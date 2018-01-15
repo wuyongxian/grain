@@ -1,0 +1,188 @@
+﻿    *
+        {
+            margin: auto;
+            padding: auto;
+        }
+        body
+        {
+            width: 100%;
+            background-color: #efefef;
+        }
+        
+        .pagehead
+        {
+            padding-left: 20px;
+            width: 100%;
+            height: 50px;
+            background: #ccc;
+            border-bottom: 1px solid #111;
+        }
+        .pagehead_title
+        {
+            padding-left: 20px;
+            font-family: Arial;
+            font-size: 18pt;
+            font-weight: bold;
+        }
+        .pagehead ul
+        {
+            float: right;
+            list-style: none;
+            margin: 40px 20px auto auto;
+        }
+        .pagehead ul li
+        {
+            text-decoration: none;
+            float: left;
+            overflow: hidden;
+            width: 100px;
+            text-align: center;
+        }
+        .pagehead ul li a
+        {
+            /* 必须是相对定位  */
+            position: relative;
+            display: block;
+            width: 90px;
+            height: 25px;
+            padding-top: 10px;
+            text-align: center;
+            font-family: Arial;
+            font-size: 12px;
+            font-weight: bold;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            text-decoration: none;
+            cursor: pointer;
+            color: #111;
+            background-color: #efefef;
+            border-radius: 5px;
+        }
+        .pagehead ul li a:hover
+        {
+            background-color: #888;
+            color: #efefef;
+        }
+        .pagehead ul li a:hover:active
+        {
+            background-color: #aaa;
+        }
+        
+        .menu_list_control
+        {
+            position: fixed;
+            width: 25px;
+            height: 25px;
+            background-color: #808080;
+            background-image: url('../images/list_black.png');
+        }
+        
+        
+        .pagemain
+        {
+            position: fixed;
+            left: 10px;
+            padding: 10px 0px 0px 20px;
+            float: right;
+            text-align: left;
+            background-color: #efefef;
+        }
+        
+        
+        .menu_list
+        {
+            display: block;
+            background-color: #d0d0d0;
+            padding-top: 20px;
+            padding-left: 0px;
+            position: relative;
+            float: left;
+        }
+        .menu_head
+        {
+            width: 180px;
+            margin: 8px 0px 0px 0px;
+            padding-left: 10px;
+            height: 30px;
+            cursor: pointer;
+            position: relative;
+            font-size: large;
+            font-weight: bold;
+            color: White;
+            background-color: #66cdaa;
+            background-image: url(../images/plus.gif);
+            background-repeat: no-repeat;
+            background-position: right;
+            border-radius:5px;
+        }
+        .menu_head:hover
+        {
+            color: #ff6347;
+        }
+        .menu_body
+        {
+            display:none;
+            margin-left: 20px;
+        }
+        .menu_body a
+        {
+            display: block;
+            height: 25px;
+            margin: 0px 0px 4px 0px;
+            padding-left: 20px;
+            font-size: medium;
+            color: Black;
+            background-color: #EFEFEF;
+            font-weight: bold;
+            text-decoration: none;
+             border-radius:5px;
+        }
+        .menu_body a:hover
+        {
+            background-color: #ccddff;
+            color: #ff6347;
+        }
+        
+        .menu_head_child
+        {
+            width: 160px;
+            margin: 4px 0px 4px 0px;
+            padding-left: 10px;
+            height: 25px;
+            cursor: pointer;
+            position: relative;
+            font-size: large;
+            font-weight: bold;
+            color: White;
+            background-color: #0066ff;
+            background-image: url(../images/plus.gif);
+            background-repeat: no-repeat;
+            background-position: right;
+             border-radius:5px;
+        }
+        .menu_head_child:hover
+        {
+            color: #ff6347;
+        }
+        .menu_body_child
+        {
+            display: none;
+            padding-left: 10px;
+        }
+        .menu_body_child a
+        {
+            display: block;
+            height: 25px;
+            margin: 0px 0px 4px 0px;
+            padding-left: 20px;
+            font-size: medium;
+            color: Black;
+            background-color: #9999ff;
+            font-weight: bold;
+            text-decoration: none;
+        }
+        .menu_body_child a:hover
+        {
+            background-color: #ccddff;
+            color: #ff6347;
+        }

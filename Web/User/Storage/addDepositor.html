@@ -1,0 +1,865 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title></title>
+    <script src="../../Scripts/jquery-1.4.1.js" type="text/javascript"></script>
+    <script src="../../Scripts/WebInner.js" type="text/javascript"></script>
+    <script src="../../Scripts/Common.js" type="text/javascript"></script>
+    <link href="../../Styles/Common.css" rel="stylesheet" type="text/css" />
+    <script src="../../Lodop6.198/LodopFuncs.js" type="text/javascript"></script>
+
+    <style type="text/css">
+
+
+        #divfrm select {
+            font-size: 18px;
+            font-weight: bold;
+            height: 30px;
+            width: 100px;
+            color:#111;
+        }
+
+       
+         input[type=text], input[type=password] {
+            width: 200px;
+            height: 30px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #111;
+        }
+
+        #txt_AccountNumber {
+            font-size: 22px;
+            font-weight: bolder;
+            background-color: #ccc;
+            color: green;
+        }
+
+        input[type=button]{
+            width: 100px;
+            height: 40px;
+            border-radius:20px;
+            font-size: 18px;
+            font-weight: bold;
+            background:#0081bc;
+            color:#fff;
+        }
+
+        #btnPrint {
+            background: #aaa;
+            color: #fff;
+        }
+        
+
+        .tabDep td {
+         padding:5px 5px;
+        }
+        .tabDep span {
+            font-size: 16px;
+            font-weight: bold;
+            color: #444;
+        }
+        .tabDep .spanwarning {
+            display:none;
+            font-size: 12px;
+            color: #ff6347;
+        }
+
+        .datadetail {
+            display: none;
+            position: fixed;
+            top: 20px;
+            left: 10px;
+            width: 650px;
+            height: 120px;
+            background: #efefef;
+            border: 2px solid #9ac0cd;
+            padding: 5px 10px;
+            border-radius: 10px;
+            z-index: 100;
+        }
+
+        .datainner {
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+        }
+
+        .datadetail .datadetail_head {
+            float: left;
+            font-size: 14px;
+            margin: 5px 0px 10px 0px;
+        }
+
+        .datadetail .datadetail_head .spaninfo {
+                margin-left: 5px;
+                color: blue;
+            }
+
+        .datadetail .div_close {
+            float: right;
+        }
+
+        .datadetail #dataInfo_detail {
+            clear: both;
+        }
+
+        .datadetail .div_close #noticeclose {
+            font-size: 18pt;
+            color: red;
+            background: #efefef;
+            border-radius: 50%;
+            border: 1px solid #ccc;
+            width: 30px;
+            height: 30px;
+            cursor: pointer;
+        }
+    </style>
+    <script type="text/javascript">
+
+
+        /*--------窗体启动设置和基本设置--------*/
+        /*--loadFuntion--*/
+        var ISCodekeyboard;//是否启用密码键盘
+        var ISIntegral;//是否开放推荐人
+        var VerifyDepInfo;//是否验证储户信息
+        var Authority_A = false;//新增权限
+        var interval_AN;//定时获取新的账号
+        var AccountNumber_New;
+        $(function () {
+            GetMenuAuthority();
+            ISCodekeyboard = JSON.parse(localStorage.getItem("WBAuthority")).ISCodekeyboard;
+            VerifyDepInfo = JSON.parse(localStorage.getItem("WBAuthority")).VerifyDepInfo;
+            ISIntegral = JSON.parse(localStorage.getItem("WBAuthority")).ISIntegral;
+            if (ISIntegral) {
+                $('#tr_Integral').show();
+            } else {
+                $('#tr_Integral').hide();
+            }
+            GetNewAccountNumber();
+            interval_AN=  setInterval('GetNewAccountNumber()', 2000);
+
+            GetAddressXian();
+            GetAddressXian_A();
+            //编辑列表选项
+            $('select[name=XianID]').change(function () {
+                var XianID = $('select[name=XianID] option:selected').val();
+                $('select[name=XiangID]').empty();
+                $('select[name=CunID]').empty();
+                GetAddressXiang(XianID);
+            });
+
+            $('select[name=XiangID]').change(function () {
+                var XiangID = $('select[name=XiangID] option:selected').val();
+                $('select[name=CunID]').empty();
+                GetAddressCun(XiangID);
+            });
+
+            $('select[name=CunID]').change(function () {
+                var strXian = $('select[name=XianID] option:selected').text();
+                var strXiang = $('select[name=XiangID] option:selected').text();
+                var strCun = $('select[name=CunID] option:selected').text();
+
+                $('input[name=strAddress]').val(strXian + ' ' + strXiang + ' ' + strCun);
+            });
+
+            $('select[name=AXianID]').change(function () {
+                var XianID = $('select[name=AXianID] option:selected').val();
+                $('select[name=AXiangID]').empty();
+                GetAddressXiang_A(XianID);
+            });
+
+
+            $('input[name=strName]').focus(function () {
+                $('#span_strName').fadeOut();
+            })
+            $('input[name=strName]').blur(function () {
+                if ($.trim($('input[name=strName]').val()) == '') {
+                    $('#span_strName').fadeIn();
+                }
+            })
+
+            $('input[name=strPassword]').focus(function () {
+                $('#span_strPassword').fadeOut();
+            })
+            $('input[name=strPassword]').blur(function () {
+                if ($.trim($('input[name=strPassword]').val()).length<4) {
+                    $('#span_strPassword').fadeIn();
+                }
+            })
+
+            $('input[name=strPassword2]').focus(function () {
+                $('#span_strPassword2').fadeOut();
+            })
+            $('input[name=strPassword2]').blur(function () {
+                if ($.trim($('input[name=strPassword2]').val()).length<4) {
+                    $('#span_strPassword2').html('请再次输入密码,且密码长度不小于4位!');
+                    $('#span_strPassword2').fadeIn();
+                }
+                if ($('input[name=strPassword]').val() != $('input[name=strPassword2]').val()) {
+                    $('#span_strPassword2').html('两次输入的密码不一致!');
+                    $('#span_strPassword2').fadeIn();
+                }
+            })
+
+            $('input[name=IDCard]').focus(function () {
+                $('#span_IDCard').fadeOut();
+            })
+            $('input[name=IDCard]').blur(function () {
+                if (VerifyDepInfo) {
+                    if (!checkIdcard($('input[name=IDCard]').val())) {
+                        $('#span_IDCard').html('不是有效的身份证号');
+                        $('#span_IDCard').fadeIn();
+                    }
+                } else {
+                    if ($.trim($('input[name=IDCard]').val()) == '') {
+                        $('#span_IDCard').html('请输入储户身份证号');
+                        $('#span_IDCard').fadeIn();
+                    }
+                }
+
+            })
+
+            $('input[name=PhoneNO]').focus(function () {
+                $('#span_PhoneNO').fadeOut();
+            })
+            $('input[name=PhoneNO]').blur(function () {
+                if (VerifyDepInfo) {
+                    var flag1 = CheckMobile($('input[name=PhoneNO]').val());
+                    var flag2 = CheckPhone($('input[name=PhoneNO]').val());
+                    if (!flag1 && !flag2) {
+                        $('#span_PhoneNO').html('不是有效的手机号');
+                        $('#span_PhoneNO').fadeIn();
+                    }
+                } else {
+                    if ($.trim($('input[name=PhoneNO]').val()) == '') {
+                        $('#span_PhoneNO').html('请输入储户手机号');
+                        $('#span_PhoneNO').fadeIn();
+                    }
+                }
+            })
+        });
+
+
+        function GetMenuAuthority() {
+            var MenuID = getQueryString('MenuID');
+            $.ajax({
+                url: '/ashx/wbinfo.ashx?type=GetMenuAuthority&MenuID=' + MenuID,
+                type: 'post',
+                data: '',
+                dataType: 'json',
+                success: function (r) {
+                    Authority_A = r.A;
+                    if (Authority_A) {
+                        $('#a_Cun').show();
+                    } else {
+                        $('#a_Cun').hide();
+                    }
+                }, error: function (r) {
+                    showMsg('加载菜单权限失败 ！');
+                }
+            });
+        }
+        /*--ENd loadFuntion--*/
+        //检测是否是密码键盘输入
+        document.onkeydown = function (event) {
+            var e = event || window.event || arguments.callee.caller.arguments[0];
+            if (ISCodekeyboard) {
+                if (e.keyCode > 47 && e.keyCode < 58) {
+                    if (document.activeElement.name != 'strPassword' && document.activeElement.name != 'strPassword2') {
+                        $('input[name=strPassword]').val('');
+                        $('input[name=strPassword2]').val('');
+                        return false;
+                    }
+                }
+            }
+            if (e.keyCode == 13) {//确认按键
+            }
+        };
+
+        function GetAddressXian() {
+            $('select[name=XianID]').html('');
+            $.ajax({
+                url: '/User/Query/depositor.ashx?type=Get_Address_Xian',
+                type: 'post',
+                data: '',
+                dataType: 'json',
+                success: function (r) {
+                    var XianID = r[0].ID;
+                    GetAddressXiang(XianID); //设置县名
+                    for (var i = 0; i < r.length; i++) {
+                        $('select[name=XianID]').append("<option value='" + r[i].ID + "'>" + r[i].strName + "</option>");
+                    }
+                }, error: function (r) {
+                    if (r.responseText != "Error") {
+                        showMsg('加载信息失败 ！');
+                    }
+                }
+            });
+        }
+
+        function GetAddressXiang(XianID) {
+            $('select[name=XiangID]').html('');
+            $.ajax({
+                url: '/User/Query/depositor.ashx?type=Get_Address_Xiang&XianID=' + XianID,
+                type: 'post',
+                data: '',
+                dataType: 'json',
+                success: function (r) {
+                    var XiangID = r[0].ID;
+                    GetAddressCun(XiangID); //设置村名
+                    for (var i = 0; i < r.length; i++) {
+                        $('select[name=XiangID]').append("<option value='" + r[i].ID + "'>" + r[i].strName + "</option>");
+                    }
+                }, error: function (r) {
+                    if (r.responseText != "Error") {
+                        showMsg('加载信息失败 ！');
+                    }
+                }
+            });
+
+        }
+
+        function GetAddressCun(XiangID) {
+            $('select[name=CunID]').html('');
+            $.ajax({
+                url: '/User/Query/depositor.ashx?type=Get_Address_Cun&XiangID=' + XiangID,
+                type: 'post',
+                data: '',
+                dataType: 'json',
+                success: function (r) {
+                    for (var i = 0; i < r.length; i++) {
+                        $('select[name=CunID]').append("<option value='" + r[i].ID + "'>" + r[i].strName + "</option>");
+                    }
+                    var strXian = $('select[name=XianID] option:selected').text();
+                    var strXiang = $('select[name=XiangID] option:selected').text();
+                    var strCun = $('select[name=CunID] option:selected').text();
+
+                    $('input[name=strAddress]').val(strXian + ' ' + strXiang + ' ' + strCun);
+                }, error: function (r) {
+                    if (r.responseText != "Error") {
+                        showMsg('加载信息失败 ！');
+                    }
+                }
+            });
+        }
+
+
+        function GetAddressXian_A() {
+            $.ajax({
+                url: '/User/Query/depositor.ashx?type=Get_Address_Xian',
+                type: 'post',
+                data: '',
+                dataType: 'json',
+                success: function (r) {
+                    var XianID = r[0].ID;
+                    GetAddressXiang_A(XianID); //设置县名
+                    for (var i = 0; i < r.length; i++) {
+                        $('select[name=AXianID]').append("<option value='" + r[i].ID + "'>" + r[i].strName + "</option>");
+                    }
+                }, error: function (r) {
+                    if (r.responseText != "Error") {
+                        showMsg('加载信息失败 ！');
+                    }
+                }
+            });
+        }
+
+        function GetAddressXiang_A(XianID) {
+            $.ajax({
+                url: '/User/Query/depositor.ashx?type=Get_Address_Xiang&XianID=' + XianID,
+                type: 'post',
+                data: '',
+                dataType: 'json',
+                success: function (r) {
+                    var XiangID = r[0].ID;
+                    GetAddressCun(XiangID); //设置村名
+                    for (var i = 0; i < r.length; i++) {
+                        $('select[name=AXiangID]').append("<option value='" + r[i].ID + "'>" + r[i].strName + "</option>");
+                    }
+                }, error: function (r) {
+                    if (r.responseText != "Error") {
+                        showMsg('加载信息失败 ！');
+                    }
+                }
+            });
+
+        }
+
+        function GetNewAccountNumber() {
+            $.ajax({
+                url: '/User/Query/depositor.ashx?type=GetNewAccountNumber',
+                type: 'post',
+                data: '',
+                dataType: 'text',
+                success: function (r) {
+                    $('input[name=AccountNumber]').val(r);
+                }, error: function (r) {
+                    showMsg('加载信息失败 ！');
+
+                }
+            });
+        }
+
+        function BDCun_Show() {
+            showBodyCenter($('#divCun'));
+           // $('#divCun').fadeIn();
+        }
+        function BDCun_Close() {
+            $('#divCun').fadeOut();
+        }
+        function BDCun_Add() {
+            if ($.trim($('input[name=ACun]').val()) == '') {
+                showMsg('请输入村名!');
+                return;
+            }
+            var msg = '您确认已经仔细检查输入信息，并继续操作吗？';
+            showConfirm(msg, function (obj) {
+                if (obj == 'yes') {
+
+                    var XiangID = $('select[name=AXiangID] option:selected').val();
+                    var strName = $.trim($('input[name=ACun]').val());
+                    $.ajax({
+                        url: '/BasicData/Data/addr.ashx?type=Add_Address_Cun&XiangID=' + XiangID+'&strName='+strName,
+                        type: 'post',
+                        data: '',
+                        dataType: 'text',
+                        success: function (r) {
+                            if (r == "OK") {
+                                showMsg('添加村名成功 ！');
+                                BDCun_Close();
+                                var XiangID = $('select[name=XiangID] option:selected').val();
+                                $('select[name=CunID]').empty();
+                                GetAddressCun(XiangID);
+
+                            } else if (r == "1") {
+                                showMsg('已存在相同名称的村名，请修改后添加 ！');
+                            }
+                        }, error: function (r) {
+                            showMsg('添加村名失败 ！');
+                        }
+                    });
+                } else {
+                    //console.log('你点击了取消！');
+                }
+
+            });
+        }
+
+
+         /*--------数据增删改操作--------*/
+         //新增数据方法
+        function FunAdd() {
+             if (!SubmitCheck()) {//检测输入内容
+                 return false;
+             }
+             var msg = '您确认已经仔细检查输入信息，并继续操作吗？';
+             showConfirm(msg, function (obj) {
+                 if (obj == 'yes') {
+                     var url = '/User/Query/depositor.ashx?type=Add_Depositor';
+                     if ($('#span_DepAccountNumber').html() != '') {
+                         url = '/User/Query/depositor.ashx?type=Add_Depositor&DepRecommend=' + $('#span_DepAccountNumber').html();
+                     }
+                     $.ajax({
+                         url: url,
+                         type: 'post',
+                         data: $('#form1').serialize(),
+                         dataType: 'json',
+                         success: function (r) {
+                             if (r.state == true) {
+                                 clearInterval(interval_AN);//清除获取新账号定时
+                                 showMsg("新增储户成功!");
+                                 AccountNumber_New = r.AccountNumber;//新的储户账号
+                                 $('#btnAdd').attr('disabled', 'disabled');
+                                 $('#btnAdd').css('background', '#aaa');
+                                 $('#btnPrint').removeAttr('disabled');
+                                 $('#btnPrint').css('background', '#0081bc');
+
+                             } else {
+                                 showMsg(r.msg);
+                             }
+                         }, error: function (r) {
+                             showMsg('添加储户失败 ！');
+                         }
+                     });
+                 } else {
+                     //console.log('你点击了取消！');
+                 }
+
+             });
+
+         }
+
+            //提交检测
+        function SubmitCheck() {
+
+                if (!CheckInput('strPassword', '密码', '4')) { return false; }
+                var strPassword = $.trim($('input[name=strPassword]').val());
+                var strPassword2 = $.trim($('input[name=strPassword2]').val());
+
+                if (strPassword != strPassword2) {
+                    showMsg('两次输入的密码不一致，请重新输入！');
+                    $('input[name=strPassword]').focus();
+                    return false;
+                }
+                if ($('input[name=strName]').val() == '') {
+                    showMsg('请输入姓名！');
+                    $('input[name=strName]').focus();
+                    return false;
+                }
+                if (VerifyDepInfo) {
+                    if (!checkIdcard($('input[name=IDCard]').val())) {
+                        showMsg('身份证号格式不正确，请重新输入 ！');
+                        $('input[name=IDCard]').focus();
+                        return false;
+                    }
+                    if (!CheckInput('PhoneNO', '手机号', '-1')) {
+                        return false;
+                    };
+                    var flag1 = CheckMobile($('input[name=PhoneNO]').val());
+                    var flag2 = CheckPhone($('input[name=PhoneNO]').val());
+                    if (!flag1 && !flag2) {
+                        showMsg('手机号格式不正确，请重新输入 ！');
+                        $('input[name=PhoneNO]').focus();
+                        return false;
+                    }
+                }
+
+                if ($('select[name=XianID] option:selected').val() == "") {
+                    showMsg('县名不能为空 ！');
+                    return false;
+                }
+                if ($('select[name=XiangID] option:selected').text() == "") {
+                    showMsg('乡名不能为空 ！');
+                    return false;
+                }
+                if ($('select[name=CunID] option:selected').text() == "") {
+                    showMsg('村名不能为空 ！');
+                    return false;
+                }
+                return true;
+            }
+
+        //查找推荐人
+        function FunQueryDep() {
+           
+            var strName =$.trim( $('#dep_Name').val());
+            var PhoneNO = $.trim($('#dep_PhoneNo').val());
+            if (strName == '' && PhoneNO == '') {
+                showMsg('请输入查询储户名或手机号!');
+                return false;
+            }
+
+            var para = 'strName=' + strName + '&PhoneNO=' + PhoneNO;
+            var url = '/User/Query/depositor.ashx?type=GetByName_Depositor';
+            $.ajax({
+                url: url,
+                type: 'post',
+                data: para,
+                dataType: 'json',
+                success: function (r) {
+                    if (r.length <= 0) {
+                        $('.datadetail').fadeOut();
+                        return false;
+                    }
+                    $('.datadetail #dataInfo_detail').show();
+                    var strhtml = '';
+                    var jsondata =r;
+                    var height = 110;
+                    for (var i = 0; i < jsondata.length; i++) {
+                        strhtml += '<tr class="trappend" >';
+                        height += 27;
+                        strhtml += ' <td style="height:25px;">' + jsondata[i].AccountNumber + '</td>';
+                        strhtml += ' <td>' + jsondata[i].strName + '</td>';
+                        strhtml += ' <td>' + jsondata[i].PhoneNO + '</td>';
+                        strhtml += ' <td>' + jsondata[i].strAddress + '</td>';
+                        //strhtml += ' <td><a href="#" AccountNumber=' + jsondata[i].AccountNumber + '  strName=' + jsondata[i].strName + ' PhoneNO=' + jsondata[i].PhoneNO + ' onclick="FunDepChoose()"></a></td>';
+                        strhtml += ' <td> <input type="button" value="选择" style="width:60px;height:25px;font-size:12px;" AccountNumber=' + jsondata[i].AccountNumber + '  strName=' + jsondata[i].strName + ' PhoneNO=' + jsondata[i].PhoneNO + ' onclick="FunDepChoose(this)"></input></td>';
+                       
+                        strhtml += '</tr>';
+                    }
+
+                    $('#dataInfo_detail .trappend').remove();//清除之前的添加项
+                    $('#dataInfo_detail').append(strhtml);
+
+                    var width = 650;
+                    // height = 50 + $('#dataInfo_detail').get(0).offsetHeight;
+                    if (height > document.documentElement.clientHeight - 50) {
+                        height = document.documentElement.clientHeight - 50;
+                    }
+                    if (width > document.documentElement.clientWidth - 50) {
+                        width = document.documentElement.clientWidth - 50;
+                    }
+                    //var top = (document.body.scrollHeight - height) / 2;
+                    var top = (document.documentElement.clientHeight - height) / 2;
+
+                    var left = (document.body.scrollWidth - width) / 2;
+                    if (top <= 0) { top = 10; }
+                    if (left <= 0) { left = 10; }
+                    $('.datadetail').css('width', width).css('height', height).css('top', top).css('left', left);
+
+
+                    $('.datadetail').fadeIn();
+                }, error: function (r) {
+                    $('.datadetail').fadeOut();
+                    showMsg('查询详细信息失败!');
+                }
+            });
+        }
+
+        function FunDepChoose(obj) {
+            var AccountNumber = $(obj).attr('AccountNumber');
+            var strName = $(obj).attr('strName');
+            var PhoneNO = $(obj).attr('PhoneNO');
+            $('#span_DepName').html('已选择:' + strName+' 账号:');
+            $('#span_DepAccountNumber').html( AccountNumber);
+            $('#divDep').hide();
+        }
+
+        function ShowQueryDep() {
+            showBodyCenter($('#divDep'));
+        }
+
+        function CloseQueryDep() {
+            $('#divDep').hide();
+        }
+            /*--------End 数据增删改操作--------*/
+
+        var p_left = 0; var p_ltop = 0; var p_lwidth = 0; var p_lheight = 0;
+        $(function () {
+                $.ajax({
+                    url: '/Ashx/wbinfo.ashx?type=GetPrintSetting_Dep',
+                    type: 'post',
+                    data: '',
+                    dataType: 'json',
+                    success: function (r) {
+                        p_lwidth = r[0].Width;
+                        p_lheight = r[0].Height;
+                        p_lleft = r[0].DriftRateX;
+                        p_ltop = r[0].DriftRateY;
+                    }, error: function (r) {
+                        showMsg('加载打印坐标时出现错误 ！');
+                    }
+                });
+            });
+
+        function CreateOneFormPage() {
+                LODOP = getLodop();
+                LODOP.PRINT_INIT("存折打印");
+                LODOP.SET_PRINT_STYLE("FontSize", 18);
+                LODOP.SET_PRINT_STYLE("Bold", 1);
+                LODOP.ADD_PRINT_TEXT(0, 0, 0, 0, "打印页面部分内容");
+                LODOP.ADD_PRINT_HTM(p_ltop, p_lleft, p_lwidth, p_lheight, document.getElementById("divPrint").innerHTML);
+
+            };
+
+        function FunPrint() {
+                //查询社员信息
+                $.ajax({
+                    url: '/User/Storage/storage.ashx?type=GetDepositorPrint&AccountNumber=' + AccountNumber_New,
+                    type: 'post',
+                    data: '',
+                    dataType: 'text',
+                    success: function (r) {
+                        $('#divPrint').html('');
+                        $('#divPrint').append(r);
+                        CreateOneFormPage();
+                        LODOP.PREVIEW(); //打印存折
+                    }, error: function (r) {
+                        showMsg('加载打印坐标时出现错误 ！');
+                    }
+                });
+
+            }
+
+    </script>
+</head>
+<body>
+
+    <div id="divPrint" style="display:none">
+
+    </div>
+    <form id="form1">
+        <div class="pageHead">
+            <b>新建储户</b><span id="spanHelp" style="cursor: pointer">帮助</span>
+        </div>
+        <div id="divHelp" class="pageHelp">
+            <span>提示1：请认真输入您的身份证号和密码信息，这可能作为您今后兑换、存转销售等业务的依据</span><br />
+            <span>提示2：新建储户账号成功后，即可以开始存粮业务</span><br />
+
+        </div>
+        <div id="divfrm" class="pageEidtInner">
+
+            <div style="padding-left:10px;">
+                <table class="tabDep">
+                    <tr>
+                        <td align="right" style="width: 150px;">
+                            <span>账号:</span>
+                        </td>
+                        <td>
+                            <input type="text" id="txt_AccountNumber" name="AccountNumber" readonly="readonly" />
+
+                        </td>
+                    </tr>
+                    <tr id="trUpdate">
+                        <td align="right">
+                            <span>密码:</span>
+                        </td>
+                        <td>
+                            <input type="password" name="strPassword"  />
+                            <span class="spanwarning" id="span_strPassword">请输入密码,且密码长度不小于4位</span>
+                        </td>
+                    </tr>
+                    <tr id="tr1">
+                        <td align="right">
+                            <span>重复密码:</span>
+                        </td>
+                        <td>
+                            <input type="password" name="strPassword2"  />
+                            <span class="spanwarning" id="span_strPassword2">请再次输入密码</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td align="right">
+                            <span>姓名:</span>
+                        </td>
+                        <td>
+                            <input name="strName" type="text"  />
+                            <span class="spanwarning" id="span_strName">请输入储户姓名</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td align="right">
+                            <span>身份证号:</span>
+                        </td>
+                        <td>
+                            <input name="IDCard" type="text"  />
+                            <span class="spanwarning" id="span_IDCard">请输入储户身份证号</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td align="right">
+                            <span>手机号:</span>
+                        </td>
+                        <td>
+                            <input name="PhoneNO" type="text"  />
+                            <span class="spanwarning" id="span_PhoneNO">请输入储户手机号</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td align="right">
+                            <span>住址:</span>
+                        </td>
+                        <td>
+                            <select name="XianID" ></select>
+                            <select name="XiangID" ></select>
+                            <select name="CunID" ></select>
+                            <a id="a_Cun" href="#" onclick="BDCun_Show()">添加村名</a>
+                        </td>
+                    </tr>
+                    <tr id="tr_Integral">
+                        <td align="right">
+                            <span>推荐人:</span>
+                        </td>
+                        <td>
+                            <img id="imgQuery" src="/images/search_blue.png" style="width:20px;height:20px;" onclick="ShowQueryDep()" />
+                            <span id="span_DepName" style="color:#0081bc"></span>
+                            <span id="span_DepAccountNumber" style="color:#0081bc"></span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td>
+                            <input type="button" id="btnAdd" value="添加储户" onclick="FunAdd()" />&nbsp;&nbsp;
+                            <input type="button" id="btnPrint" disabled="disabled" value="打印存折" onclick="FunPrint()" />
+
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <div id="divCun" class="pageEidt" style="display:none;" >
+            <div style="float: left; ">
+                <img class="imgclose" src="../../images/winClose.png" alt="关闭窗口" style="float: right; cursor: pointer;" onclick="BDCun_Close()">
+
+                <div style="clear: both">
+                    <table class="tabEdit">
+                        <tbody>
+                            <tr>
+                                <td class="td_right" style="width: 60px;"><span>县名:</span></td>
+                                <td>
+                                    <select name="AXianID" style="width:120px;height:25px;font-size:14px;"></select>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="td_right"><span>乡名:</span></td>
+                                <td>
+                                    <select name="AXiangID" style="width:120px;height:25px;font-size:14px;"></select>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="td_right"><span>村名:</span></td>
+                                <td>
+                                    <input type="text" name="ACun" style="width:120px;height:25px;font-size:14px;">
+                                </td>
+                            </tr>
+                           
+                            <tr >
+                                <td></td>
+                                <td>
+                                    <input type="button" id="btnAdd" value="添加" style="width:100px;height:25px;font-size:14px; background:#0094ff" onclick="BDCun_Add()">
+                                </td>
+                            </tr>
+                         
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="datadetail" style="display:none;" id="divDep">
+            <div class="datainner">
+                <div class="datadetail_head">
+                    <span>姓名:</span><input type="text" id="dep_Name" style="width:100px;height:25px;font-size:14px;" />
+                    <span style="margin-left:5px;">手机号:</span><input type="text" id="dep_PhoneNo" style="width:100px;height:25px;font-size:14px;" />
+                    <img id="imgQuery" src="/images/search_blue.png" style="width:20px;height:20px;" onclick="FunQueryDep()" />
+                </div>
+                <img class="imgclose" src="../../images/winClose.png"  alt="关闭窗口" style="float: right; cursor: pointer;" onclick="CloseQueryDep()" />
+                <!--<div class="div_close">
+                <input type="button" id="noticeclose" value="×">
+            </div>-->
+
+                <table class="tabData" id="dataInfo_detail" style="display:none;">
+                    <tr class="tr_head">
+                        <th style="width: 100px; height:20px; text-align: center;">
+                            账号
+                        </th>
+                        <th style="width: 80px; text-align: center;">
+                            姓名
+                        </th>
+                        <th style="width: 80px; text-align: center;">
+                            手机号
+                        </th>
+                        <th style="width: 280px; text-align: center;">
+                            地址
+                        </th>
+                        <th style="width: 80px; text-align: center;">
+                            选择
+                        </th>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <div style="display:none">
+            <input type="text" name="strAddress" value="" />
+            <%--定义编号--%>
+            <input type="hidden" id="WBID" value="" />
+            <%--定义背景色的隐藏域--%>
+            <input type="hidden" id="colorName" value="" />
+        </div>
+    </form>
+  
+</body>
+</html>

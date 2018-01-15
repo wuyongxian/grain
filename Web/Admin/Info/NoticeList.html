@@ -1,0 +1,235 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>公告消息</title>
+    <script src="../../Scripts/jquery.js"></script>
+    <link href="../../Styles/Common.css" rel="stylesheet" type="text/css" />
+   
+    <style type="text/css">
+        * {
+            margin: 0px;
+            padding: 0px;
+        }
+        .page_warning {
+            margin: 0 auto;
+            text-align: center;
+            color: red;
+            padding: 20px 50px;
+            display:none;
+        }
+         .list {
+            border-bottom: 2px solid #666;
+            background: #efefef;
+            margin: 10px 10px 10px 10px;
+            padding: 5px 20px;
+        }
+
+            .list .list_title {
+                font-size:medium;
+                padding-bottom: 5px 20px 5px 10px;
+                color: green;
+                cursor:pointer;
+                padding-top:20px;
+            }
+
+
+            .list .list_time {
+                font-size: small;
+                color: #aaa;
+            }
+            .list .list_detail {
+                font-size: small;
+                color: green;
+                cursor: pointer;
+            }
+             .notice {
+                position: fixed;
+                left:50px;
+                top:50px;
+                width:400px;
+                height:400px;
+                display: none;
+                border-bottom: 2px solid #666;
+                border-radius: 10px;
+                background: #9ac0cd;
+                margin: 20px 10px 20px 10px;
+                padding: 20px 20px;
+                overflow:auto;
+            }
+
+            .notice .notice_title {
+                margin: 0 auto;
+                text-align: center;
+                font-size: larger;
+                padding-bottom: 10px;
+                padding-top:25px;
+                color: green;
+                cursor:pointer;
+            }
+
+            .notice .notice_content {
+                padding-bottom: 10px;
+            }
+
+            .notice .notice_time {
+                float: right;
+                font-size: small;
+                color: #aaa;
+            }
+            .notice .notice_close {
+                float: right;
+            }
+                .notice .notice_close #noticeclose {
+                  font-size:20pt;
+                  color:red;
+                  background:#efefef;
+                  border-radius:50%;
+                  cursor:pointer;
+                }
+        
+    </style>
+    <script type="text/javascript">
+        var apiurl = '';//api地址
+        var webSiteCode;//网站代码 
+        var maxNum = 20;//获取最近20条公告
+        var jsonmsg;//消息列表
+        $(function () {
+
+            //获取当前站点代码
+            if (localStorage.getItem('webSiteCode') != null) {
+                webSiteCode = localStorage.getItem('webSiteCode');
+                apiurl = localStorage.getItem('apiurl');
+                GetLatestNotice();
+            }
+            else {
+                $.ajax({
+                    url: '/ashx/wbinfo.ashx?type=GetCompanyInfo',
+                    type: 'post',
+                    data: '',
+                    dataType: 'json',
+                    success: function (r) {
+                        if (r != "Error") {
+                            webSiteCode = r[0].webSiteCode;
+                            apiurl = r[0].pushmsgApiurl;
+                            GetLatestNotice();
+                            //for (var i = localStorage.length - 1 ; i >= 0; i--) {
+                            //    if (localStorage.key(i).indexOf('pushmsg') == 0) {//当缓存中仍有pushmsg时，清除缓存
+                            //        localStorage.removeItem(localStorage.key(i));
+                            //    }
+                            //}
+                            ////检索新信息定时器
+                            //timerNotice = setInterval('GetNotReadNotice()', 2000);
+
+                        }
+                    }, error: function (r) { }
+                });
+            }
+            
+
+
+            $('#noticeclose').click(function () {
+                $('.notice').hide();
+            });
+        });
+
+        //获取最近部分的消息
+        function GetLatestNotice() {
+            var apiUri =apiurl+ "/api/Notice/GetLatestNotice?webSiteCode="+webSiteCode+"&maxNum="+maxNum;//请使用绝对访问路径，参数：webSiteCode-站点代码，maxNum-获取最多条目数
+            $.ajax({
+                url: apiUri,
+                type: 'get',
+                contentType: 'application/json',
+                cache: false,
+                success: function (data) {
+                   // console.log(data);
+                    jsonmsg = JSON.parse(data);
+                    if (jsonmsg.length == 0) {
+                        $('.page_warning').show();
+                        $('.page_warning').html('没有找到可用的公告信息！');
+                        return false;
+                    }
+
+                    for (var i = 0; i < jsonmsg.length; i++) {
+                        var ID = jsonmsg[i].ID;
+                        var Title = jsonmsg[i].Title;
+                        var CreateTime = new Date(jsonmsg[i].CreateTime);
+                        var strDate = CreateTime.getFullYear() + '-' + (parseInt(CreateTime.getMonth()) + 1) + '-' + CreateTime.getDate();
+                        var strhtml = '';
+                        strhtml += '<div class="list">';
+                        strhtml += '   <span class="list_title" onclick="ShowDetail(\'' + ID + '\')">' + Title + '</span>&nbsp;&nbsp;';
+                        strhtml += '   <span class="list_time">发布时间：'+strDate+'</span>&nbsp;&nbsp;';
+                        strhtml += '   <span class="list_detail" onclick="ShowDetail(\''+ID+'\')">[详细]</span>';
+                        strhtml += ' </div>';
+                        $("#msgContainer").append(strhtml);
+                    }
+                }
+            });
+        }
+
+
+      
+
+        function ShowDetail(id) {
+            for (var i = 0; i < jsonmsg.length; i++) {
+                if (id == jsonmsg[i].ID) {
+                    //var ID = jsonmsg[i].ID;
+                    //var Title = jsonmsg[i].Title;
+                    //var Content = jsonmsg[i].Content;
+                    //var CreateTime = new Date(jsonmsg[i].CreateTime);
+                    //var strDate = CreateTime.getFullYear() + '-' + (parseInt(CreateTime.getMonth()) + 1) + '-' + CreateTime.getDate();
+
+                    //$('.notice .notice_title').html(Title);
+                    //$('.notice .notice_content').html(Content);
+                    //$('.notice .notice_time').html(strDate);
+
+                    //var width = 400;
+                    //var height = 400;
+                    //var top = (document.body.scrollHeight - height) / 2;
+                    //var left = (document.body.scrollWidth - width) / 2;
+                    //$('.notice').css('width', width).css('height', height).css('top', top).css('left', left);
+                    //$('.notice').show();
+                    var ID = jsonmsg[i].ID;
+              
+
+                    var width = 960;
+                    var height = 600;
+                    //var top = (document.body.scrollHeight - height) / 2;
+                    //var left = (document.body.scrollWidth - width) / 2;
+                    var top = (window.screen.height - height) / 2;
+                    var left = (window.screen.width - width) / 2;
+                    localStorage.setItem('pushmsg',JSON.stringify( jsonmsg[i]));
+                    var url = '/fs/pushmessage.html';
+                    window.open(url, 'newwindow', 'height=' + height + ', width=' + width + ', top=' + top + ', left=' + left + ', toolbar=no, menubar=no, scrollbars=no, resizable=no, location=no, status=no');
+                    break;
+                }
+            }
+        }
+    </script>
+</head>
+<body>
+    <div id="msgContainer">
+        <div class="pageHead">
+            <b>历史公告</b>
+        </div>
+        <div class="page_warning">
+          
+        </div>
+        <!--<div class="list">
+           <span class="list_title">第一条消息</span>&nbsp;&nbsp;
+            <span class="list_time">发布时间： 2017-5-10</span>&nbsp;&nbsp;
+            <span class="list_detail" onclick="ShowDetail(1)">[详细]</span>
+        </div>
+        <div class="list">
+            <span class="list_title">第二条消息</span>&nbsp;&nbsp;<span class="list_time">发布时间： 2017-5-1</span>
+        </div>-->
+    </div>
+
+    <div class="notice">
+        <div class="notice_close"><span id="noticeclose">&nbsp;×&nbsp;</span></div>
+        <div class="notice_title"></div>
+        <div class="notice_content"></div>
+        <div class="notice_time"></div>
+    </div>
+</body>
+</html>

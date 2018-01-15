@@ -1,0 +1,8 @@
+
+----------------------header--------------------------
+2017-09-18 18:24:14,648 [5] INFO  WebLogger - 错误日志test
+2017-09-18 18:24:15,210 [5] INFO  WebLogger - 错误日志test
+2017-09-18 18:24:15,562 [5] DEBUG WebLogger - 错误日志test
+2017-09-18 18:24:43,306 [5] INFO  WebLogger - 错误日志test
+2017-09-18 18:24:47,228 [5] INFO  WebLogger - 错误日志test
+2017-09-18 18:24:51,387 [5] DEBUG WebLogger - 错误日志test

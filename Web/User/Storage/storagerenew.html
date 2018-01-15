@@ -1,0 +1,652 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head id="Head1">
+    <title>结息续存</title>
+
+    <script src="../../Scripts/jquery-1.4.1.js" type="text/javascript"></script>
+    <script src="../../Scripts/WebInner.js" type="text/javascript"></script>
+    <script src="../../Scripts/Common.js" type="text/javascript"></script>
+    <link href="../../Styles/Common.css" rel="stylesheet" type="text/css" />
+    <link href="../../Styles/storage.css" rel="stylesheet" type="text/css" />
+    <script src="../../Lodop6.198/LodopFuncs.js" type="text/javascript"></script>
+    <script src="../../Scripts/LodopPrint.js"></script>
+    <script src="../../Scripts/codeKeyboard.js"></script>
+    <script src="../../Scripts/fakeLoader.js" type="text/javascript"></script>
+    <link href="../../Styles/fakeLoader.css" rel="stylesheet" />
+    <script type="text/javascript">
+        var BusinessNO = '';//存转销完成时生成的序列号
+        var dsiID = '';
+        $(function () {
+            //$('#QAccountNumber').val('0040000003');
+            $('.pageQuery #QSelect').click(function () {
+                // $('.divloading').fadeIn();
+                FunDepSelect();
+            });
+            $('#QAccountNumber').focus(function () { $('#QAccountNumber').val(''); });//储户账号
+
+
+            $('#QPassword').focus(function () { $('#QPassword').val(''); });//储户密码
+
+            var Dep_SID = getQueryString("Dep_SID");
+            if (Dep_SID != "") {
+                $('#Interest').fadeIn('normal'); 
+                InitStorageInfo(Dep_SID);
+                InitDepositor(Dep_SID);
+                GetInterestState(Dep_SID);
+            }
+
+            $('select[name=TypeID]').change(function () {
+                InitTimeID();
+                $('input[name=txtTypeID]').val($('select[name=TypeID] option:selected').val());
+            });
+            $('select[name=TimeID]').change(function () {
+                //InitTimeID();
+                ShowOptionInfo();
+                $('input[name=txtTimeID]').val($('select[name=TimeID] option:selected').val());
+            });
+
+            $('input[name=dt_Interest]').val(getTimeNow());
+          
+        })
+
+        //获取储户类型
+        function InitTypeID() {
+            var VarietyID = $('input[name=txtVarietyID]').val();
+            var VarietyLevelID = $('input[name=txtVarietyLevelID]').val();
+            $('select[name=TypeID]').empty();
+            $.ajax({
+                url: '/User/Storage/storage.ashx?type=GetUserTypeByVarietyID&VarietyID=' + VarietyID + '&VarietyLevelID=' + VarietyLevelID,
+                type: 'post',
+                data: '',
+                dataType: 'json',
+                success: function (r) {
+                    for (var i = 0; i < r.length; i++) {
+                        $('select[name=TypeID]').append("<option value='" + r[i].ID + "'>" + r[i].strName + "</option>");
+                    }
+                    InitTimeID(); //获取存期信息
+                }, error: function (r) {
+                    if (r.responseText != 'Error') {
+                        showMsg('不存在此储户类型,您可以请管理员添加相关的基础数据信息 ！');
+                    }
+                }
+            });
+        }
+
+        //获取存期信息
+        function InitTimeID() {
+            var VarietyID = $('input[name=txtVarietyID]').val();
+            var VarietyLevelID = $('input[name=txtVarietyLevelID]').val();
+            var TypeID = $('select[name=TypeID] option:selected').val();
+            $('select[name=TimeID]').empty();
+            $.ajax({
+                url: '/User/Storage/storage.ashx?type=GetTimeByVUID&VarietyID=' + VarietyID + '&VarietyLevelID=' + VarietyLevelID + '&TypeID=' + TypeID,
+                type: 'post',
+                data: '',
+                dataType: 'json',
+                success: function (r) {
+                    for (var i = 0; i < r.length; i++) {
+                        $('select[name=TimeID]').append("<option value='" + r[i].ID + "'>" + r[i].strName + "</option>");
+                    }
+                    ShowOptionInfo();
+                }, error: function (r) {
+                    if (r.responseText != 'Error') {
+                        showMsg('加载储户存期失败 ！');
+                    }
+                }
+            });
+        }   
+
+        function InitDepositor(Dep_SID) {
+            $.ajax({
+                url: '/User/Exchange/exchange.ashx?type=GetDepInfoByStorageID&ID=' + Dep_SID,
+                type: 'post',
+                data: '',
+                dataType: 'json',
+                success: function (r) {
+                    $('#StorageList').hide();
+                    $('#Storage').show();
+                    $('#depositorInfo').show();
+                    $('#QAccountNumber').val(r[0].AccountNumber);
+
+                    $('#D_AccountNumber').html(r[0].AccountNumber);
+                    $('#D_strName').html(r[0].strName);
+                    $('input[name=Dep_Name]').val(r[0].strName);
+                    $('#D_PhoneNo').html(r[0].PhoneNO);
+                    $('#D_strAddress').html(r[0].strAddress);
+                    $('#D_numState').html(r[0].numState);
+                    $('#D_IDCard').html(r[0].IDCard);
+
+                }, error: function (r) {
+                    showMsg('加载储户存储信息失败 ！');
+                }
+            });
+        }
+
+        /***************查询操作****************/
+
+        //储户查询
+        function FunDepSelect() {
+            var datapara = 'AccountNumber=' + $('#QAccountNumber').val().trim() + '&Password=' + $('#QPassword').val().trim()
+            if ($('#QAccountNumber').val().trim().length != 10) {
+                showMsg('请输入储户账号');
+                return false;
+            }
+            $(".fakeloader").fakeLoader({
+                timeToHide: 12000000,
+                 bgColor: "transparent",
+                spinner: "spinner7"
+            });
+            var url = '/User/Exchange/exchange.ashx?type=getDepositorStorageInfo';
+            $.ajax({
+                url: url,
+                type: 'post',
+                data: datapara,
+                dataType: 'json',
+                success: function (r) {
+                    $(".fakeloader").fakeCloser();
+
+                    $('.depositorInfo').fadeOut();
+                    $('.depositorStorageInfo').fadeOut();
+                    $('.storage').fadeOut();
+                    if (r.state == false) {
+                        showMsg(r.msg);
+                        return false;
+                    }
+                    $('.storage').fadeIn();
+                    var dep = JSON.parse(r.dep);
+                    var storage = JSON.parse(r.storage);
+                    addDepositor(dep);
+
+                    if (storage.length > 0) {//添加储户存储记录
+                        addDep_Storage(storage);
+                    }
+
+                }, error: function (r) {
+                    $(".fakeloader").fakeCloser();
+                    showMsg('获取储户信息失败 ！');
+                }
+            });
+        }
+
+        function addDepositor(dep) {
+            if (dep.length > 0) {//添加储户基本信息
+                $('#tabdepositorInfo .trappend').remove();
+
+                var strdep = '<tr class="trappend">';
+                strdep += ' <td style="height:30px;">' + dep[0].AccountNumber + '</td>';
+                strdep += ' <td>' + dep[0].strName + '</td>';
+                strdep += ' <td>' + dep[0].PhoneNO + '</td>';
+                var strState = '正常';
+                if (dep[0].numState == '0') {
+                    strState = '禁用';
+                }
+                strdep += ' <td>' + strState + '</td>';
+                strdep += ' <td>' + dep[0].IDCard + '</td>';
+                strdep += ' <td>' + dep[0].strAddress + '</td>';
+                strdep += '</tr>'
+                $('#tabdepositorInfo').append(strdep);
+            }
+            $('.depositorInfo').fadeIn();
+        }
+
+        function addDep_Storage(storage) {
+            $('#tabdepositorStorageInfo .trappend').remove();
+            $('#tabdepositorStorageInfo .tr_moneyTotal').remove();
+            $('.depositorStorageInfo').fadeIn();
+            var moneyTotal = 0;//金额总计
+            for (var i = 0; i < storage.length; i++) {
+                var strstorage = '';
+                strstorage += '<tr class="trappend">';
+                if (storage[i].ISVirtual == '1') {
+                    strstorage += ' <td style="height:25px;">' + storage[i].VarietyName + '<span style="font-size:12px;color:red;">(预)</span></td>';
+                } else {
+                    strstorage += ' <td style="height:25px;">' + storage[i].VarietyName + '</td>';
+                }
+                strstorage += ' <td>' + storage[i].StorageNumber + '</td>';
+                strstorage += ' <td>' + storage[i].StorageDate + '</td>';
+                strstorage += ' <td>' + storage[i].Price_ShiChang + '</td>';
+                strstorage += ' <td>' + storage[i].TimeName + '</td>';
+                strstorage += ' <td>' + storage[i].daycount + '</td>';//存储天数
+                strstorage += ' <td>' + storage[i].CurrentRate + '</td>';
+                strstorage += ' <td>' + storage[i].strlixi + '</td>';//利息
+
+                var SellApplyID = 0;
+                if (!isNull(storage[i].SellApplyID)) {
+                    SellApplyID = storage[i].SellApplyID;
+                }
+
+                strstorage += ' <td><input type="button" class="SVselect" value="选择" dsiID=' + storage[i].ID + '  VarietyID=' + storage[i].VarietyID + '  VarietyLevelID=' + storage[i].VarietyLevelID + ' TimeID=' + storage[i].TimeID + ' TimeName=' + storage[i].TimeName + ' VarietyName=' + storage[i].VarietyName + ' UnitName=' + storage[i].UnitName + ' TypeID=' + storage[i].TypeID + ' StorageNumber=' + storage[i].StorageNumber + ' Price_ShiChang=' + storage[i].Price_ShiChang + ' InterestType=' + storage[i].InterestType + '  onclick="FunSVSelect(this)"/></td>';
+                strstorage += '<tr>';
+                moneyTotal += accMul(storage[i].StorageNumber, storage[i].Price_ShiChang) + parseFloat(storage[i].numlixi);
+
+              
+
+                $('#tabdepositorStorageInfo').append(strstorage);
+            }
+            moneyTotal = changeTwoDecimal_f(moneyTotal);//折合现金
+            var strzhehe = '';
+            strzhehe += '<tr class="tr_moneyTotal"> <td colspan="8" style="height:25px; text-align:center;color:#666;font-size:12px;">折合现金合计：￥' + moneyTotal + '</td></tr>';
+            $('#tabdepositorStorageInfo').append(strzhehe);
+
+
+        }
+
+        //选择用于兑换的存储
+        function FunSVSelect(obj) {
+
+           // var InterestType = $(obj).attr('InterestType');
+           
+            dsiID = $(obj).attr('dsiID');
+            $('input[name=txtTimeID]').val($(obj).attr('TimeID'));
+            $('input[name=txtTypeID]').val($(obj).attr('TypeID'));
+            $('input[name=txtVarietyID]').val($(obj).attr('VarietyID'));
+            $('input[name=txtVarietyLevelID]').val($(obj).attr('VarietyLevelID'));
+
+            $('input[name=txtPrice_ShiChang]').val($(obj).attr('Price_ShiChang'));
+            
+
+            GetInterestState(dsiID);
+            InitTypeID();//加载存期类型
+            ChangeType(0);
+           
+
+            $('#tabdepositorStorageInfo').find('.SVselect').val('选择');
+            $('#tabdepositorStorageInfo').find('.SVselect').css('font-weight', '400').css('color', 'green');
+            $(obj).val('已选择');
+            $(obj).css('font-weight', '800').css('color', 'red');
+            $(obj).parent().parent().addClass('trSVSelect');
+            $(obj).parent().parent().siblings().removeClass('trSVSelect');
+        }
+
+        function GetInterestState(Dep_SID) {
+            $.ajax({
+                url: '/User/Exchange/exchange.ashx?type=GetInterestState&ID=' + Dep_SID,
+                type: 'post',
+                data: '',
+                dataType: 'json',
+                success: function (r) {
+
+                    var ISJiexi = r[0].ISJiexi;
+                    var numLixi = r[0].numLixi;
+
+                    if (ISJiexi == '0') {
+                        showWarningMsg(true, '您的存储产品未到期，不能转存!');
+                    } else {
+                        showWarningMsg(false, '');
+                    }
+                    $('input[name=numInterest]').val(numLixi);
+
+                 
+                }, error: function (r) {
+                    showMsg('加载储户存储信息失败 ！');
+                }
+            });
+        }
+
+        function showWarningMsg(flag,msg) {
+            if (flag) {
+                $('.div_msg').show();
+                $('.storage').hide();
+                $('#spanMsg').html(msg);
+            } else {
+                $('.div_msg').hide();
+                $('.storage').show();
+                $('#spanMsg').html('');
+            }
+        }
+
+
+        //获取当前的存储选项信息
+        function ShowOptionInfo() {
+            var VarietyID = $('input[name=txtVarietyID]').val();
+            var VarietyLevelID = $('input[name=txtVarietyLevelID]').val();
+            var TypeID = $('select[name=TypeID] option:selected').val();
+            var TimeID = $('select[name=TimeID] option:selected').val();
+
+            var Price_ShiChang = $('input[name=txtPrice_ShiChang]').val();
+            $.ajax({
+                url: '/User/Storage/storage.ashx?type=ShowOptionInfo&VarietyID=' + VarietyID + '&VarietyLevelID=' + VarietyLevelID + '&TypeID=' + TypeID + '&TimeID=' + TimeID + "&Price_ShiChang=" + Price_ShiChang,
+                type: 'post',
+                data: '',
+                dataType: 'text',
+                success: function (r) {
+                    $('#divMsg').html('');
+                    $('#divMsg').append(r+'(结息续存的存入价为首次存入价格!)');
+                }, error: function (r) {
+                    $('#divMsg').html('');
+                }
+            });
+        }
+
+
+        /***************结账和打印****************/
+
+        //新增数据方法
+        function frmSubmit() {
+            if ($('input[name=JiexiType]').val() == "" || $('input[name=JiexiType]').val() == "0") {
+                showMsg('请设置转存类型!');
+                return false;
+            }
+            var JiexiType = $('input[name=JiexiType]').val();
+            if (JiexiType == '2') {
+                if (isNull($('select[name=TypeID] option:selected').val())) {
+                    showMsg('转存类型不能为空 ！');
+                    return false;
+                }
+                if (isNull($('select[name=TimeID] option:selected').val())) {
+                    showMsg('存期类型不能为空 ！');
+                    return false;
+                }
+            }
+            var numInterest = $('input[name=numInterest]').val();
+            //var txtTypeID = $('input[name=txtTypeID]').val();
+            //var txtTimeID = $('input[name=txtTimeID]').val();
+            var txtTypeID = $('select[name=TypeID]').val();
+            var txtTimeID = $('select[name=TimeID]').val();
+            var para = 'dsiID=' + dsiID + '&JiexiType=' + JiexiType + '&numInterest=' + numInterest + '&txtTypeID=' + txtTypeID + '&txtTimeID=' + txtTimeID;
+
+            var msg = '确认已经认真检查输入信息,并继续提交吗？';
+            showConfirm(msg, function (obj) {
+                if (obj == 'yes') {
+                    $.ajax({
+                        url: '/User/Storage/storage.ashx?type=JieXi',
+                        type: 'post',
+                        data: para,
+                        dataType: 'json',
+                        success: function (r) {
+                            if (r.state == "success") {
+                                BusinessNO = r.BusinessNO;
+                                showMsg('结息成功，请打印存折 ！');
+                                $('#Query').fadeOut(); //隐藏查询按钮
+
+                                $('#btnAdd').attr('disabled', 'disabled');
+                                $('#btnAdd').css('background', '#aaa');
+                                $('#btnCunZhe').removeAttr('disabled');
+                                $('#btnPrintPage').removeAttr('disabled');
+                            } else {
+                                showMsg(r.msg);
+                            }
+
+                        }, error: function (r) {
+                            showMsg('操作失败 ！');
+                        }
+                    });
+                } else {
+                    //console.log('你点击了取消！');
+                }
+
+            });
+
+          
+
+        }
+
+        function ChangeType(type) {
+            $('input[name=JiexiType]').val(type);
+            switch (type) {
+                case 0://重新选择存粮种类
+                    $('input[name=txtInterestType]').val('');
+                    $('#InterestType1').removeAttr('checked');
+                    $('#InterestType2').removeAttr('checked');
+                    $('#trTime').fadeOut();
+                    $('#tr_msg').fadeOut();
+                    break;
+                case 1://仅结息
+                    $('#trTime').fadeOut();
+                    $('#tr_msg').fadeOut();
+                    break;
+                case 2://结息后转存
+                    $('#trTime').fadeIn();
+                    $('#tr_msg').fadeIn();
+                    break;
+            }
+        }
+
+
+        function hideQuery() {
+            $('#QAccountNumber').attr('disabled', 'disabled');
+            $('#QPassword').attr('disabled', 'disabled');
+            $('#QSelect').attr('disabled', 'disabled');
+
+        }
+
+        function PrintCunZhe() {
+
+            $.ajax({
+                url: '/Ashx/storage.ashx?type=PrintDep_OperateLog&BusinessNO=' + BusinessNO + '&AccountNumber=' + $('#QAccountNumber').val(),
+                type: 'post',
+                data: '',
+                dataType: 'text',
+                success: function (r) {
+                    $('#divPrint').html('');
+                    $('#divPrint').append(r);
+                    CreateOneFormPage();
+                    LODOP.PREVIEW(); //打印存折
+                }, error: function (r) {
+                    showMsg('加载打印坐标时出现错误 ！');
+                }
+            });
+        }
+
+
+        function PrintPage() {
+            var url = '/Ashx/storage.ashx?type=PrintDep_StorageInfo';
+            var para = 'AccountNumber=' + $('#QAccountNumber').val() + '&BusinessNO=' + BusinessNO + '&OperateType=结息续存';
+            $.ajax({
+                url: url,
+                type: 'post',
+                data: para,
+                dataType: 'text',
+                success: function (r) {
+                    if (r == '') {
+                        showMsg('打印内容不可以为空!');
+                        return false;
+                    }
+                    $('#divPrintPaper').html('');
+                    $('#divPrintPaper').append(r);
+                    CreatePage();
+                    LODOP.PREVIEW(); //打印存折
+                }, error: function (r) {
+                    showMsg('加载打印坐标时出现错误 ！');
+                }
+            });
+        }
+    </script>
+    <style type="text/css">
+      
+        .storage {
+            display: none;
+            margin: 10px 10px;
+        }
+
+            .storage #tabstorage {
+                width: 750px;
+            }
+
+                .storage #tabstorage tr td {
+                    padding: 5px 5px;
+                }
+
+     
+    </style>
+</head>
+<body>
+
+    <div class="pageHead">
+        <b>结息</b><span id="spanHelp" style="cursor: pointer">帮助</span>
+    </div>
+
+    <div id="divHelp" class="pageHelp">
+        <span>
+            提示1：业务进行顺序：第一步：输入储户账号-->第二步：选择业务类型-->第三步：再选择交易商品-->第四步：输入数量-->添加，即完成一笔业务。
+            完成后，单击“结账”，完成商品兑换。
+        </span><br />
+        <span>提示2：定期储粮兑换成品粮时，到期按到期价兑换，不到期按约定比例享受按到期价 优惠兑换 ，超过优惠额度则按存入价兑换；其它类型储户按约定计息（或不计息）兑换。</span><br />
+        <span>提示3：兑换时请注意兑换的计量单位与价格。</span><br />
+    </div>
+
+    <div class="pageQuery">
+        <table>
+            <tr>
+                <td style="width:80px; text-align:right;font-weight:bold;">储户账号:</td>
+                <td style="width:130px;"><input type="text" id="QAccountNumber" /></td>
+                <td style="width:50px; text-align:right;font-weight:bold;">密码:</td>
+                <td style="width:100px;"><input type="password" id="QPassword" /></td>
+                <td style="width:50px; text-align:right;font-weight:bold;"><input type="button" value="" id="QSelect" /></td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="depositorInfo">
+        <table class="tabinfo" id="tabdepositorInfo">
+            <thead>
+                <tr>
+                    <td colspan="6" style="border-bottom:1px solid #aaa; height:25px; text-align:center">
+                        <span style="font-size: 14px;  color:Green">储户基本信息</span>
+                    </td>
+                </tr>
+                <tr class="tr_head">
+                    <th align="center" style="width:100px; height:30px;">
+                        储户账号
+                    </th>
+                    <th align="center" style="width:100px;">
+                        储户姓名
+                    </th>
+                    <th align="center" style="width:100px;">
+                        移动电话
+                    </th>
+                    <th align="center" style="width:100px;">
+                        当前状态
+                    </th>
+                    <th align="center" style="width:150px;">
+                        身份证号
+                    </th>
+                    <th align="center" style="width:200px;">
+                        储户地址
+                    </th>
+
+                </tr>
+            </thead>
+        </table>
+    </div>
+
+    <div class="depositorStorageInfo">
+        <table class="tabinfo" id="tabdepositorStorageInfo">
+            <thead>
+                <tr>
+                    <td colspan="9" style="border-bottom:1px solid #aaa; height:25px; text-align:center"><span style="font-size: 14px;  color:Green">储户存粮信息</span></td>
+                </tr>
+                <tr class="tr_head">
+                    <th style="width: 100px; height:30px; text-align: center;">
+                        存贷产品
+                    </th>
+                    <th style="width: 100px; text-align: center;">
+                        结存数量
+                    </th>
+                    <th style="width: 100px; text-align: center;">
+                        存入时间
+                    </th>
+                    <th style="width: 90px; text-align: center;">
+                        存入价
+                    </th>
+                    <th style="width: 80px; text-align: center;">
+                        存期
+                    </th>
+                    <th style="width: 80px; text-align: center;">
+                        天数
+                    </th>
+                    <th style="width: 80px; text-align: center;">
+                        活期利率
+                    </th>
+                    <th style="width: 120px; text-align: center;">
+                        利息
+                    </th>
+                    <th style="width: 100px; text-align: center;">
+                        结算
+                    </th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+
+    <form id="form1">
+        <div class="div_msg" style="text-align:center;height:25px;display:none;">
+            <span id="spanMsg" style="color:Red;  font-weight:bolder;"></span>
+        </div>
+        <div class="storage">
+
+            <table class="tabinfo" id="tabstorage">
+                <tr>
+                    <td colspan="4" style=" border-bottom:1px solid #aaa;">
+                        <span style="font-size:16px; font-weight:bolder; color:Blue; margin-left:50px;">储户存粮</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="width: 100px; text-align:right;">
+                        <span>   续存选项:</span>
+                    </td>
+                    <td colspan="3" style="width: 650px; text-align:left;">
+                        <!--<input type="radio" name="InterestType" value="1" onclick="ChangeType(1)" />仅结息
+                        <input type="radio" name="InterestType" value="2" onclick="ChangeType(2)" />结息后转存-->
+                        <!--<input type="radio" id="InterestType1" name="InterestType" value="1" class="custom-radio" /><label for="InterestType1" onclick="ChangeType(1)"></label><span>仅结息</span>-->
+                        <input type="radio" id="InterestType2" name="InterestType" value="2" class="custom-radio" /><label for="InterestType2" onclick="ChangeType(2)"></label><span>结息后转存</span>
+                    </td>
+                  
+                </tr>
+                <tr id="trTime" style="display:none;">
+                    <td style="width: 100px; text-align:right;">
+                        <span>  转存类型:</span>
+                    </td>
+                    <td colspan="3" style="width: 650px; text-align:left;">
+                        <select name="TypeID" style="width:100px;"></select> &nbsp;
+                        <span>存期:</span>
+                        <select name="TimeID" style="width:100px"></select>
+                    </td>
+                   
+                </tr>
+                <tr>
+                    <td style="width: 100px; text-align:right;">
+                        <span>利息:</span>
+                    </td>
+                    <td style="width: 250px; text-align:left;">
+                        <input type="text" readonly="readonly" style="background-color:#ddd;width:100px;" name="numInterest" value="" />
+                        <span>元</span>
+                    </td>
+                    <td style="width: 100px; text-align:right;">
+                        <span>续存日期:</span>
+                    </td>
+                    <td style=" text-align:left;">
+                        <input type="text" disabled="disabled" name="dt_Interest" value="" />
+                    </td>
+                </tr>
+              
+
+                <tr id="tr_msg" style="display:none;"><td></td><td colspan="3" style="text-align:left;"><div id="divMsg" style="color:Red; font-size:16px;"></div></td></tr>
+                <tr>
+                    <td></td>
+                    <td colspan="3" style="text-align:left;">
+                        <input type="button" id="btnAdd" value="保存数据" onclick="frmSubmit()" />
+
+                        <input type="button" id="btnCunZhe" value="打印存折" disabled="disabled" onclick="PrintCunZhe()" />
+                        <input type="button" id="btnPrintPage" disabled="disabled" value="打印小票" onclick=" PrintPage();">
+                    </td>
+                </tr>
+               
+            </table>
+        </div>
+
+        <div style="display:none;">
+            <input type="text" name="txtVarietyID" />
+            <input type="text" name="txtVarietyLevelID" />
+            <input type="text" name="txtTypeID" />
+            <input type="text" name="txtTimeID" />
+
+            <!--粮食第一次的存入价格-->
+            <input type="text" name="txtPrice_ShiChang" />
+
+
+            <input type="text" name="JiexiType" />
+        </div>
+    </form>
+</body>
+</html>

@@ -1,0 +1,500 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head id="Head1">
+    <title>退还兑换</title>
+
+    <script src="../../../Scripts/jquery-1.4.1.js" type="text/javascript"></script>
+    <script src="../../../Scripts/WebInner.js" type="text/javascript"></script>
+    <script src="../../../Scripts/Common.js" type="text/javascript"></script>
+    <link href="../../../Styles/Common.css" rel="stylesheet" type="text/css" />
+    <link href="../../../Styles/storage.css" rel="stylesheet" type="text/css" />
+    <script src="../../../Lodop6.198/LodopFuncs.js" type="text/javascript"></script>
+    <script src="../../../Scripts/LodopPrint.js"></script>
+    <script src="../../../Scripts/codeKeyboard.js"></script>
+    <script src="../../../Scripts/fakeLoader.js" type="text/javascript"></script>
+    <link href="../../../Styles/fakeLoader.css" rel="stylesheet" />
+    <script src="../../../Scripts/storage.js"></script>
+    <script src="../../../Scripts/My97DatePicker/WdatePicker.js" type="text/javascript"></script>
+    <script type="text/javascript">
+        /*--------窗体启动设置和基本设置--------*/
+      
+        var BNOList = '';//退还产生的业务列表
+        var BNOListSurPlue = '';//翻页打印列表
+       
+        var ISHQ = false;
+        $(function () {
+            var wbinfo = JSON.parse(localStorage.getItem('wbinfo'));
+             ISHQ = wbinfo[0].ISHQ;
+            if (!ISHQ) {
+                $('#td_date').hide();
+            } else {
+                $('#td_date').show();
+                //获取一周前的时间
+                var now = new Date();
+                var date_week = new Date(now.getTime() - 7 * 24 * 3600 * 1000);
+                $('#date_begin').val(getDate(date_week));
+                $('#date_end').val(getDateNow());
+            }
+            $('.pageQuery #QSelect').click(function () {
+                $('#select_AccountNumber').val($('#QAccountNumber').val());
+                QDep(FunDepSelect);
+            });
+            $('#QAccountNumber').focus(function () { $('#QAccountNumber').val(''); });//储户账号
+            $('#QPassword').focus(function () { $('#QPassword').val(''); });//储户密码
+
+           
+
+        });
+
+        /***************查询操作****************/
+      
+        function QDep(callback) {
+            if (typeof (callback) === 'function') {
+                callback();
+                if (dep_result) {
+                    $('.storage').fadeIn();
+                    showExchange();//显示兑换信息
+                } else {
+                    $('.storage').fadeOut();
+                    showExchange();//显示兑换信息
+                }
+            }
+        }
+
+        //产品兑换信息
+        function showExchange(){
+            var para = 'AccountNumber=' + $('#select_AccountNumber').val();
+            if (ISHQ) {
+                para += '&date_begin=' + $('#date_begin').val() + '&date_end=' + $('#date_end').val();
+            }
+            $.ajax({
+                url: 'return.ashx?type=get_rExchange&AccountNumber=' + $('#D_AccountNumber').html(),
+                type: 'post',
+                data: para,
+                dataType: 'json',
+                success: function (r) {
+                    var jsondata = r;
+                    if (jsondata.state == 'success')
+                    {
+                        pageState(true);
+                        //遍历兑换列表
+                        var exdata =JSON.parse( jsondata.data);
+                        var strhtml = '';
+                        for (var i = 0; i < exdata.length; i++) {
+                            strhtml += '<tr class="tr_data">';
+                            strhtml += '  <td style="height: 25px;">' + exdata[i]["GoodName"] + '</td>';
+                            strhtml += '  <td>' + exdata[i]["GoodPrice"] + '</td>';
+                            strhtml += '  <td>' + exdata[i]["GoodCount"] + '</td>';
+                            strhtml += '  <td>' + exdata[i]["UnitName"] + '</td>';
+                            strhtml += '  <td>' + exdata[i]["VarietyCount"] + '</td>';
+                            strhtml += '  <td>' + exdata[i]["Money_DuiHuan"] + '</td>';
+                            strhtml += '  <td>' + exdata[i]["dt_Exchange"] + '</td>';
+                            strhtml += '  <td>  <input type="checkbox" id="select-' + i + '"  name="exselect" onclick="FunSelect(this,' + exdata[i].ID + ')" value="' + exdata[i].ID + '" class="custom-checkbox"  /><label for="select-' + i + '"></label></td>';
+                            strhtml += '</tr>';
+                        }
+                        $('#tabdatalist .tr_data').remove();
+                        $('#tabdatalist').append(strhtml);
+                    } else {
+                        pageState(false);
+                        showMsg(jsondata.msg); 
+                    }
+                   
+                }, error: function (r) {
+                    pageState(false);
+                    //showMsg(r.msg); 
+                }
+            });
+
+        }
+
+        function pageState(flag) {
+            if (flag) {
+                $('.datalist').fadeIn();
+                $('.actionlist').fadeIn();
+                $('.divWarning').fadeOut();
+            } else {
+                $('.datalist').fadeOut();
+                $('.actionlist').fadeOut();
+                $('.divWarning').fadeIn();
+            }
+        }
+
+        //选择兑换商品
+        function FunSelect(obj, exid) {
+
+            var IDList = $('#IDList').val();
+            var arrayObj = new Array();
+            arrayObj = IDList.split(',');
+
+            IDList = '';
+            if (obj.checked) {//当前节点被选中
+                arrayObj.push(exid); //添加被选中节点
+                for (var i = 0; i < arrayObj.length; i++) {
+                    if (IDList == '') {
+                        IDList = arrayObj[i];
+                    }
+                    else {
+                        IDList += ',' + arrayObj[i];
+                    }
+                }
+            } else { //当前节点没被选中
+                for (var i = 0; i < arrayObj.length; i++) {
+                    if (arrayObj[i] != exid) {
+                        if (IDList == '') {
+                            IDList = arrayObj[i];
+                        }
+                        else {
+                            IDList += ',' + arrayObj[i];
+                        }
+                    }
+                }
+            }
+            $('#IDList').val(IDList);
+        }
+
+
+        function frmSubmit() {
+            var IDList = $('#IDList').val();
+            var AccountNumber = $('#select_AccountNumber').val();
+            if ($.trim(IDList) == '') {
+                showMsg(' 请选择要退还的商品 ！');
+                return;
+            } else {
+                var msg = '您确认已经仔细检查输入信息，并继续操作吗？';
+                showConfirm(msg, function (obj) {
+                    if (obj == 'yes') {
+
+                        $.ajax({
+                            url: 'return.ashx?type=Return_GoodExchange&IDList=' + IDList + '&AccountNumber=' + AccountNumber,
+                            type: 'post',
+                            data: '',
+                            dataType: 'json',
+                            success: function (r) {
+                                if (r.state == "success") {
+                                    showMsg(r.msg);
+                                    $('#btnJieZhang').attr('disabled', 'disabled');
+                                    $('#btnJieZhang').css('background', '#aaa');
+                                    $('#btnPrint').removeAttr('disabled');
+                                    $('#btnPrintPage').removeAttr('disabled');
+                                    BNOList = r.BNList;
+                                    $('#QSelect').attr('disabled', 'disabled')
+                                }
+                               
+                              
+                            }, error: function (r) {
+                                showMsg(' 退还操作失败 ！');
+                            }
+                        });
+                    } else {
+                        //console.log('你点击了取消！');
+                    }
+                });
+            }
+
+        }
+
+        /*----打印----*/
+   
+        //打印存折
+        function PrintCunZhe() {
+            var AccountNumber = $('#select_AccountNumber').val();
+            var url = '/User/Exchange/exchange.ashx?type=PrintDep_OperateLogList';
+            var para = 'AccountNumber=' + AccountNumber + '&BNOList=' + BNOList;
+            $.ajax({
+                url: url,
+                type: 'post',
+                data: para,
+                dataType: 'json',
+                success: function (r) {
+                    if (r == '') {
+                        showMsg('打印内容不可以为空!');
+                        return false;
+                    }
+                    if (r.SurPlus != '') {
+                        $('#btnPrintFanYe').fadeIn('normal');//显示可翻页打印
+                        $('#btnPrintFanYe').removeAttr('disabled', 'disabled');
+                        BNOListSurPlue = r.SurPlus;
+                    }
+                    $('#divPrint').html('');
+                    $('#divPrint').append(r.Msg);
+                    CreateOneFormPage();
+                    LODOP.PREVIEW(); //打印存折
+                }, error: function (r) {
+                    showMsg('加载打印坐标时出现错误 ！');
+                }
+            });
+        }
+
+        function PrintCunZheFanYe() {
+            var AccountNumber = $('#select_AccountNumber').val();
+            var url = '/User/Exchange/exchange.ashx?type=PrintDep_OperateLogList';
+            var para = 'AccountNumber=' + AccountNumber + '&BNOList=' + BNOListSurPlue;
+            $.ajax({
+                url: url,
+                type: 'post',
+                data: para,
+                dataType: 'json',
+                success: function (r) {
+                    if (r == '') {
+                        showMsg('打印内容不可以为空!');
+                        return false;
+                    }
+                    $('#divPrint').html('');
+                    $('#divPrint').append(r.Msg);
+                    CreateOneFormPage();
+                    LODOP.PREVIEW(); //打印存折
+                }, error: function (r) {
+                    showMsg('加载打印坐标时出现错误 ！');
+                }
+            });
+        }
+
+        function PrintPage() {
+            var AccountNumber = $('#select_AccountNumber').val();
+            var url = '/User/Exchange/exchange.ashx?type=PrintGoodExchangeList';
+            var para = 'AccountNumber=' + AccountNumber + '&BNOList=' + BNOList + '&model=t';
+            $.ajax({
+                url: url,
+                type: 'post',
+                data: para,
+                dataType: 'json',
+                success: function (r) {
+                    if (r.state == 'false' || r.state == false) {
+                        showMsg(r.msg);
+                        return false;
+                    }
+                    $('#divPrintPaper').html('');
+                    $('#divPrintPaper').append(r.msg);
+                    CreatePage();
+                    // LODOP.PREVIEW(); //打印存折
+                    var printime = '';
+                    if (LODOP.CVERSION) CLODOP.On_Return = function (TaskID, Value) {
+                        printime = Value;
+                    };
+                    printime = LODOP.PREVIEW();
+                    if (parseInt(printime) > 0) {
+                        updatePrintTime(printime, BNOList);
+                    }
+                }, error: function (r) {
+                    showMsg('加载打印坐标时出现错误 ！');
+                }
+            });
+        }
+
+
+        //更新打印次数
+        function updatePrintTime(printime, BusinessNO) {
+            $.ajax({
+                url: '/Ashx/storage.ashx?type=updatePrintTime_List&BNOList=' + BNOList + '&AccountNumber=' + $('#select_AccountNumber').val(),
+                type: 'post',
+                data: '',
+                dataType: 'text',
+                success: function (r) {
+                    if (r == 'Y') {
+                        console.log('----更新打印次数成功----');
+                    } else {
+                        console.log('----更新打印次数失败----');
+                    }
+                }, error: function (r) {
+                    console.log('----更新打印次数失败----');
+                }
+            });
+        }
+    </script>
+    <style type="text/css">
+        .datalist {
+            display: none;
+            margin: 10px 10px;
+        }
+
+            .datalist #tabdatalist {
+                width: 750px;
+            }
+
+        .actionlist {
+            display: none;
+            margin: 5px 10px;
+            padding: 5px 18px;
+            background-color: #ececec;
+            border: 1px solid #aaa;
+            border-radius: 5px;
+            width: 712px;
+        }
+
+            .actionlist input {
+                margin: 5px 10px;
+                width: 80px;
+                border: 1px solid #666;
+            }
+
+            .actionlist #btnJieZhang {
+                font-size: 16px;
+                width:120px;
+                font-weight: 600;
+                color: blue;
+            }
+
+            .actionlist #btnPrintFanYe {
+                display: none;
+            }
+            
+    </style>
+</head>
+<body>
+
+    <div id="divPrint" style="display:none"></div>
+    <div id="divPrintPaper" style="display:none"></div>
+
+    
+        <div class="pageHead">
+            <b>退还储户兑换商品</b><span id="spanHelp" style="cursor: pointer">帮助</span>
+        </div>
+        <div id="divHelp" class="pageHelp">
+            <span>提示1：首先找到储户信息与兑换信息，选择对应的商品进行退还。当存在多条可退换商品时，储户可以一次退换多种商品。</span><br />
+            <span>提示2：营业员可以退还当日兑换的商品，管理员可以按原数退还储户所有兑换的商品</span><br />
+        </div>
+    
+    <div class="pageQuery">
+        <table>
+            <tr>
+                <td style="width:80px; text-align:right;font-weight:bold;">储户账号:</td>
+                <td style="width:130px;"><input type="text" id="QAccountNumber" /></td>
+                <td style="width:50px; text-align:right;font-weight:bold;">密码:</td>
+                <td style="width:100px;"><input type="password" id="QPassword" /></td>
+                <td id="td_date" style="width:300px; text-align:left;font-weight:bold;display:none;">
+                    <span style="margin-right:5px;">日期:</span>
+                    <input type="text" id="date_begin" onclick="WdatePicker();" style="font-size:16px;width:100px; font-weight:bolder;"  />
+                    <span>-</span>
+                    <input type="text" id="date_end" onclick="WdatePicker()" style="font-size:16px;width:100px; font-weight:bolder;"  />
+                </td>
+                <td style="width:50px; text-align:right;font-weight:bold;"><input type="button" value="" id="QSelect" /></td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="depositorInfo">
+        <table class="tabinfo" id="tabdepositorInfo">
+            <thead>
+                <tr>
+                    <td colspan="6" style="border-bottom:1px solid #aaa; height:25px; text-align:center">
+                        <span style="font-size: 14px;  color:Green">储户基本信息</span>
+                    </td>
+                </tr>
+                <tr class="tr_head">
+                    <th align="center" style="width:100px; height:30px;">
+                        储户账号
+                    </th>
+                    <th align="center" style="width:100px;">
+                        储户姓名
+                    </th>
+                    <th align="center" style="width:100px;">
+                        移动电话
+                    </th>
+                    <th align="center" style="width:100px;">
+                        当前状态
+                    </th>
+                    <th align="center" style="width:150px;">
+                        身份证号
+                    </th>
+                    <th align="center" style="width:200px;">
+                        储户地址
+                    </th>
+
+                </tr>
+            </thead>
+        </table>
+    </div>
+
+    <div class="depositorStorageInfo">
+        <table class="tabinfo" id="tabdepositorStorageInfo">
+            <thead>
+                <tr>
+                    <td colspan="8" style="border-bottom:1px solid #aaa; height:25px; text-align:center"><span style="font-size: 14px;  color:Green">储户存粮信息</span></td>
+                </tr>
+                <tr class="tr_head">
+                    <th style="width: 100px; height:30px; text-align: center;">
+                        存贷产品
+                    </th>
+                    <th style="width: 100px; text-align: center;">
+                        结存数量
+                    </th>
+                    <th style="width: 100px; text-align: center;">
+                        存入时间
+                    </th>
+                    <th style="width: 90px; text-align: center;">
+                        存入价
+                    </th>
+                    <th style="width: 80px; text-align: center;">
+                        存期
+                    </th>
+                    <th style="width: 80px; text-align: center;">
+                        天数
+                    </th>
+                    <th style="width: 80px; text-align: center;">
+                        活期利率
+                    </th>
+                    <th style="width: 120px; text-align: center;">
+                        利息
+                    </th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+
+    <div class="datalist">
+        <table class="tabinfo" id="tabdatalist">
+            <thead>
+                <tr>
+                    <td colspan="8" style="border-bottom:1px solid #aaa; height:25px; text-align:center">
+                        <span style="font-size: 14px;  color:Green">储户兑换信息</span>
+                    </td>
+                </tr>
+                <tr class="tr_head">
+                   
+                    <th align="center" style="width:150px;">
+                        品名
+                    </th>
+                    <th align="center" style="width:80px;">
+                        单价
+                    </th>
+                    <th align="center" style="width:80px;">
+                        数量
+                    </th>
+                    <th align="center" style="width:80px;">
+                        计价单位
+                    </th>
+                    <th align="center" style="width:100px;">
+                        折合原粮
+                    </th>
+                    <th align="center" style="width:100px;">
+                        收费
+                    </th>
+                    <th align="center" style="width:100px;">
+                        时间
+                    </th>
+                    <th align="center" style="width:60px;">
+                        退还
+                    </th>
+
+                </tr>
+            </thead>
+        </table>
+    </div>
+   
+    <div class="actionlist">
+        <input type="button" id="btnJieZhang" value="确认并退还" onclick="frmSubmit();">
+        <input type="button" id="btnPrint" disabled="disabled" value="打印存折" onclick=" PrintCunZhe();">
+        <input type="button" id="btnPrintFanYe" disabled="disabled" value="翻页打印" onclick="PrintCunZheFanYe();">
+        <input type="button" id="btnPrintPage" disabled="disabled" value="打印小票" onclick=" PrintPage();">
+    </div>
+    <div class="divWarning" >没有查找到兑换信息!</div>
+    <div class="divhidden">
+        <!--兑换业务编号集合-->
+        <input type="text" id="IDList" />
+        <input type="text" id="select_AccountNumber" />
+    </div>
+ 
+</body>
+</html>
+
+

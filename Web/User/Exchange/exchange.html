@@ -1,0 +1,1198 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head id="Head1">
+    <title>兑换</title>
+
+    <script src="../../Scripts/jquery-1.4.1.js" type="text/javascript"></script>
+    <script src="../../Scripts/WebInner.js" type="text/javascript"></script>
+    <script src="../../Scripts/Common.js" type="text/javascript"></script>
+    <link href="../../Styles/Common.css" rel="stylesheet" type="text/css" />
+    <link href="../../Styles/storage.css" rel="stylesheet" type="text/css" />
+    <script src="../../Lodop6.198/LodopFuncs.js" type="text/javascript"></script>
+    <script src="../../Scripts/LodopPrint.js"></script>
+    <script src="../../Scripts/codeKeyboard.js"></script>
+    <script src="../../Scripts/fakeLoader.js" type="text/javascript"></script>
+    <link href="../../Styles/fakeLoader.css" rel="stylesheet" />
+    <script type="text/javascript">
+       
+        var dsiID; //已选择Dep_StorageInfo表ID
+        var ChuFenLv = 0;//0:表示当前兑换没设置出粉率，否则按照出粉率计算粮食扣重
+        var limitMount = 0; //营业员操作限额
+        var exchangeMount = 0;//已经兑换的额度(当exchangeMount>limitMount不可再兑换)
+        var arrayex = new Array();//存放兑换列表
+        var arraygood = new Array();//存放商品数量列表（GoodID，WBWareHouseID,count）
+        var arrayWBGoodStore = new Array();//所有商品的库存信息
+        var mapgood = new Map();//已选择兑换的商品数量列表（key；GoodID，value：仓库中的商品剩余数）
+        var BNOList = '';//结账后产生的序列号
+        var BNOListSurPlue = '';//存折当前页每打印完，剩余的编号
+
+
+        $(function () {
+
+            GetUserLimit();//营业员操作限额
+            $('.pageQuery #QSelect').click(function () {
+                // $('.divloading').fadeIn();
+                FunDepSelect();
+            });
+            $('#QAccountNumber').focus(function () { $('#QAccountNumber').val(''); });//储户账号
+            $('#QPassword').focus(function () { $('#QPassword').val(''); });//储户密码
+
+            InitSelect('/Ashx/good.ashx?type=Get_WBWareHouse', 'select_WBWareHouse', '加载网点仓库信息失败！'); //网点仓库
+            $('select[name=select_WBWareHouse]').change(function () {
+                GetGoodStorage();//获取商品储量
+            })
+        })
+
+
+        /***************查询操作****************/
+        function GetUserLimit() {
+            //查看当前营业员的限额是否足够
+            $.ajax({
+                url: '/Ashx/wbinfo.ashx?type=GetUserLimit',
+                type: 'post',
+                data: '',
+                dataType: 'text',
+                success: function (r) {
+                    limitMount = parseInt(r);
+                }, error: function (r) {
+                    showMsg('获取当前营业员的操作限额时发生错误 ！');
+                }
+            });
+        }
+
+        //储户查询
+        function FunDepSelect() {
+            var datapara = 'AccountNumber=' + $('#QAccountNumber').val().trim() + '&Password=' + $('#QPassword').val().trim()
+            if ($('#QAccountNumber').val().trim().length != 10) {
+                showMsg('请输入储户账号');
+                return false;
+            }
+            $(".fakeloader").fakeLoader({
+                timeToHide: 12000000,
+                 bgColor: "transparent",
+                spinner: "spinner7"
+            });
+            var url = '/User/Exchange/exchange.ashx?type=getDepositorStorageInfo';
+            $.ajax({
+                url: url,
+                type: 'post',
+                data: datapara,
+                dataType: 'json',
+                success: function (r) {
+                    $(".fakeloader").fakeCloser();
+
+                    $('.depositorInfo').fadeOut();
+                    $('.depositorStorageInfo').fadeOut();
+                    $('.exchangeChoose').fadeOut();
+                    $('.exchangePolicy').fadeOut();
+                    if (r.state == false) {
+                        showMsg(r.msg);
+                        return false;
+                    }
+
+                    var dep = JSON.parse(r.dep);
+                    var storage = JSON.parse(r.storage);
+                    addDepositor(dep);
+
+                    initGoodStorage();//加载商品信息
+
+                    if (storage.length > 0) {//添加储户存储记录
+                        addDep_Storage(storage);
+                    }
+                }, error: function (r) {
+                    $(".fakeloader").fakeCloser();
+                    showMsg('获取储户信息失败 ！');
+                }
+            });
+        }
+
+        function addDepositor(dep) {
+            if (dep.length > 0) {//添加储户基本信息
+                $('#tabdepositorInfo .trappend').remove();
+
+                var strdep = '<tr class="trappend">';
+                strdep += ' <td style="height:30px;">' + dep[0].AccountNumber + '</td>';
+                strdep += ' <td>' + dep[0].strName + '</td>';
+                strdep += ' <td>' + dep[0].PhoneNO + '</td>';
+                var strState = '正常';
+                if (dep[0].numState == '0') {
+                    strState = '禁用';
+                }
+                strdep += ' <td>' + strState + '</td>';
+                strdep += ' <td>' + dep[0].IDCard + '</td>';
+                strdep += ' <td>' + dep[0].strAddress + '</td>';
+                strdep += '</tr>'
+                $('#tabdepositorInfo').append(strdep);
+            }
+            $('.depositorInfo').fadeIn();
+        }
+
+        function addDep_Storage(storage) {
+            $('#tabdepositorStorageInfo .trappend').remove();
+            $('#tabdepositorStorageInfo .tr_moneyTotal').remove();
+            $('.depositorStorageInfo').fadeIn();
+            var moneyTotal = 0;//金额总计
+            for (var i = 0; i < storage.length; i++) {
+                var strstorage = '';
+                strstorage += '<tr class="trappend">';
+                if (storage[i].ISVirtual == '1') {
+                    strstorage += ' <td style="height:25px;">' + storage[i].VarietyName + '<span style="font-size:12px;color:red;">(预)</span></td>';
+                } else {
+                    strstorage += ' <td style="height:25px;">' + storage[i].VarietyName + '</td>';
+                }
+                strstorage += ' <td>' + storage[i].StorageNumber + '</td>';
+                strstorage += ' <td>' + storage[i].StorageDate + '</td>';
+                strstorage += ' <td>' + storage[i].Price_ShiChang + '</td>';
+                strstorage += ' <td>' + storage[i].TimeName + '</td>';
+                strstorage += ' <td>' + storage[i].daycount + '</td>';//存储天数
+                strstorage += ' <td>' + storage[i].CurrentRate + '</td>';
+                strstorage += ' <td>' + storage[i].strlixi + '</td>';//利息
+                //strstorage += ' <td>￥' + storage[i].numlixi + '</td>';//利息
+
+                moneyTotal += accMul(storage[i].StorageNumber, storage[i].Price_ShiChang) + parseFloat(storage[i].numlixi);
+
+
+                strstorage += ' <td><input type="button" class="SVselect" value="选择" dsiID=' + storage[i].ID + '  VarietyID=' + storage[i].VarietyID + ' TimeID=' + storage[i].TimeID + ' TimeName=' + storage[i].TimeName + ' VarietyName=' + storage[i].VarietyName + ' UnitName=' + storage[i].UnitName + ' StorageNumber=' + storage[i].StorageNumber + ' SellApplyCount=' + storage[i].SellApplyCount + '  onclick="FunSVSelect(this)"/></td>';
+                strstorage += '<tr>';
+                $('#tabdepositorStorageInfo').append(strstorage);
+            }
+            moneyTotal = changeTwoDecimal_f(moneyTotal);//折合现金
+            var strzhehe = '';
+            strzhehe += '<tr class="tr_moneyTotal"> <td colspan="8" style="height:25px; text-align:center;color:#666;font-size:12px;">折合现金合计：￥' + moneyTotal + '</td></tr>';
+            $('#tabdepositorStorageInfo').append(strzhehe);
+            if (storage.length == 1) {//该储户只有一项存粮信息
+                var input_SVselect = $('#tabdepositorStorageInfo .SVselect');
+                FunSVSelect(input_SVselect[0]);//默认选中第一项
+            }
+
+        }
+
+        //选择用于兑换的存储
+        function FunSVSelect(obj) {
+            $('.SellApplyWarning').fadeOut();
+            var UnitName = $(obj).attr('UnitName');
+            var SellApplyCount = $(obj).attr('SellApplyCount');
+            var StorageNumber = $(obj).attr('StorageNumber');//结存
+            if (SellApplyCount != '0') {//该产品已有存转销申请
+                // showMsg('当前存储已经申请存转销，不可以重复申请！');
+                // return false;
+                var StorageNumber_sur = parseFloat(StorageNumber) - parseFloat(SellApplyCount);
+                $('input[name=txtStorageNumber]').val(StorageNumber_sur);
+                $('.SellApplyWarning').html('').html('该存储剩余结存:' + changeTwoDecimal_f(StorageNumber) + UnitName + ',已申请存转销' + changeTwoDecimal_f(SellApplyCount) + UnitName + ',可操作结存<span>' + changeTwoDecimal_f(StorageNumber_sur) + '</span>' + UnitName)
+                $('.SellApplyWarning').fadeIn();
+            } else {
+                $('input[name=txtStorageNumber]').val(StorageNumber);
+
+            }
+
+            dsiID = $(obj).attr('dsiID');
+
+           
+            $('input[name=txtTimeID]').val($(obj).attr('TimeID'));
+            $('input[name=txtTimeName]').val($(obj).attr('TimeName'));
+            $('input[name=txtVarietyID]').val($(obj).attr('VarietyID'));
+            $('input[name=txtVarietyName]').val($(obj).attr('VarietyName'));
+            $('input[name=txtVarietyUnitName]').val($(obj).attr('UnitName'));
+
+            $('.exchangeChoose').fadeIn();
+            GetGoodStorage();
+
+            $('#tabdepositorStorageInfo').find('.SVselect').val('选择');
+            $('#tabdepositorStorageInfo').find('.SVselect').css('font-weight', '400').css('color', 'green');
+            $(obj).val('已选择');
+            $(obj).css('font-weight', '800').css('color', 'red');
+            //$(obj).parent().parent().attr('class', 'trSVSelect');
+            //$(obj).parent().parent().siblings().removeAttr('class', 'trSVSelect');
+            $(obj).parent().parent().addClass('trSVSelect');
+            $(obj).parent().parent().siblings().removeClass('trSVSelect');
+        }
+
+
+        /***************添加兑换****************/
+
+        function initGoodStorage(){
+            $.ajax({
+                url: '/Ashx/storage.ashx?type=GetExchangeGoodStore',
+                type: 'post',
+                data: '',
+                dataType: 'json',
+                success: function (r) {                   
+                    var goodarray = new Array();//GoodID数组
+                    //$('.exchangeChoose').fadeIn();
+                    $('#tabexchangeChoose #tdselect_goodlist').html('');
+                    var strselect_goodlist = '';
+                    strselect_goodlist += '<select name="select_goodlist" style="width:120px;">';                
+                     for(var i=0;i<r.length;i++){
+                        if (!goodarray.contains(r[i].GoodID)) {
+                            goodarray.push(r[i].GoodID);
+                            strselect_goodlist += '<option value="' + r[i].GoodID + '">' + r[i].GoodName + '</option>';
+                        }
+                        arrayWBGoodStore.push(r[i]);
+                    }
+                     strselect_goodlist += '</select>';
+                     $('#tabexchangeChoose #tdselect_goodlist').append(strselect_goodlist);
+                     GetGoodStorage();//获取该商品的网点库存数
+                     $('select[name=select_goodlist]').change(function () { //选择兑换商品
+                         //获取商品数量
+                         GetGoodStorage();
+                     });
+
+                   
+                }, error: function (r) {
+                    showMsg("当前网点没有可以用来兑换的商品！");
+                }
+            });
+        }
+        //获取指定产品库存
+        function GetGoodStorage() {
+            var GoodID = $('select[name=select_goodlist] option:selected').val();
+            var WBWareHouseID = $('select[name=select_WBWareHouse] option:selected').val();
+           
+            var wbStoreInfo = getWBGoodStoreDetail(GoodID, WBWareHouseID);//当前商品在库存中的存储信息
+
+            if (wbStoreInfo ==null) {//当前仓库中没有该商品的库存信息
+                
+                $('#GoodStorage').html('0');
+                $('.exchangePolicy').fadeIn();
+                $('.exchangePolicy #spanexchangePolicyTitle').html('提示:');
+                $('.exchangePolicy #spanexchangePolicy').html('当前仓库中没有该商品的库存信息！');
+            }
+            else {
+                var goodStoreinfo = getGoodItem(GoodID, WBWareHouseID);//经过兑换之后的商品信息
+                if (goodStoreinfo == null) {
+                    goodStoreinfo = { GoodID: GoodID, WBWareHouseID: WBWareHouseID, numStore: wbStoreInfo.numStore }
+                    arraygood.push(goodStoreinfo);
+                    $('#GoodStorage').html(wbStoreInfo.numStore);
+                } else {
+                    $('#GoodStorage').html(goodStoreinfo.numStore);
+                }
+
+                $('#GoodUnit').html('元/' + wbStoreInfo.UnitName);
+                $('#Good_UnitName').val(wbStoreInfo.UnitName);
+                $('#Good_SpecName').val(wbStoreInfo.SpecName);
+                // $('#GoodPrice').html(r[0].Price_XiaoShou);//销售价
+                $('#GoodPrice').html(wbStoreInfo.Price_DuiHuan);//兑换
+
+                if (dsiID != '0'&&!isNull(dsiID)) {//已经选择了用于兑换的商品
+                    GetChuFenLv();
+                }
+              
+            }
+
+        }
+
+        function getWBGoodStoreDetail(GoodID, WBWareHouseID) {
+            for (var i = 0; i < arrayWBGoodStore.length; i++) {
+                if (GoodID == arrayWBGoodStore[i].GoodID && WBWareHouseID == arrayWBGoodStore[i].WBWareHouseID) {
+                    return arrayWBGoodStore[i];
+                }
+            }
+            return null;
+        }
+
+
+        function getGoodItem(GoodID, WBWareHouseID) {
+            if (arraygood.length <= 0) {
+                return null;
+            }
+            for (var i = 0; i < arraygood.length; i++) {
+                var goodinfo = arraygood[i];
+                if (goodinfo.GoodID == GoodID && goodinfo.WBWareHouseID == WBWareHouseID) {
+                    return goodinfo;
+                }
+            }
+        }
+
+        function updateGoodItem(GoodID, WBWareHouseID, numStore) {
+            if (arraygood.length <= 0) {
+                return '0';
+            }
+            for (var i = 0; i < arraygood.length; i++) {
+                var goodinfo = arraygood[i];
+                if (goodinfo.GoodID == GoodID && goodinfo.WBWareHouseID == WBWareHouseID) {
+                    goodinfo.numStore = numStore;
+                    return '1';
+                }
+            }
+            return '0';
+        }
+
+
+        //---------------------------------------
+        //获取出粉率
+        function GetChuFenLv() {
+            var VarietyID = $('input[name=txtVarietyID]').val();
+            var TimeID = $('input[name=txtTimeID]').val();
+
+            var GoodID = $('select[name=select_goodlist] option:selected').val(); //已选择的商品类型
+            $.ajax({
+                url: '/Ashx/exchangeprop.ashx?type=GetExchangePropByID&TimeID=' + TimeID + "&VarietyID=" + VarietyID + "&GoodID=" + GoodID,
+                type: 'post',
+                data: '',
+                dataType: 'json',
+                success: function (r) {
+                    console.log('----获取出粉率success----');
+                    ChuFenLv = parseFloat(r[0].ChuFenLv);
+                    //按照比例兑换
+                    $('.exchangePolicy').fadeIn("normal");
+                    $('.exchangePolicy #spanexchangePolicyTitle').html('兑换政策(出粉率):');
+                    $('.exchangePolicy #spanexchangePolicy').html('');
+                    var TimeName = $('input[name=txtTimeName]').val(); //已选择的存期类型
+                    var VarietyName = $('input[name=txtVarietyName]').val(); //已选择的产品类型
+                    var GoodName = $('select[name=select_goodlist] option:selected').text(); //已选择的商品类型
+                    var strMsg = "按比例兑换;存期类型:" + TimeName + ",产品类型:" + VarietyName + ",商品类型:" + GoodName + ",出粉率:" + ChuFenLv;
+                    $('.exchangePolicy').fadeIn();
+                    $('#spanexchangePolicy').html(strMsg);
+                }, error: function (r) {
+                    console.log('----获取出粉率error----');
+                    GetExchangePolicy();
+                    ChuFenLv = 0;
+                }
+            });
+
+        }
+
+        //获取兑换政策
+        function GetExchangePolicy() {
+            var numMoney = 0;
+            var Exchange_trading = getJieCun_tran();
+            var para = 'Dep_SID=' + dsiID + '&numMoney=' + numMoney + '&Exchange_trading=' + Exchange_trading;
+            var url = '/User/Exchange/exchange.ashx?type=GetExchangePolicy';
+            $.ajax({
+                url: url,
+                type: 'post',
+                data: para,
+                dataType: 'json',
+                success: function (r) {
+                    $('.exchangePolicy').fadeIn("normal");
+                    $('.exchangePolicy #spanexchangePolicyTitle').html('兑换政策:');
+                    $('.exchangePolicy #spanexchangePolicy').html(r.strPolicy);
+                    if (r.state == "success") {
+                        $('#d_ISDQ').val('0');
+                        if (r.ISRegular) {//定期存储
+                            console.log('----定期存储----');
+                            if (r.daoqi == 'false' && r.youhui == 'true') {//当且仅当是定期，未到期，有优惠时
+                                var SurPlue_Count = parseFloat(r.SurPlue_Count);//剩余可优惠兑换数量
+                                if (SurPlue_Count > 0) {
+                                    $('#d_ISDQ').val('1');
+                                    $('#d_daoqi').val(r.daoqi);
+                                    $('#d_youhui').val(r.youhui);
+                                    $('#d_Price_ShiChang').val(r.Price_ShiChang);
+                                    $('#d_Price_DaoQi').val(r.Price_DaoQi);
+                                    $('#d_YouHui_Count_init').val(r.YouHui_Count);
+                                    $('#d_YouHui_Count').val(r.YouHui_Count);
+                                    $('#d_SurPlue_Count').val(r.SurPlue_Count);
+
+                                }
+                            }
+                        } else {//获取存储
+                            console.log('----活期存储----');
+                        }
+                    } else {
+                        showMsg('获取兑换政策失败!');
+                        console.log('----获取兑换政策error----');
+                    }
+                }, error: function (r) {
+                    console.log('----获取兑换政策error----');
+                }
+            });
+        }
+
+        //添加兑换
+        function AddExchange() {
+            $('#QAccountNumber').attr('disabled', 'disabled');
+            $('#QPassword').attr('disabled', 'disabled');
+            $('#QSelect').attr('disabled', 'disabled');
+            $('#tabdepositorStorageInfo .SVselect').attr('disabled', 'disabled');
+
+            //是否存在储户账号
+            if ($('#QAccountNumber').val() == '') {
+                showMsg('请选择存储账户 ！');
+                return false;
+            }
+            if (dsiID == '') {
+                showMsg('请选择存储产品 ！');
+                return false;
+            }
+
+            var GoodCount = $('input[name=ExchangeCount]').val();
+
+            if (isNaN(GoodCount)) {
+                showMsg('兑换数量请输入数字 ！');
+                return false;
+            }
+
+            if (parseFloat(GoodCount) < 0) {
+                showMsg('兑换数量不可以为负数 ！');
+                return false;
+            }
+
+            var GoodID = $('select[name=select_goodlist] option:selected').val(); //已选择的商品类型
+            var AccountNumber = $('#QAccountNumber').val();//储户账号
+            GoodCount =parseFloat( GetGoodCountAddCurrent(GoodID)) +parseFloat( GoodCount);
+            var para = 'AccountNumber=' + AccountNumber + '&GoodID=' + GoodID + '&GoodCount=' + GoodCount;
+            var url = '/User/Exchange/exchange.ashx?type=ISExchangeLimit';
+            $.ajax({
+                url: url,
+                type: 'post',
+                data: para,
+                dataType: 'json',
+                success: function (r) {
+                    if (r.ISLimit == "true" || r.ISLimit == true) {
+                        showMsg('当前商品的兑换限额为每月' + r.GoodExchangeLimit + $('#Good_UnitName').val() + ',当前储户已经兑换' + r.DepExchangeCount + $('#Good_UnitName').val() + '，本次兑换数量' + GoodCount + $('#Good_UnitName').val() + ',无法继续兑换该商品！');
+                        ExchangeEnd();
+                    } else {
+                        if (ChuFenLv == "0") {
+                            AddExchangeNormal();
+                        }
+                        else {
+                            AddExchangeChuFen();
+                        }
+                    }
+                }
+
+            });
+           
+        }
+
+        //按普通方式添加兑换
+        function AddExchangeNormal() {
+
+            //计算折合原粮和收费
+            var GoodPrice = parseFloat($('#GoodPrice').html()); //商品兑换价格
+            var GoodCount = parseFloat($('input[name=ExchangeCount]').val()); //商品数量
+            var JinE = accMul(GoodPrice, GoodCount); //商品价值金额
+            //限定条件（不允许大于当前营业员的操作限额）
+            //if (limitMount < parseFloat(JinE)||limitMount<exchangeMount) {
+            if (limitMount < parseFloat(JinE) + parseFloat(exchangeMount)) {
+                showMsg('当前产品的兑换金额已经大于营业员的兑换限额 ！');
+                ExchangeEnd();
+                return false;
+            }
+            //查询当前仓库中的商品存储数量是否足够
+            var GoodStorage = $('#GoodStorage').html();; //仓库库存
+            if (parseFloat(GoodStorage) < parseFloat(GoodCount)) {//判断仓库库存是否足够
+                showMsg('仓库中的商品数量已不足，进货后方可兑换该商品 ！');
+                ExchangeEnd();
+                return false;
+            }
+            var GoodID = $('select[name=select_goodlist] option:selected').val(); //已选择的商品类型
+            var WBWareHouseID = $('select[name=select_WBWareHouse] option:selected').val(); //已选择的商品仓库
+            var AccountNumber = $('#QAccountNumber').val();//储户账号
+            var ExchangeCount = $('input[name=ExchangeCount]').val();//这一次兑换的商品数量
+            var Exchange_trading = getJieCun_tran();
+            var para = 'Dep_SID=' + dsiID + '&numMoney=' + JinE + '&Exchange_trading=' + Exchange_trading + '&AccountNumber=' + AccountNumber + '&GoodID=' + GoodID + '&ExchangeCount=' + ExchangeCount;
+            var url = '/User/Exchange/exchange.ashx?type=GetExchangeVarietyCount';
+            $.ajax({
+                url: url,
+                type: 'post',
+                data: para,
+                dataType: 'json',
+                success: function (r) {
+                   
+                    VarietyCount = parseFloat(r.VarietyCount);//本次折合产品数量
+                    var StorageNumber = parseFloat($('input[name=txtStorageNumber]').val()); //产品当前的结存数量
+                    var JieCun_tran = getJieCun_tran();//前几次的折合产品数量
+                    if (VarietyCount > StorageNumber - JieCun_tran) {
+                        showMsg('储户的存储产品结存不足，无法完成兑换！');
+                        ExchangeEnd();
+                        return false;
+                    } else {
+                        /*Begin如果是定期且有优惠兑换额的处理*/
+                        var change_Count = 0;//变化的可优惠兑换额度(活期默认为0)
+                        if ($('#d_ISDQ').val() == '1') {
+                            var YouHui_Count = parseFloat($('#d_YouHui_Count').val());
+                            var SurPlue_Count = parseFloat($('#d_SurPlue_Count').val());
+
+                            if (SurPlue_Count - VarietyCount < 0) {
+                                change_Count = SurPlue_Count;
+                            } else {
+                                change_Count = VarietyCount;
+                            }
+                            YouHui_Count = YouHui_Count + change_Count
+                            SurPlue_Count = SurPlue_Count - change_Count;
+                            $('#d_YouHui_Count').val(YouHui_Count);
+                            $('#d_SurPlue_Count').val(SurPlue_Count);
+                            //修改兑换政策
+                            var strPolicy = '当前存期类型存期：定期，未到期，存入价：' + $('#d_Price_ShiChang').val() + '，到期价：' + $('#d_Price_DaoQi').val() + '，本月已优惠兑换数量：' + changeTwoDecimal_f($('#d_YouHui_Count').val()) + '，剩余可优惠兑换数量：' + changeTwoDecimal_f($('#d_SurPlue_Count').val());
+                            $('.exchangePolicy #spanexchangePolicy').html(strPolicy);
+                        }
+                        /*End如果是定期且有优惠兑换额的处理*/
+
+                        //更新商品剩余数量
+                        //mapgood.set(GoodID, GoodStorage - GoodCount);
+                        //$('#GoodStorage').html( mapgood.get(GoodID));
+
+                        var updateresult = updateGoodItem(GoodID, WBWareHouseID, GoodStorage - GoodCount);
+                        if (updateresult == '0') {
+                            showMsg('更新仓库剩余库存失败!');
+                            return false;
+                        }
+                        $('#GoodStorage').html(GoodStorage - GoodCount);
+
+                        //更新结存
+                        var guid = new GUID();
+                        var GoodName = $('select[name=select_goodlist] option:selected').text(); //已选择的商品类型
+                        var SpecName = $('#Good_SpecName').val();
+                        var UnitName = $('#Good_UnitName').val();
+                        var JieCun = $('input[name=txtStorageNumber]').val();//结存数据在此处不改变
+
+                        var exinfo = { id: guid.newGUID(), BusinessName: '兑换', GoodID: GoodID, WBWareHouseID: WBWareHouseID, GoodName: GoodName, SpecName: SpecName, UnitName: UnitName, GoodPrice: GoodPrice, GoodCount: GoodCount, VarietyLiXi: r.VarietyLiXi, VarietyCount: r.VarietyCount, JinE: JinE, JieCun: JieCun, Money_YouHui: r.Money_YouHui, YouHui_Count: change_Count }
+                        //arrayex.push(exinfo);//添加一条兑换信息
+                        exarrayPush(arrayex, exinfo);//添加一条兑换信息
+                        ShowExChangeInfo();
+                    }
+                }, error: function (r) {
+                    showMsg('获取折合原粮数量时发生错误 ！');
+                    ExchangeEnd();
+                    return false;
+                }
+            });
+        }
+
+        //按出粉率方式添加兑换
+        function AddExchangeChuFen() {
+            //计算折合原粮和收费
+            var GoodPrice = parseFloat($('#GoodPrice').html()); //商品兑换价格
+            var GoodCount = parseFloat($('input[name=ExchangeCount]').val()); //商品数量
+            var JinE = accMul(GoodPrice, GoodCount); //商品价值金额
+            //限定条件（不允许大于当前营业员的操作限额）
+            //if (limitMount < parseFloat(JinE) || limitMount < exchangeMount) {
+            if (limitMount < parseFloat(JinE) + parseFloat(exchangeMount)) {
+                showMsg('当前产品的兑换金额已经大于营业员的兑换限额 ！');
+                ExchangeEnd();
+                return false;
+            }
+            //查询当前仓库中的商品存储数量是否足够
+            var GoodStorage = $('#GoodStorage').html();; //仓库库存
+            if (parseFloat(GoodStorage) < parseFloat(GoodCount)) {//判断仓库库存是否足够
+                showMsg('仓库中的商品数量已不足，进货后方可兑换该商品 ！');
+                ExchangeEnd();
+                return false;
+            }
+            var GoodID = $('select[name=select_goodlist] option:selected').val(); //已选择的商品类型
+            var WBWareHouseID = $('select[name=select_WBWareHouse] option:selected').val(); //已选择的商品仓库
+            VarietyCount = accDiv(GoodCount, ChuFenLv);//本次折合产品数量(使用出粉率计算)
+            var StorageNumber = parseFloat($('input[name=txtStorageNumber]').val()); //产品当前的结存数量
+            var JieCun_tran = getJieCun_tran();//前几次的折合产品数量
+            if (VarietyCount > StorageNumber - JieCun_tran) {
+                showMsg('储户的存储产品结存不足，无法完成兑换！');
+                ExchangeEnd();
+                return false;
+            } else {
+                //更新商品剩余数量
+                //mapgood.set(GoodID, GoodStorage - GoodCount);
+                //$('#GoodStorage').html(mapgood.get(GoodID));
+                var updateresult = updateGoodItem(GoodID, WBWareHouseID, GoodStorage - GoodCount);
+                if (updateresult == '0') {
+                    showMsg('更新仓库剩余库存失败!');
+                    return false;
+                }
+                $('#GoodStorage').html(GoodStorage - GoodCount);
+
+                //更新结存
+                var guid = new GUID();
+                var GoodName = $('select[name=select_goodlist] option:selected').text(); //已选择的商品类型
+                var SpecName = $('#Good_SpecName').val();
+                var UnitName = $('#Good_UnitName').val();
+                var JieCun = $('input[name=txtStorageNumber]').val();//结存数据在此处不改变
+                var VarietyID = $('input[name=txtVarietyID]').val();
+                var exinfo = { id: guid.newGUID(), BusinessName: '兑换', GoodID: GoodID, WBWareHouseID: WBWareHouseID, GoodName: GoodName, SpecName: SpecName, UnitName: UnitName, GoodPrice: GoodPrice, GoodCount: GoodCount, VarietyLiXi: 0, VarietyCount: VarietyCount, JinE: JinE, JieCun: JieCun, Money_YouHui: 0, YouHui_Count: 0 }
+                //arrayex.push(exinfo);//添加一条兑换信息
+                exarrayPush(arrayex, exinfo);//添加一条兑换信息
+                ShowExChangeInfo();
+            }
+
+        }
+
+        //获取已经添加的商品数量
+        function GetGoodCountAddCurrent(GoodID) {
+            var GoodCount=0;
+            if (arrayex.length != 0) {
+
+                for (var i = 0; i < arrayex.length; i++) {
+                    var exinfo = arrayex[i];
+                    if (GoodID == exinfo.GoodID) {
+                        GoodCount += parseFloat(exinfo.GoodCount);
+                    }
+                }
+            }
+            return GoodCount;
+
+        }
+
+        function ShowExChangeInfo() {
+            var VarietyCount_t = 0;
+            var JinE_t = 0;
+            var VarietyLiXi_t = 0;
+            var Money_YouHui_t = 0;//优惠金额
+            $('#tabexchangelist .tr_exchangelist').remove();//清空原来的兑换列表
+            $('#tabexchangelist .tr_exchangesummary').remove();//清空原来的兑换列表
+            if (arrayex.length != 0) {
+                $('.exchangelist').fadeIn();
+                $('.actionlist').fadeIn();
+                for (var i = 0; i < arrayex.length; i++) {
+                    var exinfo = arrayex[i];
+                    VarietyCount_t += parseFloat(exinfo.VarietyCount);
+                    JinE_t += parseFloat(exinfo.JinE);
+                    VarietyLiXi_t += parseFloat(exinfo.VarietyLiXi);
+                    Money_YouHui_t += parseFloat(exinfo.Money_YouHui);
+                    var tr_ex = ' <tr class="tr_exchangelist">';
+                    tr_ex += '<td style="height:30px;width:90px;">' + exinfo.BusinessName + '</td>';
+                    tr_ex += '<td style="width:100px;">' + exinfo.GoodName + '</td>';
+                    tr_ex += '<td style="width:80px;">' + exinfo.SpecName + '</td>';
+                    tr_ex += '<td style="width:80px;">' + exinfo.GoodPrice + '</td>';
+                    tr_ex += '<td style="width:80px;">' + changeTwoDecimal_f(exinfo.GoodCount) + '</td>';
+                    tr_ex += '<td style="width:80px;">' + exinfo.UnitName + '</td>';
+                    tr_ex += '<td style="width:80px;">' + changeTwoDecimal_f(exinfo.VarietyCount) + '</td>';
+                    tr_ex += '<td style="width:80px;">' + changeTwoDecimal_f(exinfo.VarietyLiXi) + '</td>';
+                    tr_ex += '<td style="width:80px;">' + changeTwoDecimal_f(exinfo.JinE) + '</td>';
+                    tr_ex += '<td style="width:100px;"><input type="button" class="exchangelistdel" guid=' + exinfo.id + ' value="删除" style="width:60px;" onclick="DelExchange(this);"/></td>';
+
+                    $('#tabexchangelist tbody').append(tr_ex);
+                }
+                exchangeMount = JinE_t;//本次总共发生的交易额
+                var tr_summary = '';
+                var VarietyName = $('input[name=txtVarietyName]').val();//存储产品名称
+                var VarietyUnitName = $('input[name=txtVarietyUnitName]').val();//存储产品名称
+                var StorageNumber = parseFloat($('input[name=txtStorageNumber]').val());//未兑换前的小麦结存
+                var StorageNumber_JieCun = StorageNumber - VarietyCount_t;
+                tr_summary += '<tr class="tr_exchangesummary">';
+                tr_summary += ' <td colspan="10" style="text-align:left;padding:5px 20px;">消费金额：<span style="color:Red">' + changeTwoDecimal_f(JinE_t) + '</span>元，折合<span style="color:Blue">' + VarietyName + '</span><span style="color:Red">' + changeTwoDecimal_f(VarietyCount_t) + '</span><span>公斤，</span>   利息<span style="color:Red">' + changeTwoDecimal_f(VarietyLiXi_t) + '</span>元， 优惠金额<span style="color:Red">' + changeTwoDecimal_f(Money_YouHui_t) + '</span>元，  结存：<span style="color:Red">' + changeTwoDecimal_f(StorageNumber_JieCun) + '</span><span>' + VarietyUnitName + '。</span>   </td>';
+                tr_summary += '</tr>';
+                $('#tabexchangelist tbody').append(tr_summary);
+            } else {
+                $('.exchangelist').fadeOut();
+                $('.actionlist').fadeOut();
+            }
+            $('body').scrollTop(10000);//定位到最后
+
+        }
+
+        //删除一条兑换记录
+        function DelExchange(obj) {
+            var id = $(obj).attr('guid');
+            if (arrayex.length != 0) {
+                for (var i = 0; i < arrayex.length; i++) {
+                    if (arrayex[i].id == id) {
+                        var GoodID = arrayex[i].GoodID;
+                        var WBWareHouseID = arrayex[i].WBWareHouseID;
+                        var GoodCount = arrayex[i].GoodCount;
+                        var JinE = arrayex[i].JinE;
+                        exchangeMount = JinE - parseFloat(JinE);//改变已兑换的金额
+
+                        var goodinfo = getGoodItem(GoodID, WBWareHouseID);
+                        if (goodinfo != null) {
+                            updateGoodItem(GoodID, WBWareHouseID, parseFloat(goodinfo.numStore) + parseFloat(GoodCount));
+                            if ($('select[name=select_goodlist]').val() == GoodID && $('select[name=select_WBWareHouse]').val() == WBWareHouseID) {//删除的是当前显示的商品
+                                $('#GoodStorage').html(parseFloat(goodinfo.numStore));
+                            }
+                        }
+
+                        //var map_GoodStorage = mapgood.get(GoodID);
+                        //if (map_GoodStorage != null) {//改变商品库存变化数量
+                        //    mapgood.set(GoodID, parseFloat(map_GoodStorage) + parseFloat(GoodCount));
+                        //    if ($('select[name=select_goodlist]').val() == GoodID) {//删除的是当前显示的商品
+                        //        $('#GoodStorage').html(mapgood.get(GoodID));
+                        //    }
+                        //}
+
+
+                        /*Begin如果是定期且有优惠兑换额的处理*/
+                        //是否有优惠额度
+                        var change_Count = parseFloat(arrayex[i].YouHui_Count);
+                        if (change_Count > 0) {
+                            var YouHui_Count = parseFloat($('#d_YouHui_Count').val());
+                            var SurPlue_Count = parseFloat($('#d_SurPlue_Count').val());
+                            if (change_Count > YouHui_Count) {
+                                var YouHui_Count_init = parseFloat($('#d_YouHui_Count_init').val());
+                                SurPlue_Count = YouHui_Count - YouHui_Count_init;
+                                YouHui_Count = YouHui_Count_init;//初始的可优惠兑换数量
+
+                            } else {
+                                YouHui_Count = YouHui_Count - change_Count
+                                SurPlue_Count = SurPlue_Count + change_Count;
+                            }
+
+                            $('#d_YouHui_Count').val(YouHui_Count);
+                            $('#d_SurPlue_Count').val(SurPlue_Count);
+                            //修改兑换政策
+                            var strPolicy = '当前存期类型存期：定期，未到期；市场价格：' + $('#d_Price_ShiChang').val() + '，兑换价格：' + $('#d_Price_DaoQi').val() + '，本月已优惠兑换数量：' + changeTwoDecimal_f($('#d_YouHui_Count').val()) + '，剩余可优惠兑换数量：' + changeTwoDecimal_f($('#d_SurPlue_Count').val());
+                            $('.exchangePolicy #spanexchangePolicy').html(strPolicy);
+                        }
+                        /*End如果是定期且有优惠兑换额的处理*/
+
+                        arrayex.splice(i, 1);//删除数组中的指定项
+                        break;
+                    }
+                }
+            }
+            ShowExChangeInfo();//重新显示兑换列表
+        }
+
+        //添加兑换条目（同时合并相同的产品兑换）
+        function exarrayPush(arrayex, exinfo) {
+            var GoodID = exinfo.GoodID;//
+            var WBWareHouseID = exinfo.WBWareHouseID;
+            var exit_GoodID = false;//兑换列表中是否已经存在此产品兑换
+            if (arrayex.length != 0) {
+                for (var i = 0; i < arrayex.length; i++) {
+                    if (arrayex[i].GoodID == GoodID && arrayex[i].WBWareHouseID == WBWareHouseID) {//有相同的产品兑换
+                        exit_GoodID = true;
+                        arrayex[i].GoodCount += parseFloat(exinfo.GoodCount);
+                        arrayex[i].VarietyLiXi += parseFloat(exinfo.VarietyLiXi);
+                        arrayex[i].VarietyCount += parseFloat(exinfo.VarietyCount);
+                        arrayex[i].JinE += parseFloat(exinfo.JinE);
+                        arrayex[i].Money_YouHui += parseFloat(exinfo.Money_YouHui);
+                        arrayex[i].YouHui_Count += parseFloat(exinfo.YouHui_Count);
+                    }
+                }
+            }
+            if (!exit_GoodID) {
+                arrayex.push(exinfo);
+            }
+        }
+
+        //计算在交易中发生的结存数量、当前商品扣重、定期不到期剩余优惠兑换额
+        function getJieCun_tran() {
+            //交易中发生的结存数量
+            var jc_tran = 0;
+            if (arrayex.length != 0) {
+                for (var i = 0; i < arrayex.length; i++) {
+                    jc_tran += parseFloat(arrayex[i].VarietyCount);
+                }
+            }
+            return jc_tran;
+        }
+
+
+        //重启兑换操作
+        function ExchangeActive() {
+            //$('#btnJieZhang').removeAttr('disabled');
+            //$('#btnJieZhang').css("background", "#cdc9a5");
+        }
+        //结束兑换操作
+        function ExchangeEnd() {
+            console.log('-------------------ExchangeEnd');
+        }
+
+        /***************结账和打印****************/
+        function FunJieZhang() {
+            var para = 'dsiID=' + dsiID + '&exlist=' + JSON.stringify(arrayex);
+            $.ajax({
+                url: '/User/Exchange/exchange.ashx?type=Add_GoodExchange',
+                type: 'post',
+                data: para,
+                dataType: 'json',
+                success: function (r) {
+                    if (r.state == "error") {
+                        showMsg(r.msg);
+                        return false;
+                    } else {
+                        $('#tabexchangeChoose input[name=btnAddEx]').attr('disabled', 'disabled');
+                        $('#tabexchangelist .exchangelistdel').attr('disabled', 'disabled');
+                        BNOList = r.BNOList;//兑换序列号，用于打印
+                        showMsg(r.msg);
+                        $('#btnChongLai').attr('disabled', 'disabled');
+                        $('#btnChongLai').css('background', '#aaa');
+                        $('#btnJieZhang').attr('disabled', 'disabled');
+                        $('#btnJieZhang').css('background', '#aaa');
+                        $('#btnPrint').removeAttr('disabled');
+                        $('#btnPrintFanYe').removeAttr('disabled');
+                        $('#btnPrintPage').removeAttr('disabled');
+                    }
+                }, error: function (r) {
+                    showMsg('兑换商品失败 ！');
+                }
+            });
+        }
+
+
+        function FunChonglai() {
+            location.href = '/User/Exchange/exchange.html';
+        }
+        //打印存折
+        function PrintCunZhe() {
+            var url = '/User/Exchange/exchange.ashx?type=PrintDep_OperateLogList';
+            var para = 'AccountNumber=' + $('#QAccountNumber').val() + '&BNOList=' + BNOList;
+            $.ajax({
+                url: url,
+                type: 'post',
+                data: para,
+                dataType: 'json',
+                success: function (r) {
+                    if (r == '') {
+                        showMsg('打印内容不可以为空!');
+                        return false;
+                    }
+                    if (r.SurPlus != '') {
+                        $('#btnPrintFanYe').fadeIn('normal');//显示可翻页打印
+                        BNOListSurPlue = r.SurPlus;
+                    }
+                    $('#divPrint').html('');
+                    $('#divPrint').append(r.Msg);
+                    CreateOneFormPage();
+                    LODOP.PREVIEW(); //打印存折
+                }, error: function (r) {
+                    showMsg('加载打印坐标时出现错误 ！');
+                }
+            });
+        }
+
+        function PrintCunZheFanYe() {
+            var url = '/User/Exchange/exchange.ashx?type=PrintDep_OperateLogList';
+            var para = 'AccountNumber=' + $('#QAccountNumber').val() + '&BNOList=' + BNOListSurPlue;
+            $.ajax({
+                url: url,
+                type: 'post',
+                data: para,
+                dataType: 'json',
+                success: function (r) {
+                    if (r == '') {
+                        showMsg('打印内容不可以为空!');
+                        return false;
+                    }
+                    $('#divPrint').html('');
+                    $('#divPrint').append(r.Msg);
+                    CreateOneFormPage();
+                    LODOP.PREVIEW(); //打印存折
+                }, error: function (r) {
+                    showMsg('加载打印坐标时出现错误 ！');
+                }
+            });
+        }
+
+        function PrintPage() {
+            var url = '/User/Exchange/exchange.ashx?type=PrintGoodExchangeList';
+            var para = 'AccountNumber=' + $('#QAccountNumber').val() + '&BNOList=' + BNOList + '&model=';
+            $.ajax({
+                url: url,
+                type: 'post',
+                data: para,
+                dataType: 'json',
+                success: function (r) {
+                    if (r.state == 'false' || r.state == false) {
+                        showMsg(r.msg);
+                        return false;
+                    }
+                    $('#divPrintPaper').html('');
+                    $('#divPrintPaper').append(r.msg);
+                    CreatePage();
+                    // LODOP.PREVIEW(); //打印存折
+                    var printime = '';
+                    if (LODOP.CVERSION) CLODOP.On_Return = function (TaskID, Value) {
+                        printime = Value;
+                    };
+                    printime = LODOP.PREVIEW();
+                    if (parseInt(printime) > 0) {
+                        updatePrintTime(printime, BNOList);
+                    }
+
+                }, error: function (r) {
+                    showMsg('加载打印坐标时出现错误 ！');
+                }
+            });
+        }
+
+        //更新打印次数
+        function updatePrintTime(printime, BNOList) {
+            $.ajax({
+                url: '/Ashx/storage.ashx?type=updatePrintTime_List&BNOList=' + BNOList + '&AccountNumber=' + $('#QAccountNumber').val(),
+                type: 'post',
+                data: '',
+                dataType: 'text',
+                success: function (r) {
+                    if (r == 'Y') {
+                        console.log('----更新打印次数成功----');
+                    } else {
+                        console.log('----更新打印次数失败----');
+                    }
+                }, error: function (r) {
+                    console.log('----更新打印次数失败----');
+                }
+            });
+        }
+
+
+
+    </script>
+    <style type="text/css">
+        .exchangeChoose {
+            display: none;
+            margin: 10px 10px;
+        }
+
+            .exchangeChoose #tabexchangeChoose {
+                background-color: #ececec;
+                border: 1px solid #aaa;
+                border-radius: 5px;
+                margin: 10px 0px;
+                width: 850px;
+            }
+
+            .exchangeChoose input[name=ExchangeCount] {
+                color: blue;
+                font-size: 16px;
+                font-weight: bold;
+            }
+
+        .exchangePolicy {
+            display: none;
+            margin: 5px 10px;
+            padding: 5px 18px;
+            background-color: #ececec;
+            border: 1px solid #aaa;
+            border-radius: 5px;
+            width: 712px;
+            font-size: 14px;
+            color: red;
+        }
+
+            .exchangePolicy #spanexchangePolicyTitle {
+                font-weight: bold;
+            }
+
+        .exchangelist {
+            display: none;
+            margin: 10px 10px;
+        }
+
+            .exchangelist #tabexchangelist {
+                width: 850px;
+            }
+
+        .actionlist {
+            display: none;
+            margin: 5px 10px;
+            padding: 5px 18px;
+            background-color: #ececec;
+            border: 1px solid #aaa;
+            border-radius: 5px;
+            width: 712px;
+        }
+
+            .actionlist input {
+                margin: 5px 10px;
+                width: 80px;
+                border: 1px solid #666;
+            }
+
+            .actionlist #btnJieZhang {
+                font-size: 16px;
+                font-weight: 600;
+                color: blue;
+            }
+
+            .actionlist #btnPrintFanYe {
+                display: none;
+            }
+
+        input[name=btnAddEx] {
+            border: 1px solid #666;
+            color: green;
+            font-weight: bold;
+            width: 60px;
+            height: 25px;
+            border-radius: 8px;
+        }
+
+        .exchangelist .exchangelistdel {
+            width: 60px;
+            height: 20px;
+            font-size: 12px;
+            color: red;
+            background: #ccc;
+            border: 1px solid #999;
+            border-radius: 10px;
+        }
+
+            .exchangelist .exchangelistdel:hover {
+                background: #eee;
+                border: 1px solid #999;
+            }
+    </style>
+</head>
+<body>
+ 
+    <div class="pageHead">
+        <b>兑换商品</b><span id="spanHelp" style="cursor: pointer">帮助</span>
+    </div>
+
+    <div id="divHelp" class="pageHelp">
+        <span>
+            提示1：业务进行顺序：第一步：输入储户账号-->第二步：选择业务类型-->第三步：再选择交易商品-->第四步：输入数量-->添加，即完成一笔业务。
+            完成后，单击“结账”，完成商品兑换。
+        </span><br />
+        <span>提示2：定期储粮兑换成品粮时，到期按到期价兑换，不到期按约定比例享受按到期价 优惠兑换 ，超过优惠额度则按存入价兑换；其它类型储户按约定计息（或不计息）兑换。</span><br />
+        <span>提示3：兑换时请注意兑换的计量单位与价格。</span><br />
+    </div>
+
+    <div class="pageQuery">
+        <table>
+            <tr>
+                <td style="width:80px; text-align:right;font-weight:bold;">储户账号:</td>
+                <td style="width:130px;"><input type="text" id="QAccountNumber" /></td>
+                <td style="width:50px; text-align:right;font-weight:bold;">密码:</td>
+                <td style="width:100px;"><input type="password" id="QPassword" /></td>
+                <td style="width:50px; text-align:right;font-weight:bold;"><input type="button" value="" id="QSelect" /></td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="depositorInfo">
+        <table class="tabinfo" id="tabdepositorInfo">
+            <thead>
+                <tr>
+                    <td colspan="6" style="border-bottom:1px solid #aaa; height:25px; text-align:center">
+                        <span style="font-size: 14px;  color:Green">储户基本信息</span>
+                    </td>
+                </tr>
+                <tr class="tr_head">
+                    <th align="center" style="width:100px; height:30px;">
+                        储户账号
+                    </th>
+                    <th align="center" style="width:100px;">
+                        储户姓名
+                    </th>
+                    <th align="center" style="width:100px;">
+                        移动电话
+                    </th>
+                    <th align="center" style="width:100px;">
+                        当前状态
+                    </th>
+                    <th align="center" style="width:150px;">
+                        身份证号
+                    </th>
+                    <th align="center" style="width:200px;">
+                        储户地址
+                    </th>
+
+                </tr>
+            </thead>
+        </table>
+    </div>
+
+    <div class="depositorStorageInfo">
+        <table class="tabinfo" id="tabdepositorStorageInfo">
+            <thead>
+                <tr>
+                    <td colspan="9" style="border-bottom:1px solid #aaa; height:25px; text-align:center"><span style="font-size: 14px;  color:Green">储户存粮信息</span></td>
+                </tr>
+                <tr class="tr_head">
+                    <th style="width: 100px; height:30px; text-align: center;">
+                        存贷产品
+                    </th>
+                    <th style="width: 100px; text-align: center;">
+                        结存数量
+                    </th>
+                    <th style="width: 100px; text-align: center;">
+                        存入时间
+                    </th>
+                    <th style="width: 90px; text-align: center;">
+                        存入价
+                    </th>
+                    <th style="width: 80px; text-align: center;">
+                        存期
+                    </th>
+                    <th style="width: 80px; text-align: center;">
+                        天数
+                    </th>
+                    <th style="width: 80px; text-align: center;">
+                        活期利率
+                    </th>
+                    <th style="width: 120px; text-align: center;">
+                        利息
+                    </th>
+                    <th style="width: 100px; text-align: center;">
+                        结算
+                    </th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+    <div class="SellApplyWarning"></div>
+    <div class="exchangeChoose">
+        <table id="tabexchangeChoose">
+            <thead>
+                <tr>
+                    <td align="right" style="width: 40px"><span>商品:</span></td>
+                    <td id="tdselect_goodlist" style="width: 140px; border-right: 1px solid #999"><!--<select name="select_goodlist" style="width:120px;"><option value="122">XX面粉25KG</option></select>--></td>
+                    <td align="right" style="width: 120px"><select name="select_WBWareHouse" style="width:120px;"></select></td>
+                    <td align="right" style="width: 40px"><span>库存:</span></td>
+                    <td style="width: 60px; border-right: 1px solid #999"><span id="GoodStorage" style="color:Green">0</span></td>
+                    <td align="right" style="width: 70px"><span>兑换价格:</span></td>
+                    <td style="width: 100px; border-right: 1px solid #999"><span id="GoodPrice" style="color:Green;font-weight:bold;"></span><span id="GoodUnit" style="color:Green"></span></td>
+                    <td align="right" style="width: 40px"><span>数量:</span></td>
+                    <td style="width: 60px; "><input type="text" name="ExchangeCount" value="1" style="width:60px;"></td>
+                    <td style="width: 80px;text-align:center;"> <input type="button" name="btnAddEx" value="添加" onclick="AddExchange();" class="btnOperate" style="width: 60px;"></td>
+                </tr>
+            </thead>
+        </table>
+    </div>
+
+    <div class="exchangePolicy">
+        <span id="spanexchangePolicyTitle"></span>
+        <span id="spanexchangePolicy"></span>
+    </div>
+
+    <div class="exchangelist">
+        <table class="tabinfo" id="tabexchangelist">
+            <thead>
+                <tr>
+                    <td colspan="10" style="border-bottom:1px solid #aaa; height:25px; text-align:center"><span style="font-size: 14px;  color:Green">兑换产品信息</span></td>
+                </tr>
+                <tr class="tr_head">
+                    <th style="width: 80px; height:30px; text-align: center;"> 业务名称 </th>
+                    <th style="width: 100px; text-align: center;"> 品名 </th>
+                    <th style="width: 80px; text-align: center;"> 规格 </th>
+                    <th style="width: 80px; text-align: center;"> 单价 </th>
+                    <th style="width: 80px; text-align: center;">  数量 </th>
+                    <th style="width: 80px; text-align: center;"> 计量单位 </th>
+                    <th style="width: 80px; text-align: center;">  折合原粮 </th>
+                    <th style="width: 80px; text-align: center;"> 利息 </th>
+                    <th style="width: 80px; text-align: center;">  收费 </th>
+                    <th style="width: 100px; text-align: center;">  删除 </th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <div class="actionlist">
+        <input type="button" id="btnChongLai" value="清除重来" onclick="FunChonglai()">
+        <input type="button" id="btnJieZhang" value="结账" onclick="FunJieZhang();">
+        <input type="button" id="btnPrint" disabled="disabled" value="打印存折" onclick=" PrintCunZhe();">
+        <input type="button" id="btnPrintFanYe" disabled="disabled" value="翻页打印" onclick="PrintCunZheFanYe();">
+        <input type="button" id="btnPrintPage" disabled="disabled" value="打印小票" onclick=" PrintPage();">
+
+    </div>
+
+    <div class="divhidden">
+        <span>已选择存储产品的存期</span>
+        <input type="text" name="txtTimeID" value="" />
+        <input type="text" name="txtTimeName" value="" />
+        <span>已选择存储产品</span>
+        <input type="text" name="txtVarietyID" value="" />
+        <input type="text" name="txtVarietyName" value="" />
+        <input type="text" name="txtVarietyUnitName" value="" />
+        <span>已选择商品</span>
+        <input type="text" id="Good_UnitName" value="" />
+        <input type="text" id="Good_SpecName" value="" />
+
+        <span>当前选择的存储结存数量(此数据不改变)</span>
+        <input type="text" name="txtStorageNumber" value="0" />
+
+
+        <span>定期存粮数据</span>
+        <input type="text" id="d_ISDQ" value="0" />
+        <input type="text" id="d_daoqi" value="" />
+        <input type="text" id="d_youhui" value="" />
+        <input type="text" id="d_Price_ShiChang" value="" />
+        <input type="text" id="d_Price_DaoQi" value="" />
+        <!--d_YouHui_Count_init初始的已优惠兑换数量-->
+        <input type="text" id="d_YouHui_Count_init" value="" />
+        <input type="text" id="d_YouHui_Count" value="" />
+        <input type="text" id="d_SurPlue_Count" value="" />
+    </div>
+</body>
+</html>

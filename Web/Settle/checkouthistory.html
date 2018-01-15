@@ -1,0 +1,299 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title></title>
+    <script src="../Scripts/jquery-1.4.1.js" type="text/javascript"></script>
+    <script src="../Scripts/WebInner.js" type="text/javascript"></script>
+    <script src="../Scripts/Common.js" type="text/javascript"></script>
+    <script src="../Scripts/excelhelper.js"></script>
+    <script src="../Lodop6.198/LodopFuncs.js" type="text/javascript"></script>
+    <script src="../Scripts/LodopPrint.js"></script>
+    <link href="../Styles/Common.css" rel="stylesheet" type="text/css" />
+    <script src="../Scripts/My97DatePicker/WdatePicker.js" type="text/javascript"></script>
+    <style type="text/css">
+        .Query {
+            margin: 0px 0px 5px 0px;
+            background: #e0eeee;
+            border: 1px solid #9ac0cd;
+            border-radius: 10px;
+            max-width: 950px;
+            padding: 0px 5px 5px 5px;
+        }
+
+            .Query span {
+                font-size: 12px;
+                color: #333;
+            }
+
+            .Query img {
+                width: 30px;
+                height: 30px;
+                margin: 0px 5px -8px 5px;
+                cursor: pointer;
+            }
+
+            .Query .outputExcel {
+                width: 60px;
+                color: #111;
+            }
+
+        #dataInfo {
+            display: none;
+        }
+
+            #dataInfo .btndetail {
+                width: 50px;
+                height: 20px;
+                /*background: #cdcdcd;
+                border: 1px solid #aaa;*/
+                /*color: green;*/
+                cursor: pointer;
+            }
+    </style>
+
+</head>
+<body>
+    <div id="divPrint" style="display: none">
+    </div>
+    <div id="divPrintPaper" style="display: none">
+    </div>
+    <div class="pageHead">
+        <b>原粮出库历史记录</b>
+        <!--<span id="spanHelp" style="cursor: pointer">帮助</span>-->
+    </div>
+    <div id="divHelp" class="pageHelp" style="border:1px solid #333; border-radius:5px; display:none; ">
+        <span>提示1：网点存粮汇总报表只显示查询日期内的存粮总数。</span><br />
+    </div>
+
+    <div class="Query">
+
+        <span class="QWBInfo">网点</span>
+        <select class="QWBInfo" id="QWBID" style="width: 120px; margin-right: 5px;"></select>
+        <span>日期</span>
+        <input type="text" id="Qdtstart" onclick="WdatePicker();" style="font-size: 12px; width: 70px; height: 20px;" />
+        <span>-</span>
+        <input type="text" id="Qdtend" onclick="WdatePicker()" style="font-size: 12px; width: 70px; height: 20px;" />
+        <img id="imgQuery" src="/images/search_red.png" onclick="FunQuery()" />
+
+        <a id="excel_export" href="#">Excel</a>
+    </div>
+
+    <table class="tabData" id="dataInfo">
+        <tr class="tr_head">
+            <th style="width: 120px; height: 20px; text-align: center;">
+                网点名称
+            </th>
+            <th style="width: 100px; text-align: center;">
+                网点账号
+            </th>
+            <th style="width: 80px; text-align: center;">
+                产品名称
+            </th>
+            <th style="width: 80px; text-align: center;">
+                毛重
+            </th>
+            <th style="width: 80px; text-align: center;">
+                皮重
+            </th>
+            <th style="width: 80px; text-align: center;">
+                净重
+            </th>
+            <th style="width: 80px; text-align: center;">
+                出库实重
+            </th>
+            <th style="width: 80px; text-align: center;">
+                出库时间
+            </th>
+            <th style="width: 80px; text-align: center;">
+                补打存折
+            </th>
+            <th style="width: 80px; text-align: center;">
+                补打小票
+            </th>
+            <th style="width: 80px; text-align: center;">
+                修改
+            </th>
+        </tr>
+    </table>
+
+    <div style="display: none;">
+        <input type="text" id="colorName" />
+        <!--被选择的网点ID-->
+        <input type="text" id="WBID" value="" />
+    </div>
+
+
+    <script type="text/javascript">
+
+        $(function () {
+
+            InitWBID();
+            $('#QWBID').change(function () {
+                $('#WBID').val($('#QWBID').find('option:selected').val());//选择查询的粮食银行
+
+            });
+
+            $('#excel_export').ExportExcel('dataInfo', '原粮出库历史记录');
+
+        });
+
+        function InitWBID() {
+            var WBName = '';
+            $('#QWBID').empty();
+            $.ajax({
+                url: '/Ashx/wbinfo.ashx?type=GetWBByName&strName=' + WBName,
+                type: 'post',
+                data: '',
+                dataType: 'json',
+                success: function (r) {
+
+                    $('#QWBID').append("<option value='0'>--全部--</option>");
+
+                    if (r.responseText == "Error") { return false; }
+                    for (var i = 0; i < r.length; i++) {
+                        if (WBName == r[i].strName) {
+                            $('#QWBID').append("<option value='" + r[i].ID + "' selected = 'selected'>" + r[i].strName + "</option>");
+                        } else {
+                            $('#QWBID').append("<option value='" + r[i].ID + "'>" + r[i].strName + "</option>");
+                        }
+                    }
+                }, error: function (r) { }
+            });
+        }
+
+
+        function FunQuery() {
+            var wbid = $('#QWBID').val();
+            var Qdtstart = $('#Qdtstart').val();
+            var Qdtend = $('#Qdtend').val();
+            if (wbid == '0') {
+                showMsg('请选择您要查询的分行！');
+                return;
+            }
+            var para = 'wbid=' + wbid + '&Qdtstart=' + Qdtstart + '&Qdtend='+Qdtend;
+            $.ajax({
+                url: '/ashx/settle_checkout.ashx?type=getCheckOutHistory',
+                type: 'post',
+                data: para,
+                dataType: 'json',
+                success: function (r) {
+                    if (r.state == false || r.state == 'false') {
+                        showMsg(r.msg);
+                        return;
+                    }
+
+                    var strhtml = '';
+                    //var jsondata = JSON.parse(r.data);
+                    var jsondata =JSON.parse( r.data);
+                    var jsondataTotal =JSON.parse( r.total);
+                    for (var i = 0; i < jsondata.length; i++) {
+                        strhtml += '<tr class="trappend"  onmouseover="change_colorOver(this)" onmouseout="change_colorOut(this)">';
+
+                        strhtml += ' <td style="height:25px;">' + jsondata[i].WBName + '</td>';
+                        strhtml += ' <td>' + jsondata[i].SA_AN + '</td>';
+                        strhtml += ' <td>' + jsondata[i].Variety_Name + '</td>';
+                        strhtml += ' <td>' + jsondata[i].Weight_Mao + '</td>';
+                        strhtml += ' <td>' + jsondata[i].Weight_Pi + '</td>';
+                        strhtml += ' <td>' + jsondata[i].Weight_Jing + '</td>';
+                        strhtml += ' <td>' + jsondata[i].Weight_Reality + '</td>';
+                        strhtml += ' <td>' + jsondata[i].dt_Trade + '</td>';
+                  
+                        strhtml += ' <td>  <a href="#" onclick="GetCunZheInfo(' + jsondata[i].ID + ')">补打存折</a></td>';
+                        strhtml += ' <td>  <a href="#" onclick="PrintPage(' + jsondata[i].ID + ')">补打存折</a></td>';
+                        strhtml += ' <td>   <a href="CheckOutEdit.aspx?ID=' + jsondata[i].ID + '">修改</a></td>';
+                        strhtml += '</tr>';
+                    }
+
+
+
+                    strhtml += '<tr  class="trappend"><td colspan="11" style="height:25px;text-align:center;">总计</td></tr>';
+
+                    for (var i = 0; i < jsondataTotal.length; i++) {
+                        strhtml += '<tr class="trappend"  onmouseover="change_colorOver(this)" onmouseout="change_colorOut(this)">';
+
+                        strhtml += ' <td style="height:25px;">' + jsondataTotal[i].WBName + '</td>';
+                        strhtml += ' <td></td>';
+                        strhtml += ' <td>' + jsondataTotal[i].Variety_Name + '</td>';
+                        strhtml += ' <td>' + jsondataTotal[i].Weight_Mao + '</td>';
+                        strhtml += ' <td>' + jsondataTotal[i].Weight_Pi + '</td>';
+                        strhtml += ' <td>' + jsondataTotal[i].Weight_Jing + '</td>';
+                        strhtml += ' <td>' + jsondataTotal[i].Weight_Reality + '</td>';
+                        strhtml += '</tr>';
+                    }
+
+
+                    $('#dataInfo').fadeIn();
+                    $('#dataInfo .trappend').remove();//清除之前的添加项
+                    $('#dataInfo').append(strhtml);
+
+                   
+
+                }, error: function (r) {
+                    showMsg('获取存粮出库信息失败 ！');
+                }
+            });
+        }
+
+
+        function GetCunZheInfo(ID) {
+
+            $.ajax({
+                url: '/Ashx/settle.ashx?type=GetCheckOut_LogByCheckOut_ID&ID=' + ID,
+                type: 'post',
+                data: '',
+                dataType: 'json',
+                success: function (r) {
+                    var AccountNumber = r[0].AccountNumber;
+                    var BusinessNO = r[0].BusinessNO;
+
+                    PrintCunZhe(AccountNumber, BusinessNO);
+                }, error: function (r) {
+                    showMsg('未能找到打印存折信息 ！');
+                }
+            });
+        }
+
+        function PrintCunZhe(AccountNumber, BusinessNO) {
+
+            $.ajax({
+                url: '/Ashx/settle.ashx?type=PrintSA_CheckOutLog&AccountNumber=' + AccountNumber + '&BusinessNO=' + BusinessNO,
+                type: 'post',
+                data: '',
+                dataType: 'text',
+                success: function (r) {
+
+                    $('#divPrint').html('');
+                    $('#divPrint').append(r);
+                    CreateOneFormPage();
+                    LODOP.PREVIEW(); //打印存折
+                }, error: function (r) {
+                    showMsg('打印存折时出现错误 ！');
+                }
+            });
+        }
+
+        function PrintPage(ID) {
+
+            $.ajax({
+                url: '/Ashx/settle.ashx?type=PrintCheckOut&ID=' + ID,
+                type: 'post',
+                data: '',
+                dataType: 'text',
+                success: function (r) {
+
+                    $('#divPrintPaper').html('');
+                    $('#divPrintPaper').append(r);
+                    CreatePage();
+                    LODOP.PREVIEW(); //打印存折
+                }, error: function (r) {
+                    showMsg('加载打印坐标时出现错误 ！');
+                }
+            });
+
+        }
+
+       
+    </script>
+</body>
+</html>

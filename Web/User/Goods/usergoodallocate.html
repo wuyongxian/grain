@@ -1,0 +1,384 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title></title>
+    <script src="../../Scripts/jquery-1.4.1.js" type="text/javascript"></script>
+    <link href="../../Styles/Common.css" rel="stylesheet" type="text/css" />
+    <script src="../../Scripts/WebInner.js" type="text/javascript"></script>
+    <script src="../../Scripts/Common.js" type="text/javascript"></script>
+
+
+    <style type="text/css">
+    </style>
+    
+</head>
+<body>
+    <form id="form1">
+        <div class="pageHead">
+            <b>网点商品调货</b>
+            <!--<span id="spanHelp" style="cursor: pointer">帮助</span>-->
+        </div>
+        <div id="divHelp" class="pageHelp">
+            <span>提示1：商品列表最多只列出20种商品，如果商品不在列表中，可以按商品名查询。找到商品后，填写相关进货数据</span><br />
+
+        </div>
+
+        <div id="divfrm" class="pageEidtInner">
+            <div style="clear: both;">
+                <table class="tabEdit">
+                   
+                    <tr>
+                        <td align="right" style="width: 100px;">
+                            <span>出库仓库:</span>
+                        </td>
+                        <td style="width: 160px;">
+                            <select name="WareHouseID" style="width:150px;"></select>
+                           
+                        </td>
+                        <td align="right" style="width: 100px;">
+                            <span>商品:</span>
+                        </td>
+                        <td style="width: 160px;">
+                            <select name="GoodID" style="width:150px"></select>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td align="right" style="width: 100px;">
+                            <span>已选择商品:</span>
+                        </td>
+                        <td>
+                            <span style=" font-weight:bolder; color:Blue" id="spanGood"></span>
+                        </td>
+                        <td align="right">
+                            <span>仓储数量:</span>
+                        </td>
+                        <td>
+                        
+                            <!--<span style="font-weight:bolder;" id="PackingSpecID"></span>
+                            <span>计量单位:</span>-->
+                            <span id="numStore" style=" font-weight:bolder; color:Blue"></span>
+                            <span class="spanUnit"></span>
+
+                        </td>
+                    </tr>
+                    <tr>
+                        <td align="right">
+                            <span>接收网点:</span>
+                        </td>
+                        <td>
+                            <select name="QWBID" style="width: 150px;"></select>
+                        </td>
+                        <td align="right">
+                            <span>接收库仓号:</span>
+                        </td>
+                        <td>
+                            <select name="WBWareHouseID" style="width: 150px;"></select>
+                        </td>
+                    </tr>
+                  
+                    <tr>
+                        <td align="right">
+                            <span>商品单价:</span>
+                        </td>
+                        <td>
+                            <input name="Price_Stock" type="text" onkeyup="calcSum()" style="width: 100px;" />
+                            <span>元/</span>
+                            <span class="spanUnit"></span>
+                        </td>
+                        <td align="right">
+                            <span>进货数量:</span>
+                        </td>
+                        <td>
+                            <input name="Quantity" type="text" onkeyup="calcSum()" style="width: 100px;" />
+
+                            <span class="spanUnit"></span>
+                        </td>
+                    </tr>
+                   
+
+                    <tr>
+                       
+                        <td align="right">
+                            <span>交易额:</span>
+                        </td>
+                        <td >
+                            <span id="spanSum" style="font-weight:bolder; color:Green"></span><span>元</span>
+                        </td>
+                        <td align="right">
+                            <span>日期:</span>
+                        </td>
+                        <td>
+                            <input type="text" name="dt_JinHuo" disabled="disabled" style="width:100px;" />
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td align="right">
+                            <span>接收人:</span>
+                        </td>
+                        <td colspan="3">
+                            <input name="strRecipient" placeholder="请输入接收人信息" type="text" style="width: 200px;" />
+                        </td>
+
+                    </tr>
+
+                  
+                    <tr style="display:none;">
+                        <td align="right">
+                            <span>现金交易:</span>
+                        </td>
+                        <td>
+                            <input type="checkbox" name="ISCash" /><span style="color:Red">请谨慎选择</span>
+                        </td>
+                    </tr>
+
+
+                    <tr>
+                        <td></td>
+                        <td>
+                            <input type="button" id="btnStock" style="background:#8fbc8f"  value="确认调货" onclick="FunStock()" />
+                        </td>
+                    </tr>
+
+                </table>
+            </div>
+        </div>
+        <div style="display:none">
+            <input type="text" name="GoodIDSelect" />
+        </div>
+    </form>
+
+
+    <script type="text/javascript">
+        /*--------窗体启动设置和基本设置--------*/
+        var wbinfo ;
+        $(function () {
+            wbinfo = JSON.parse(localStorage.getItem('wbinfo'));
+            initWareHouseList();//加载当前网点仓库
+
+            $('select[name=WareHouseID]').change(function () {
+                initGoodList();//加载网点商品 
+            });
+
+            $('select[name=GoodID]').change(function () {
+                //var GoodID = $('select[name=GoodID]').find('option:selected').val();
+                LoadGoodInfo($('select[name=GoodID]').find('option:selected'));
+            });
+            
+            InitWBID();
+            //initWBWareHouseList();
+
+            $('select[name=QWBID]').change(function () {
+                initWBWareHouseList();
+            });
+
+            $('input[name=Quantity]').val('0');
+            $('#spanSum').html('0');
+
+            $('input[name=dt_JinHuo]').val(getDateNow());
+        });
+
+
+        //加载当前网点仓库
+        function initWareHouseList() {
+            $.ajax({
+                url: '/BasicData/HQStorage/storage.ashx?type=GetWBWareHouseList',
+                type: 'post',
+                data: '',
+                dataType: 'json',
+                success: function (r) {
+                    if (r == null) {
+                        showMsg('没有查询到仓库信息 ！');
+                        return false;
+                    }
+                    $('select[name=WareHouseID]').empty();
+                    for (var i = 0; i < r.length; i++) {
+                        $('select[name=WareHouseID]').append("<option value='" + r[i].ID + "' >" + r[i].strName + "</option>");
+                    }
+                    initGoodList();//加载当前网点商品信息
+
+                }, error: function (r) {
+                    showMsg('没有查询到总部仓库信息 ！');
+                }
+            });
+        }
+
+        //加载商品列表
+        function initGoodList() {
+            var WBWareHouseID = $('select[name=WareHouseID]').find('option:selected').val();
+          
+            var WBID = wbinfo[0].ID;
+            var para = 'WBID=' + WBID + '&WBWareHouseID=' + WBWareHouseID
+            $.ajax({
+                url: '/Ashx/good.ashx?type=GetWBGoodByWHID',
+                type: 'post',
+                data: para,
+                dataType: 'json',
+                success: function (r) {
+                    $('select[name=GoodID]').empty();
+                    for (var i = 0; i < r.length; i++) {
+                        $('select[name=GoodID]').append("<option value='" + r[i].ID + "'  strName='" + r[i].strName + "'  numStore='" + r[i].numStore + "' Price_Stock='" + r[i].Price_Stock + "'  PackingSpecID='" + r[i].PackingSpecID + "' MeasuringUnit='" + r[i].MeasuringUnit + "'>" + r[i].strName + "</option>");
+                    }
+                  
+                    LoadGoodInfo($('select[name=GoodID]').find('option:selected'));
+
+                }, error: function (r) {
+                    showMsg('不存在的商品类型 ！');
+                }
+            });
+        }
+
+        //商品信息及库存信息
+        function LoadGoodInfo(obj) {
+            $('input[name=GoodIDSelect]').val($(obj).attr('value'));
+
+            $('#btnStock').removeAttr('disabled');
+            $('#spanGood').html($(obj).attr('strName'));
+            $('input[name=Price_Stock]').val($(obj).attr('Price_Stock'));
+            $('#numStore').html($(obj).attr('numStore'));
+
+            //$('#PackingSpecID').html($(obj).attr('PackingSpecID'));
+            //$('#MeasuringUnit').html($(obj).attr('MeasuringUnit'));
+
+            $('.spanUnit').html($(obj).attr('MeasuringUnit'));
+        }
+
+
+        //加载网点信息
+        function InitWBID() {
+            var WBName = '';
+            $('select[name=QWBID]').empty();
+            $.ajax({
+                url: '/Ashx/wbinfo.ashx?type=GetWBByName&strName=' + WBName,
+                type: 'post',
+                data: '',
+                dataType: 'json',
+                success: function (r) {
+                   // $('select[name=QWBID]').append("<option value='0'>--全部--</option>");
+                    if (r.responseText == "Error") { return false; }
+                    for (var i = 0; i < r.length; i++) {
+                        if (wbinfo[0].ID != r[i].ID) {//排除自身网点
+                            $('select[name=QWBID]').append("<option value='" + r[i].ID + "'>" + r[i].strName + "</option>");
+                        } else {
+                            
+                        }
+                    }
+
+                    initWBWareHouseList();//加载网点的仓库
+                }, error: function (r) { }
+            });
+        }
+
+        //加载接收网点仓库
+        function initWBWareHouseList() {
+           
+            var para = "WBID=" + $('select[name=QWBID]').val();
+            $.ajax({
+                url: '/BasicData/HQStorage/storage.ashx?type=GetWBWareHouseList',
+                type: 'post',
+                data: para,
+                dataType: 'json',
+                success: function (r) {
+                    if (r == null) {
+                        showMsg('没有查询到仓库信息 ！');
+                        $('#btnStock').attr("disabled", "disabled");
+                        $('#btnStock').css('background', '#ddd');
+                        return false;
+                    }
+                    $('#btnStock').removeAttr("disabled");
+                    $('#btnStock').css('background', '#8fbc8f');
+                    $('select[name=WBWareHouseID]').empty();
+                    for (var i = 0; i < r.length; i++) {
+                        $('select[name=WBWareHouseID]').append("<option value='" + r[i].ID + "'>" + r[i].strName + "</option>");
+                    }
+                    var WBWareHouseID = getQueryString("WBWareHouseID"); //是否有商品名ID
+                    if (WBWareHouseID != "") {
+                        $('select[name=WBWareHouseID]').val(WBWareHouseID);
+                    }
+                    // LoadGoodInfo($('select[name=GoodID] option:selected').val());
+
+                }, error: function (r) {
+                    showMsg('没有查询到仓库信息 ！');
+                    $('#btnStock').attr("disabled", "disabled");
+                    $('#btnStock').css('background', '#ddd');
+                }
+            });
+        }
+  
+
+        function calcSum() {
+            //计算总价格
+
+            if (!CheckNumDecimal($('input[name=Price_Stock]').val(), '进货价格', 2)) {
+                return false;
+            }
+            if (!CheckNumInt($('input[name=Quantity]').val(), '进货数量', '-1', '-1')) {
+                return false;
+            }
+            var price = parseFloat($('input[name=Price_Stock]').val());
+            var Quantity = parseFloat($('input[name=Quantity]').val());
+            var moneysum = price * Quantity;
+
+            $('#spanSum').html(moneysum.toFixed(2));
+
+        }
+
+        /*--------End  窗体启动设置和基本设置--------*/
+      
+
+        function FunStock() {
+
+            if (!CheckNumDecimal($('input[name=Price_Stock]').val(), '进货价格', 2)) {
+                return false;
+            }
+            if (!CheckNumInt($('input[name=Quantity]').val(), '进货数量', '-1', '-1')) {
+                return false;
+            }
+            var Quantity = parseFloat($('input[name=Quantity]').val());
+            var WBStorage = parseFloat($('#numStore').html());
+            if (parseFloat(Quantity) > parseFloat(WBStorage)) {
+                showMsg('本网点库存不足，无法调货 ！');
+                return false;
+            }
+            var msg = '您已经认真检查输入信息，并继续提交吗？';
+            showConfirm(msg, function (obj) {
+                if (obj == 'yes') {
+                    //alert('你点击了确定！');
+                    $.ajax({
+                        url: '/Ashx/good.ashx?type=Add_GoodAllocateWB',
+                        type: 'post',
+                        data: $('#form1').serialize(),
+                        dataType: 'json',
+                        success: function (r) {
+                            if (r.state == 'true' || r.state == true) {
+                                showMsg('调货成功 ！');
+                               
+                            } else {
+                                showMsg('调货失败 ！');
+                            }
+                            $('#btnStock').attr("disabled", "disabled");
+                            $('#btnStock').css('background', '#ddd');
+                        }, error: function (r) {
+                            showMsg('调货失败 ！');
+                            $('#btnStock').attr("disabled", "disabled");
+                            $('#btnStock').css('background', '#ddd');
+                        }
+                    });
+                } else {
+                    //alert('你点击了取消！');
+                }
+
+            })
+        }
+
+    </script>
+    <div style="display:none">
+        <%--定义编号--%>
+        <input type="hidden" id="WBID" value="" />
+        <%--定义背景色的隐藏域--%>
+        <input type="hidden" id="colorName" value="" />
+    </div>
+
+</body>
+</html>

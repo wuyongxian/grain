@@ -1,0 +1,132 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title>粮食银行公告！</title>
+    <script src="../Scripts/jquery.js"></script>
+    <style type="text/css">
+        * {
+            margin: 0px;
+            padding: 0px;
+            background: #d3d7d4;
+        }
+        .notice {
+            /*border-bottom: 2px solid #666;*/
+            /*height:100%;
+            width:100%;*/
+            /*border-radius: 10px;*/
+            /*background: #d3d7d4;*/
+            /*border: 1px solid #666;
+            border-radius: 10px;
+            box-shadow: 0px 0px 20px #000;*/
+            /*margin: 20px 10px 20px 10px;*/
+            padding: 20px 20px;
+            clear: both;
+        }
+            .notice .notice_title {
+                margin: 0 auto;
+                text-align: center;
+                font-size: larger;
+                padding-bottom:10px;
+                color: green;
+            }
+            .notice .notice_content {
+                padding-bottom: 10px;   
+            }
+            .notice .notice_time {
+                float:right;
+                font-size:small;
+                color:#666;
+            }
+
+    </style>
+    <script type="text/javascript">
+        $(function () {
+            var pushmsg = localStorage.getItem('pushmsg');
+            if (pushmsg == undefined || pushmsg == null || pushmsg == "") {
+                alert("没有查找到新的未读消息！");
+            }
+          
+            var noticedata = JSON.parse(pushmsg);
+
+            var Title = noticedata.Title;
+            var CreateTime = new Date(noticedata.CreateTime);
+            var strDate = CreateTime.getFullYear() + '-' + (parseInt(CreateTime.getMonth()) + 1) + '-' + CreateTime.getDate();
+            var Content = noticedata.Content;
+            var strhtml = "";
+            strhtml += '<div class="notice">';
+            strhtml += '<div class="notice_title">' + Title + '</div>';
+            strhtml += '<div class="notice_content">' + Content + '</div>';
+            strhtml += '<div class="notice_time">' + strDate + '</div>';
+            strhtml += '</div>';
+            $('#msgContainer').append(strhtml);
+
+            var ID = noticedata.ID;
+            PostNoticeIsRead(ID);//将此消息置为已读
+        })
+
+        function PostNoticeIsRead(id) {
+
+            var webSiteCode = localStorage.getItem('webSiteCode');
+            var apiurl = localStorage.getItem('apiurl');
+            var noticeInfo = {
+                webSiteCode: webSiteCode,//站点代码
+                noticeID: id,//公告系统编号
+                isRead: "true"//已读标识（true 或者 false）
+            }
+            var apiUri = apiurl + "/api/Notice/PostNoticeIsRead";//请使用绝对访问路径，参数：webSiteCode-站点代码，maxNum-获取最多条目数
+            //查看其它网点对此消息的阅读状态
+
+            $.ajax({
+                url: '/Ashx/wbinfo.ashx?type=UpdateWBPushMsgState&msgid=' + id,
+                type: 'post',
+                contentType: 'application/json',
+                async: true,
+                data: '',
+                dataType: 'json',
+                beforeSend: function (r) { },
+                success: function (r) {
+                    localStorage.setItem('pushmsg', '');//将未读消息置空
+                    if (r == "1") {//所有的网点已全部读取此信息
+                        $.ajax({
+                            url: apiUri,
+                            type: 'post',
+                            contentType: 'application/json',
+                            async: true,
+                            data: JSON.stringify(noticeInfo),
+                            dataType: 'json',
+                            beforeSend: function (r) { },
+                            success: function (r) {
+                                console.log('success!');
+                                //localStorage.setItem('pushmsg', '');//将未读消息置空
+                            },
+                            error: function (r) { console.log('error!'); }
+                        });
+                    } else {
+
+                    }
+                },
+                error: function (r) { }
+            });
+
+
+
+        }
+    </script>
+</head>
+<body>
+    <div id="msgContainer">
+
+    <!--<div class="notice">
+        <div class="notice_title">第一条消息</div>
+        <div class="notice_content">这是第一条消息内容</div>
+        <div class="notice_time">2017-5-1</div>
+    </div>
+        <div class="notice">
+            <div class="notice_title">第二条消息</div>
+            <div class="notice_content">这是第二条消息</div>
+            <div class="notice_time">2017-5-10</div>
+        </div>-->
+    </div>
+</body>
+</html>

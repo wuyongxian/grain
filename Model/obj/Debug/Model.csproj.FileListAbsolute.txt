@@ -1,0 +1,5 @@
+F:\GrainBank\GrainBank\Model\bin\Debug\Model.dll
+F:\GrainBank\GrainBank\Model\bin\Debug\Model.pdb
+F:\GrainBank\GrainBank\Model\obj\Debug\ResolveAssemblyReference.cache
+F:\GrainBank\GrainBank\Model\obj\Debug\Model.dll
+F:\GrainBank\GrainBank\Model\obj\Debug\Model.pdb

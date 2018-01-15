@@ -1,0 +1,4 @@
+E:\grain\DAL\bin\Debug\p.dll
+E:\grain\DAL\obj\Debug\p.dll
+E:\grain\DAL\obj\Debug\p.pdb
+E:\grain\DAL\bin\Debug\p.pdb

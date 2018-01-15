@@ -1,0 +1,174 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head id="Head1">
+    <title>存转销审批结果</title>
+    <script src="../../../Scripts/jquery-1.4.1.js" type="text/javascript"></script>
+    <script src="../../../Scripts/WebInner.js" type="text/javascript"></script>
+    <script src="../../../Scripts/Common.js" type="text/javascript"></script>
+    <link href="../../../Styles/Common.css" rel="stylesheet" type="text/css" />
+    <link href="../../../Styles/storage.css" rel="stylesheet" type="text/css" />
+    <script type="text/javascript">
+        /*--------窗体启动设置和基本设置--------*/
+        /*--loadFuntion--*/
+        $(function () {
+            GetSellApplyState();
+            $('#QSelect').click(function () {
+                GetSellApplyList();
+            })
+        });
+
+
+        function GetSellApplyState() {
+            var AccountNumber = getQueryString("AccountNumber");
+            if (AccountNumber != '') {
+                $('#QAccountNumber').val(AccountNumber);
+                //将当前储户的存转销申请设为已读
+                var url = '/ashx/exchangeprop.ashx?type=UpdateAdviceState_Response';
+                var para = 'AccountNumber=' + AccountNumber;
+                $.ajax({
+                    url: url,
+                    type: 'post',
+                    data: para,
+                    dataType: 'json',
+                    success: function (r) {
+                        if (r == "OK") {
+                            console.log('----------将当前储户的存转销申请设为已读成功!');
+                        } else {
+                            console.log('----------将当前储户的存转销申请设为已读失败!');
+                        }
+                    }, error: function (r) {
+                        console.log('----------将当前储户的存转销申请设为已读失败!');
+                    }
+                });
+            }
+        }
+
+        function GetSellApplyList() {
+            var AccountNumber = $('#QAccountNumber').val();
+            if (AccountNumber == '') {
+                showMsg('请输入储户账号!');
+                return false;
+            }
+            var url = '/User/Exchange/exchange.ashx?type=GetSellApplyByAN';
+            var para = 'AccountNumber=' + AccountNumber;
+            $.ajax({
+                url: url,
+                type: 'post',
+                data: para,
+                dataType: 'json',
+                success: function (r) {
+                    if (r.state == 'error') {
+                        showMsg(r.msg);
+                        return;
+                    }
+                    var jsondata = JSON.parse(r.data);
+                    var strhtml = '';
+                    for (var i = 0; i < jsondata.length; i++) {
+                        strhtml += '<tr class="tr_datainfo">';
+                        strhtml += '<td style="height:25px;">' + jsondata[i].Dep_AccountNumber + '</td>';
+                        strhtml += '<td>' + jsondata[i].Dep_Name + '</td>';
+                        strhtml += '<td>' + jsondata[i].ApplyType + '</td>';
+                        strhtml += '<td>' + jsondata[i].VarietyName + '</td>';
+                        strhtml += '<td>' + jsondata[i].VarietyCount + '</td>';
+                        strhtml += '<td>' + jsondata[i].ApplyDate + '</td>';
+                        switch (jsondata[i].ApplyState) {
+                            case 0://已申请
+                                strhtml += '<td><span style="color:gray">' + jsondata[i].strApplyState + '</span></td>';
+                                strhtml += '<td></td>';
+                                break;
+                            case 1://已批准
+                                var ApplyID = jsondata[i].ID;
+                                var Apply_dsiID = jsondata[i].Dep_SID;
+                                strhtml += '<td><span style="color:green">' + jsondata[i].strApplyState + '</span></td>';
+                                strhtml += '<td><input type="button" value="存转销" style="width:80px; height:20px;" onclick="storagesell(' + ApplyID + ',' + Apply_dsiID + ')"/></td>';
+                                break;
+                            case 2://已否决
+                                strhtml += '<td><span style="color:red">' + jsondata[i].strApplyState + '</span></td>';
+                                strhtml += '<td></td>';
+                                break;
+                            case 3://已结算
+                                strhtml += '<td><span style="color:blue">' + jsondata[i].strApplyState + '</span></td>';
+                                strhtml += '<td></td>';
+                                break;
+
+                        }
+                        strhtml+='</tr>'
+                    }
+                    $('#tabdatalist .tr_datainfo').remove();
+                    $('#tabdatalist').append(strhtml);
+                    $('.datalist').fadeIn();
+                }, error: function (r) {
+                    showMsg('查询失败!');
+                }
+            });
+        }
+
+        function storagesell(ApplyID, Apply_dsiID) {
+            window.location.href = '/User/Exchange/storagesell.html?ApplyID=' + ApplyID + '&Apply_dsiID='+Apply_dsiID;//转到存转销页面
+        }
+
+    </script>
+
+    <style type="text/css">
+        .datalist {
+            display: none;
+            margin: 10px 20px;
+        }
+
+            .datalist #tabdatalist {
+                width: 750px;
+            }
+    </style>
+
+</head>
+<body>
+
+    <div class="pageHead">
+        <b>存转销审核结果</b>
+    </div>
+
+    <div class="pageQuery">
+        <table>
+            <tr>
+                <td style="width:80px; text-align:right;font-weight:bold;">储户账号:</td>
+                <td style="width:130px;"><input type="text" id="QAccountNumber" /></td>
+                <td style="width:50px; text-align:right;font-weight:bold;"><input type="button" value="" id="QSelect" /></td>
+            </tr>
+        </table>
+    </div>
+
+
+    <div class="datalist">
+        <table class="tabinfo" id="tabdatalist">
+            <tr class="tr_head">
+                <th style="width: 100px; height:20px; text-align: center;">
+                    储户账号
+                </th>
+                <th style="width: 100px; text-align: center;">
+                    储户姓名
+                </th>
+                <th style="width: 80px; text-align: center;">
+                    申请业务
+                </th>
+                <th style="width: 100px; text-align: center;">
+                    申请商品
+                </th>
+                <th style="width: 80px; text-align: center;">
+                    申请数量
+                </th>
+                <th style="width: 100px; text-align: center;">
+                    申请日期
+                </th>
+
+                <th style="width: 120px; text-align: center;">
+                    申请状态
+                </th>
+                <th style="width: 100px; text-align: center;">
+                    操作
+                </th>
+            </tr>
+        </table>
+    </div>
+   
+</body>
+</html>

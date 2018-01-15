@@ -1,0 +1,421 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head id="Head1">
+    <title>预存转实存</title>
+
+    <script src="../../Scripts/jquery-1.4.1.js" type="text/javascript"></script>
+    <script src="../../Scripts/WebInner.js" type="text/javascript"></script>
+    <script src="../../Scripts/Common.js" type="text/javascript"></script>
+    <link href="../../Styles/Common.css" rel="stylesheet" type="text/css" />
+    <link href="../../Styles/storage.css" rel="stylesheet" type="text/css" />
+    <script src="../../Lodop6.198/LodopFuncs.js" type="text/javascript"></script>
+    <script src="../../Scripts/LodopPrint.js"></script>
+    <script src="../../Scripts/codeKeyboard.js"></script>
+    <script src="../../Scripts/storage.js"></script>
+    <script src="../../Scripts/fakeLoader.js" type="text/javascript"></script>
+    <link href="../../Styles/fakeLoader.css" rel="stylesheet" />
+    <script type="text/javascript">
+        var BusinessNO = '';//存转销完成时生成的序列号
+
+        $(function () {
+          
+
+            $('.pageQuery #QSelect').click(function () {
+                FunDepSelect();
+            });
+
+            $('.imgclose').click(function () {
+                $('.datadetail').fadeOut();
+            })
+          
+        })
+        //储户查询
+        function FunDepSelect() {
+            var datapara = 'AccountNumber=' + $('#QAccountNumber').val().trim() + '&Password=' + $('#QPassword').val().trim() + '&ISVirtual=1';//只查询虚拟存粮
+            if ($('#QAccountNumber').val().trim().length != 10) {
+                showMsg('请输入储户账号');
+                return false;
+            }
+            $(".fakeloader").fakeLoader({
+                timeToHide: 12000000,
+                bgColor: "transparent",
+                spinner: "spinner7"
+            });
+            var url = '/User/Exchange/exchange.ashx?type=getDepositorStorageInfo';
+            $.ajax({
+                url: url,
+                type: 'post',
+                data: datapara,
+                dataType: 'json',
+                async: false,
+                success: function (r) {
+                    $(".fakeloader").fakeCloser();
+
+                    $('#QAccountNumber').attr('disabled', 'disabled');
+                    $('.depositorInfo').fadeOut();
+                    $('.depositorStorageInfo').fadeOut();
+                    dep_result = false;
+                    // $('.storage').fadeOut();
+                    if (r.state == false) {
+                        if (r.msg == '当前的储户不存在存粮记录!') {
+                            addDepositor(JSON.parse(r.dep));
+                           // showMsg('当前的储户不存在存粮记录!');
+                            $('.storage').fadeIn();
+                        } else {
+                            $('.storage').fadeOut();
+                            showMsg(r.msg);
+                        }
+                        return false;
+                    }
+                    $('.storage').fadeIn();
+                    var dep = JSON.parse(r.dep);
+                    var storage = JSON.parse(r.storage);
+                    addDepositor(dep);
+
+                    if (storage.length > 0) {//添加储户存储记录
+                        addDep_Storage(storage);
+                    }
+                    dep_result = true;
+
+                }, error: function (r) {
+                    $(".fakeloader").fakeCloser();
+                    showMsg('获取储户信息失败 ！');
+                    dep_result = false;
+
+                }
+            });
+        }
+
+        function addDepositor(dep) {
+            if (dep.length > 0) {//添加储户基本信息
+                $('#tabdepositorInfo .trappend').remove();
+                $('input[name=Dep_AccountNumber]').val(dep[0].AccountNumber);
+                var strdep = '<tr class="trappend">';
+                strdep += ' <td style="height:30px;">' + dep[0].AccountNumber + '</td>';
+                strdep += ' <td>' + dep[0].strName + '</td>';
+                strdep += ' <td>' + dep[0].PhoneNO + '</td>';
+                var strState = '正常';
+                if (dep[0].numState == '0') {
+                    strState = '禁用';
+                }
+                strdep += ' <td>' + strState + '</td>';
+                strdep += ' <td>' + dep[0].IDCard + '</td>';
+                strdep += ' <td>' + dep[0].strAddress + '</td>';
+                strdep += '</tr>'
+                $('#tabdepositorInfo').append(strdep);
+            }
+            $('.depositorInfo').fadeIn();
+        }
+
+        function addDep_Storage(storage) {
+            $('#tabdepositorStorageInfo .trappend').remove();
+            $('#tabdepositorStorageInfo .tr_moneyTotal').remove();
+            $('.depositorStorageInfo').fadeIn();
+            var moneyTotal = 0;//金额总计
+            for (var i = 0; i < storage.length; i++) {
+                var strstorage = '';
+                strstorage += '<tr class="trappend">';
+                if (storage[i].ISVirtual == '1') {
+                    strstorage += ' <td style="height:25px;">' + storage[i].VarietyName + '<span style="font-size:12px;color:red;">(预)</span></td>';
+                } else {
+                    strstorage += ' <td style="height:25px;">' + storage[i].VarietyName + '</td>';
+                }
+               
+                strstorage += ' <td>' + storage[i].StorageNumber + '</td>';
+                strstorage += ' <td>' + storage[i].StorageDate + '</td>';
+                strstorage += ' <td>' + storage[i].Price_ShiChang + '</td>';
+                strstorage += ' <td>' + storage[i].TimeName + '</td>';
+                strstorage += ' <td>' + storage[i].daycount + '</td>';//存储天数
+                strstorage += ' <td>' + storage[i].CurrentRate + '</td>';
+                strstorage += ' <td>' + storage[i].strlixi + '</td>';//利息
+                strstorage += ' <td><input type="button" class="SVselect" value="转存" dsiID=' + storage[i].ID + '  WeighNo=' + storage[i].WeighNo + '  onclick="FunSVSelect(this)"/></td>';
+                moneyTotal += accMul(storage[i].StorageNumber, storage[i].Price_ShiChang) + parseFloat(storage[i].numlixi);
+
+                var SellApplyID = 0;
+                if (!isNull(storage[i].SellApplyID)) {
+                    SellApplyID = storage[i].SellApplyID;
+                }
+
+                $('#tabdepositorStorageInfo').append(strstorage);
+            }
+            moneyTotal = changeTwoDecimal_f(moneyTotal);//折合现金
+            var strzhehe = '';
+            strzhehe += '<tr class="tr_moneyTotal"> <td colspan="9" style="height:25px; text-align:center;color:#666;font-size:12px;">折合现金合计：￥' + moneyTotal + '</td></tr>';
+            $('#tabdepositorStorageInfo').append(strzhehe);
+
+
+        }
+
+
+        //选择用于兑换的存储
+        function FunSVSelect(obj) {
+ 
+            $('#dsiID').val($(obj).attr('dsiID'));
+            $('input[name=WeighNO]').val($(obj).attr('WeighNO'));
+            $('#tabdepositorStorageInfo').find('.SVselect').css('font-weight', '400').css('color', 'green');
+          
+            $(obj).css('font-weight', '800').css('color', 'red');
+           
+            $(obj).parent().parent().addClass('trSVSelect');
+            $(obj).parent().parent().siblings().removeClass('trSVSelect');
+
+
+            showBodyCenter($('.datadetail'));
+          
+        }
+
+        /***************结账和打印****************/
+
+        //新增数据方法
+        function frmSubmit() {
+            if (!SubmitCheck()) {//检测输入内容
+                return false;
+            }
+         
+            var para = "ID=" + $('#dsiID').val() + '&WeighNO='+ $('input[name=WeighNO]').val();
+            var msg = '您确认已经仔细检查输入信息，并继续操作吗？';
+            showConfirm(msg, function (obj) {
+                if (obj == 'yes') {
+                    //alert('你点击了确定！');
+                    $.ajax({
+                        url: '/User/Storage/storage.ashx?type=StorageVirtual',
+                        type: 'post',
+                        data: para,
+                        dataType: 'json',
+                        success: function (r) {
+                            if (r.state == "true" || r.state == true) {
+                                $('.datadetail').fadeOut();
+                                showMsg(r.msg);
+                                FunDepSelect();//重新查询结果
+                            } else {
+                                showMsg(r.msg);
+                            }
+                        }, error: function (r) {
+                            showMsg('保存数据失败 ！');
+                        }
+                    });
+                } else {
+                    //alert('你点击了取消！');
+                }
+            });
+
+        }
+
+        //提交检测
+        function SubmitCheck() {
+
+         
+            if ($.trim($('input[name=WeighNO]').val())=='') {
+                showMsg('请输入磅单编号!');
+                return false;
+            }
+        
+            return true;
+        }
+
+
+    </script>
+    <style type="text/css">
+        .storage {
+            display: none;
+            margin: 10px 10px;
+        }
+
+            .storage #tabstorage {
+                width: 750px;
+            }
+
+                .storage #tabstorage tr td {
+                    padding: 5px 5px;
+                }
+
+
+        .datadetail {
+            display: none;
+            position: fixed;
+            top: 20px;
+            left: 10px;
+            width: 350px;
+            height: 150px;
+            background: #efefef;
+            border: 2px solid #9ac0cd;
+            padding: 5px 10px;
+            border-radius: 10px;
+            z-index: 100;
+        }
+
+        .datainner {
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+        }
+
+        .datadetail .datadetail_head {
+            float: left;
+           
+            margin: 5px 0px 10px 0px;
+        }
+
+            .datadetail .datadetail_head .spaninfo {
+                margin-left: 5px;
+                font-size: 16px;
+                font-weight:bold;
+                color: blue;
+            }
+
+        .datadetail .div_close {
+            float: right;
+        }
+
+        .datadetail #dataInfo_detail {
+            clear: both;
+        }
+
+        .datadetail .div_close #noticeclose {
+            font-size: 18pt;
+            color: red;
+            background: #efefef;
+            border-radius: 50%;
+            border: 1px solid #ccc;
+            width: 30px;
+            height: 30px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="pageHead">
+        <b id="pageHeadTitle">预存转实存</b>
+        <!--<span id="spanHelp" style="cursor: pointer">帮助</span>-->
+    </div>
+
+    <div id="divHelp" class="pageHelp" style="border:1px solid #333; border-radius:5px; display:none; ">
+        <span>提示1：请认真填写储户的存储产品信息，储户类型、存期信息；储户类型确定储户存储的是否是定期产品，不同的存期类型也会有不同的利息计算方式！</span><br />
+        <span>提示2：如果保存后，发现有错误，可以使用 修改错误存粮 修改数据。</span><br />
+    </div>
+
+    <div class="pageQuery">
+        <table>
+            <tr>
+                <td style="width:80px; text-align:right;font-weight:bold;">储户账号:</td>
+                <td style="width:130px;"><input type="text" id="QAccountNumber" /></td>
+                <td style="width:50px; text-align:right;font-weight:bold;">密码:</td>
+                <td style="width:100px;"><input type="password" id="QPassword" /></td>
+                <td style="width:50px; text-align:right;font-weight:bold;"><input type="button" value="" id="QSelect" /></td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="depositorInfo">
+        <table class="tabinfo" id="tabdepositorInfo">
+            <thead>
+                <tr>
+                    <td colspan="6" style="border-bottom:1px solid #aaa; height:25px; text-align:center">
+                        <span style="font-size: 14px;  color:Green">储户基本信息</span>
+                    </td>
+                </tr>
+                <tr class="tr_head">
+                    <th align="center" style="width:100px; height:30px;">
+                        储户账号
+                    </th>
+                    <th align="center" style="width:100px;">
+                        储户姓名
+                    </th>
+                    <th align="center" style="width:100px;">
+                        移动电话
+                    </th>
+                    <th align="center" style="width:100px;">
+                        当前状态
+                    </th>
+                    <th align="center" style="width:150px;">
+                        身份证号
+                    </th>
+                    <th align="center" style="width:200px;">
+                        储户地址
+                    </th>
+
+                </tr>
+            </thead>
+        </table>
+    </div>
+
+    <div class="depositorStorageInfo">
+        <table class="tabinfo" id="tabdepositorStorageInfo">
+            <thead>
+                <tr>
+                    <td colspan="9" style="border-bottom:1px solid #aaa; height:25px; text-align:center"><span style="font-size: 14px;  color:Green">储户预存粮信息</span></td>
+                </tr>
+                <tr class="tr_head">
+                    <th style="width: 100px; height:30px; text-align: center;">
+                        存贷产品
+                    </th>
+                    <th style="width: 100px; text-align: center;">
+                        结存数量
+                    </th>
+                    <th style="width: 100px; text-align: center;">
+                        存入时间
+                    </th>
+                    <th style="width: 90px; text-align: center;">
+                        存入价
+                    </th>
+                    <th style="width: 80px; text-align: center;">
+                        存期
+                    </th>
+                    <th style="width: 80px; text-align: center;">
+                        天数
+                    </th>
+                    <th style="width: 80px; text-align: center;">
+                        活期利率
+                    </th>
+                    <th style="width: 120px; text-align: center;">
+                        利息
+                    </th>
+                    <th style="width: 60px; text-align: center;">
+                        操作
+                    </th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+
+
+    <div class="datadetail">
+        <div class="datainner">
+            <div class="datadetail_head">
+                <span class="spaninfo">预存转实存</span>
+            </div>
+
+            <img class="imgclose" src="../../images/winClose.png" alt="关闭窗口" style="float: right; cursor: pointer;" />
+            <!--<div class="div_close">
+                <input type="button" id="noticeclose" value="×">
+            </div>-->
+
+
+            <table class="tabEdit" id="dataInfo_detail">
+                <tr>
+
+                    <td style="width: 100px; text-align:right;">
+                        <span>磅单编号:</span>
+                    </td>
+                    <td style=" text-align:left;">
+                        <input name="WeighNO" type="text" />
+                    </td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td colspan="2" style="text-align:center;">
+                        <input type="button" id="btnAdd" value="保存数据" onclick="frmSubmit()" />
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    
+
+        <div class="divhidden">
+            <input type="text" id="dsiID"></div>
+   
+</body>
+</html>

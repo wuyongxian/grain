@@ -1,0 +1,685 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>业务日志</title>
+    <script src="../../Scripts/jquery-1.4.1.js" type="text/javascript"></script>
+    <script src="../../Scripts/WebInner.js" type="text/javascript"></script>
+    <script src="../../Scripts/Common.js" type="text/javascript"></script>
+    <link href="../../Styles/Common.css" rel="stylesheet" type="text/css" />
+    <script src="../../Scripts/My97DatePicker/WdatePicker.js" type="text/javascript"></script>
+    <style type="text/css">
+        .pageQuery {
+        
+        margin-left:20px;
+        }
+         .pageQuery #QSelect {
+            width: 30px;
+            height: 30px;
+            background-image: url(/images/search_red.png);
+        }
+
+        .list {
+            position:relative;
+            display: block;
+            margin: 10px 10px;
+        }
+        .warning {
+            position: relative;
+            width: 680px;
+            height: 20px;
+            display: none;
+            margin: 5px 10px;
+            padding: 5px 10px;
+            background-color: #e0eeee;
+            border-radius: 5px;
+            font-weight: bolder;
+            color: Red;
+        }
+
+        .storagelist #tabstorage {
+            width: 700px;
+        }
+
+        .exchangelist #tabexchange {
+            width: 800px;
+        }
+
+        .selllist #tabsell {
+            width: 800px;
+        }
+        .shoppinglist #tabshopping {
+            width: 800px;
+        }
+        .tr_bottom td{
+            background: #efefef;
+            color:blue;
+        }
+    </style>
+    <script type="text/javascript">
+        /*--------窗体启动设置和基本设置--------*/
+        /*--loadFuntion--*/
+        $(function () {
+            var wbinfo = JSON.parse(localStorage.getItem('wbinfo'));
+            var ISHQ = wbinfo[0].ISHQ;
+            if (!ISHQ) {
+                $('.QWBInfo').hide();
+                $('#WBID').val(wbinfo[0].ID);//当前的粮食银行
+                initUser();
+            } else {
+                $('.QWBInfo').show();
+                InitWBID();
+            }
+            $('#QWBID').change(function () {
+                $('#WBID').val($('#QWBID').find('option:selected').val());//选择查询的粮食银行
+                initUser();
+            })
+
+            $('#txtDate').val(getDateNow());
+            
+            $('#QSelect').click(function () {
+                getUserLog();
+            })
+        });
+
+        function InitWBID() {
+            var WBName = '';
+            $('#QWBID').empty();
+            $.ajax({
+                url: '/Ashx/wbinfo.ashx?type=GetWBByName&strName=' + WBName,
+                type: 'post',
+                data: '',
+                dataType: 'json',
+                success: function (r) {
+
+                    $('#QWBID').append("<option value='0'>--全部--</option>");
+
+                    if (r.responseText == "Error") { return false; }
+                    for (var i = 0; i < r.length; i++) {
+                        if (WBName == r[i].strName) {
+                            $('#QWBID').append("<option value='" + r[i].ID + "' selected = 'selected'>" + r[i].strName + "</option>");
+                        } else {
+                            $('#QWBID').append("<option value='" + r[i].ID + "'>" + r[i].strName + "</option>");
+                        }
+                    }
+                }, error: function (r) { }
+            });
+        }
+
+        function initUser() {
+            var wbid = $('#WBID').val();
+            var para = 'wbid=' + wbid;
+            $.ajax({
+                url: '/Ashx/operatelog.ashx?type=GetUserByWBID',
+                type: 'post',
+                async: true,
+                data: para,
+                dataType: 'json',
+                beforeSend: function (r) { },
+                success: function (r) {
+                    if (r==null||r.length <= 0) { return false; }
+                    $('#sel_user').empty();
+                    var strhtml = '';
+                    strhtml += '  <option value="0">--全部--</option>';
+                    for (var i = 0; i < r.length; i++) {
+                        strhtml += '  <option value="'+r[i].ID+'">'+r[i].strRealName+'</option>';
+                    }
+                    $('#sel_user').append(strhtml);
+                    getUserLog();
+                },
+                error: function (r) { }
+            });
+        }
+
+        function getUserLog() {
+            if ($('#txtDate').val() == '') {
+                showMsg('请选择查询时间!');
+                return false;
+            }
+            var wbid = $('#WBID').val();
+            if (wbid == '' || wbid == '0') {
+                showMsg('请选择查询的网点!');
+                return;
+            }
+            var para = 'wbid=' +wbid+ '&userid=' + $('#sel_user').val() + '&dtDate=' + $('#txtDate').val();
+            $.ajax({
+                url: '/Ashx/operatelog.ashx?type=Get_WBUserLog',
+                type: 'post',
+                async: true,
+                data: para,
+                dataType: 'text',
+                beforeSend: function (r) { },
+                success: function (r) {
+                   // if (r.length <= 0) { return false; }
+                    var jsondata = JSON.parse(r);
+                    var storage =JSON.parse( jsondata.storage);
+                    var exchange =JSON.parse( jsondata.exchange);
+                    var sell =JSON.parse( jsondata.sell);
+                    var shopping = JSON.parse(jsondata.shopping);
+                    var goodsell = JSON.parse(jsondata.goodsell);
+                    var Integral = JSON.parse(jsondata.Integral);
+                    //存储
+                    if (storage==null||storage=='[]'||storage.length <= 0) {
+                        $('.storagelist').hide();
+                        $('.storagewarning').show();
+                    } else {
+                        $('.storagelist').show();
+                        $('.storagewarning').hide(); 
+                        $('#tabstorage .tr_content').remove();
+                        $('#tabstorage .tr_bottom').remove();
+                        var strhtml = '';
+                        var rowcount = 0;
+                        var numtotal = 0;
+                        for (var i = 0; i < storage.length; i++) {
+                            var model = storage[i];
+                            rowcount += 1;
+                            numtotal += parseFloat(model.StorageNumber);
+                            strhtml += '  <tr class="tr_content">';
+                            strhtml += '   <td align="center" style=" height:30px;"> ' + model.AccountNumber + '</td>';
+                            strhtml += '  <td align="center"> ' + model.VarietyID + '</td>';
+                            strhtml += '  <td align="center"> ' + model.StorageNumber + '</td>';
+                            strhtml += '  <td align="center"> ' + model.StorageDate + '</td>';
+                            strhtml += '  <td align="center"> ' + model.Price_ShiChang + '</td>';
+                            strhtml += '  <td align="center"> ' + model.TimeID + '</td>';
+                            strhtml += '  <td align="center"> ' + model.UserID + '</td>';
+                            strhtml += '  </tr>';
+                        }
+                        $('#tabstorage').append(strhtml);
+                        numtotal = changeTwoDecimal_f(numtotal);
+                        strhtml = ' <tr class="tr_bottom">  <td align="center" style="height:25px;">' + rowcount + '笔</td><td></td><td>' + numtotal + '</td><td></td><td></td><td></td><td></td><tr>';
+                        $('#tabstorage').append(strhtml);
+                    }
+                   
+
+                    //兑换
+                    if (exchange == null || exchange == '[]' || exchange.length <= 0) {
+                        $('.exchangelist').hide();
+                        $('.exchangewarning').show();
+                    } else {
+                        $('.exchangelist').show();
+                        $('.exchangewarning').hide();
+                        $('#tabexchange .tr_content').remove();
+                        $('#tabexchange .tr_bottom').remove();
+                        var strhtml = '';
+                        var rowcount = 0;
+                        var numtotal = 0;
+                        for (var i = 0; i < exchange.length; i++) {
+                            var model = exchange[i];
+                            rowcount += 1;
+                          
+                            if (model.type.indexOf('退还') == 0) {
+                                numtotal -= parseFloat(model.Money_DuiHuan);
+                            } else {
+                                numtotal += parseFloat(model.Money_DuiHuan);
+                            }
+
+                            strhtml += '  <tr class="tr_content">';
+                            strhtml += '   <td align="center" style=" height:30px;"> ' + model.AccountNumber + '</td>';
+                            strhtml += '  <td align="center"> ' + model.GoodName + '</td>';
+                            strhtml += '  <td align="center"> ' + model.GoodPrice + '</td>';
+                            strhtml += '  <td align="center"> ' + model.GoodCount + '</td>';
+                            strhtml += '  <td align="center"> ' + model.UnitName + '</td>';
+                            strhtml += '  <td align="center"> ' + model.VarietyCount + '</td>';
+                            strhtml += '  <td align="center"> ' + model.Money_DuiHuan + '</td>';
+                            strhtml += '  <td align="center"> ' + model.type + '</td>';
+                            strhtml += '  <td align="center"> ' + model.UserID + '</td>';
+                            strhtml += '  </tr>';
+                        }
+                        $('#tabexchange').append(strhtml);
+                        numtotal = changeTwoDecimal_f(numtotal);
+                        strhtml = ' <tr class="tr_bottom">  <td align="center" style="height:25px;">' + rowcount + '笔</td><td></td><td></td><td></td><td></td><td></td><td>' + numtotal + '</td><td></td><td></td><tr>';
+                        $('#tabexchange').append(strhtml);
+                    }
+
+                    //存转销
+                    if (sell == null || sell == '[]' || sell.length <= 0) {
+                        $('.selllist').hide();
+                        $('.sellwarning').show();
+                    } else {
+                        $('.selllist').show();
+                        $('.sellwarning').hide();
+                        $('#tabsell .tr_content').remove();
+                        $('#tabsell .tr_bottom').remove();
+                        var strhtml = '';
+                        var rowcount = 0;
+                        var numtotal = 0;
+                        var numinterest = 0;
+                        for (var i = 0; i < sell.length; i++) {
+                            var model = sell[i];
+                            rowcount += 1;
+                            if (model.type.indexOf('退还') == 0) {
+                                numtotal -= parseFloat(model.VarietyMoney);
+                                numinterest -= parseFloat(model.VarietyInterest);
+                            } else {
+                                numtotal += parseFloat(model.VarietyMoney);
+                                numinterest += parseFloat(model.VarietyInterest);
+                            }
+
+                            strhtml += '  <tr class="tr_content">';
+                            strhtml += '   <td align="center" style=" height:30px;"> ' + model.AccountNumber + '</td>';
+                            strhtml += '  <td align="center"> ' + model.dt_Sell + '</td>';
+                            strhtml += '  <td align="center"> ' + model.VarietyName + '</td>';
+                            strhtml += '  <td align="center"> ' + model.StorageDate + '</td>';
+                            strhtml += '  <td align="center"> ' + model.VarietyCount + '</td>';
+                            strhtml += '  <td align="center"> ' + model.VarietyInterest + '</td>';
+                            strhtml += '  <td align="center"> ' + model.VarietyMoney + '</td>';
+                            strhtml += '  <td align="center"> ' + model.type + '</td>';
+                            strhtml += '  <td align="center"> ' + model.UserID + '</td>';
+                            strhtml += '  </tr>';
+                        }
+                        $('#tabsell').append(strhtml);
+                        numinterest = changeTwoDecimal_f(numinterest);
+                        numtotal = changeTwoDecimal_f(numtotal);
+                        strhtml = ' <tr class="tr_bottom">  <td align="center" style="height:25px;">' + rowcount + '笔</td><td><td></td></td><td></td><td></td><td>' + numinterest + '</td><td>' + numtotal + '</td><td></td><td></td><tr>';
+                        $('#tabsell').append(strhtml);
+                    }
+
+
+                    //产品换购
+                    if (shopping == null || shopping == '[]' || shopping.length <= 0) {
+                        $('.shoppinglist').hide();
+                        $('.shoppingwarning').show();
+                    } else {
+                        $('.shoppinglist').show();
+                        $('.shoppingwarning').hide();
+                        $('#tabshopping .tr_content').remove();
+                        $('#tabshopping .tr_bottom').remove();
+                        var strhtml = '';
+                        var rowcount = 0;
+                        var numtotal = 0;
+                        var numinterest = 0;
+                        for (var i = 0; i < shopping.length; i++) {
+                            var model = shopping[i];
+                            rowcount += 1;
+                            if (model.type.indexOf('退还') == 0) {
+                                numtotal -= parseFloat(model.VarietyMoney);
+                                numinterest -= parseFloat(model.VarietyInterest);
+                            } else {
+                                numtotal += parseFloat(model.VarietyMoney);
+                                numinterest += parseFloat(model.VarietyInterest);
+                            }
+                           
+                            strhtml += '  <tr class="tr_content">';
+                            strhtml += '   <td align="center" style=" height:30px;"> ' + model.AccountNumber + '</td>';
+                            strhtml += '  <td align="center"> ' + model.dt_Sell + '</td>';
+                            strhtml += '  <td align="center"> ' + model.VarietyName + '</td>';
+                            strhtml += '  <td align="center"> ' + model.StorageDate + '</td>';
+                            strhtml += '  <td align="center"> ' + model.VarietyCount + '</td>';
+                            strhtml += '  <td align="center"> ' + model.VarietyInterest + '</td>';
+                            strhtml += '  <td align="center"> ' + model.VarietyMoney + '</td>';
+                            strhtml += '  <td align="center"> ' + model.type + '</td>';
+                            strhtml += '  <td align="center"> ' + model.UserID + '</td>';
+                            strhtml += '  </tr>';
+                        }
+                        $('#tabshopping').append(strhtml);
+                        numinterest = changeTwoDecimal_f(numinterest);
+                        numtotal = changeTwoDecimal_f(numtotal);
+                        strhtml = ' <tr class="tr_bottom">  <td align="center" style="height:25px;">' + rowcount + '笔</td><td><td></td></td><td></td><td></td><td>' + numinterest + '</td><td>' + numtotal + '</td><td></td><td></td><tr>';
+                        $('#tabshopping').append(strhtml);
+                    }
+
+
+                    //商品销售
+                    if (goodsell == null || goodsell == '[]' || goodsell.length <= 0) {
+                        $('.goodselllist').hide();
+                        $('.goodsellwarning').show();
+                    } else {
+                        $('.goodselllist').show();
+                        $('.goodsellwarning').hide();
+                        $('#tabgoodsell .tr_content').remove();
+                        $('#tabgoodsell .tr_bottom').remove();
+                        var strhtml = '';
+                        var rowcount = 0;
+                        var GoodValue = 0;
+                        for (var i = 0; i < goodsell.length; i++) {
+                            var model = goodsell[i];
+                            rowcount += 1;
+
+                            if (model.type.indexOf('退还') == 0) {
+                                GoodValue -= parseFloat(model.GoodValue);
+                            } else {
+                                GoodValue += parseFloat(model.GoodValue);
+                            }
+
+                            strhtml += '  <tr class="tr_content">';
+                            strhtml += '   <td align="center" style=" height:30px;"> ' + model.AccountNumber + '</td>';
+                            strhtml += '  <td align="center"> ' + model.GoodName + '</td>';
+                            strhtml += '  <td align="center"> ' + model.GoodPrice + '</td>';
+                            strhtml += '  <td align="center"> ' + model.GoodCount + '</td>';
+                            strhtml += '  <td align="center"> ' + model.UnitName + '</td>';
+                            strhtml += '  <td align="center"> ' + model.GoodValue + '</td>';
+                            strhtml += '  <td align="center"> ' + model.type + '</td>';
+                            strhtml += '  <td align="center"> ' + model.UserID + '</td>';
+                            strhtml += '  </tr>';
+                        }
+                        $('#tabgoodsell').append(strhtml);
+                        GoodValue = changeTwoDecimal_f(GoodValue);
+                        strhtml = ' <tr class="tr_bottom">  <td align="center" style="height:25px;">' + rowcount + '笔</td><td></td><td></td><td></td><td></td><td>' + GoodValue + '</td><td></td><td></td><tr>';
+                        $('#tabgoodsell').append(strhtml);
+                    }
+
+
+                    //积分兑换
+                    if (Integral == null || Integral == '[]' || Integral.length <= 0) {
+                        $('.Integrallist').hide();
+                        $('.Integralwarning').show();
+                    } else {
+                        $('.Integrallist').show();
+                        $('.Integralwarning').hide();
+                        $('#tabIntegral .tr_content').remove();
+                        $('#tabIntegral .tr_bottom').remove();
+                        var strhtml = '';
+                        var rowcount = 0;
+                        var GoodValue = 0;
+                        for (var i = 0; i < Integral.length; i++) {
+                            var model = Integral[i];
+                            rowcount += 1;
+
+                            strhtml += '  <tr class="tr_content">';
+                            strhtml += '   <td align="center" style=" height:30px;"> ' + model.AccountNumber + '</td>';
+                            strhtml += '  <td align="center"> ' + model.GoodName + '</td>'                                               
+                            strhtml += '  <td align="center"> ' + model.UnitName + '</td>';
+                            strhtml += '  <td align="center"> ' + model.GoodCount + '</td>';
+                            strhtml += '  <td align="center"> ' + model.integral_Change + '</td>';
+                            strhtml += '  <td align="center"> ' + model.UserID + '</td>';
+                            strhtml += '  </tr>';
+                        }
+                        $('#tabIntegral').append(strhtml);
+                        strhtml = ' <tr class="tr_bottom">  <td align="center" style="height:25px;" colspan="6">' + rowcount + '笔</td><tr>';
+                        $('#tabIntegral').append(strhtml);
+                    }
+
+
+                },
+                error: function (r) {
+                    showMsg(r);
+                }
+            });
+        }
+        /*--ENd loadFuntion--*/
+
+    </script>
+</head>
+<body>
+   
+    <div class="pageHead">
+            <b>网点业务日志</b>
+     </div>
+
+    <div class="pageQuery">
+        <table>
+            <tr>
+                <td style=" text-align:right;font-weight:bold;"><span class="QWBInfo">网点</span></td>
+                <td>
+                    <select class="QWBInfo" id="QWBID" style="width: 120px; margin-right: 5px;"></select>
+                </td>
+               
+             
+                <td style="width:60px; text-align:right;font-weight:bold;"><span>日期</span></td>
+                <td style="width:130px;">
+                <input id="txtDate" type="text" style="width:120px;" readonly="readonly" onclick="WdatePicker()" /></td>
+                <td style="width:80px; text-align:right;font-weight:bold;">操作员:</td>
+                <td style="width:130px;">
+                <select id="sel_user" style="width:120px;">
+                   
+                </select>
+                </td>
+                <td style="width:50px; text-align:right;font-weight:bold;"><input type="button" value="" id="QSelect" /></td>
+            </tr>
+        </table>
+    </div>
+        
+    <div class="list storagelist" >
+        <table class="tabinfo" id="tabstorage">
+            <thead>
+                <tr>
+                    <td colspan="7" style="border-bottom:1px solid #aaa; height:25px; text-align:center">
+                        <span style="font-size: 14px;  color:Green">存储信息列表</span>
+                    </td>
+                </tr>
+                <tr class="tr_head">
+                    <th align="center" style="width:100px; height:30px;">
+                        储户账号
+                    </th>
+                    <th align="center" style="width:100px;">
+                        存贷产品
+                    </th>
+                    <th align="center" style="width:100px;">
+                        结存数量
+                    </th>
+                    <th align="center" style="width:100px;">
+                        存入时间
+                    </th>
+                    <th align="center" style="width:100px;">
+                        存入价
+                    </th>
+                    <th align="center" style="width:100px;">
+                        存期
+                    </th>
+                    <th align="center" style="width:100px;">
+                        营业员
+                    </th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+    <div class="warning storagewarning">
+        当前日期没有存储信息!
+    </div>
+
+    <div class="list exchangelist">
+        <table class="tabinfo" id="tabexchange">
+            <thead>
+                <tr>
+                    <td colspan="9" style="border-bottom:1px solid #aaa; height:25px; text-align:center">
+                        <span style="font-size: 14px;  color:Green">兑换信息列表</span>
+                    </td>
+                </tr>
+                <tr class="tr_head">
+                    <th align="center" style="width:100px; height:30px;">
+                        储户账号
+                    </th>
+                    <th align="center" style="width:160px;">
+                        品名
+                    </th>
+                    <th align="center" style="width:80px;">
+                        单价
+                    </th>
+                    <th align="center" style="width:80px;">
+                        数量
+                    </th>
+                    <th align="center" style="width:80px;">
+                        计价单位
+                    </th>
+                    <th align="center" style="width:100px;">
+                        折合原粮
+                    </th>
+                    <th align="center" style="width:100px;">
+                        收费
+                    </th>
+                    <th align="center" style="width:100px;">
+                        类型
+                    </th>
+                    <th align="center" style="width:100px;">
+                        营业员
+                    </th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+    <div class="warning exchangewarning">
+        当前日期没有兑换信息!
+    </div>
+
+    <div class="list selllist">
+        <table class="tabinfo" id="tabsell">
+            <thead>
+                <tr>
+                    <td colspan="9" style="border-bottom:1px solid #aaa; height:25px; text-align:center">
+                        <span style="font-size: 14px;  color:Green">存转销信息列表</span>
+                    </td>
+                </tr>
+                <tr class="tr_head">
+                    <th align="center" style="width:100px; height:30px;">
+                        储户账号
+                    </th>
+                    <th align="center" style="width:100px;">
+                        结算日期
+                    </th>
+                    <th align="center" style="width:100px;">
+                        存储产品
+                    </th>
+                    <th align="center" style="width:100px;">
+                        实存天数
+                    </th>
+                    <th align="center" style="width:100px;">
+                        结算重量
+                    </th>
+                    <th align="center" style="width:100px;">
+                        利息
+                    </th>
+                    <th align="center" style="width:100px;">
+                        结算金额
+                    </th>
+                    <th align="center" style="width:100px;">
+                        类型
+                    </th>
+                    <th align="center" style="width:100px;">
+                        营业员
+                    </th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+    <div class="warning sellwarning">
+        当前日期没有存转销信息!
+    </div>
+
+    <div class="list shoppinglist">
+        <table class="tabinfo" id="tabshopping">
+            <thead>
+                <tr>
+                    <td colspan="9" style="border-bottom:1px solid #aaa; height:25px; text-align:center">
+                        <span style="font-size: 14px;  color:Green">产品换购信息列表</span>
+                    </td>
+                </tr>
+                <tr class="tr_head">
+                    <th align="center" style="width:100px; height:30px;">
+                        储户账号
+                    </th>
+                    <th align="center" style="width:100px;">
+                        结算日期
+                    </th>
+                    <th align="center" style="width:100px;">
+                        存储产品
+                    </th>
+                    <th align="center" style="width:100px;">
+                        实存天数
+                    </th>
+                    <th align="center" style="width:100px;">
+                        结算重量
+                    </th>
+                    <th align="center" style="width:100px;">
+                        利息
+                    </th>
+                    <th align="center" style="width:100px;">
+                        换购金额
+                    </th>
+                    <th align="center" style="width:100px;">
+                        类型
+                    </th>
+                    <th align="center" style="width:100px;">
+                        营业员
+                    </th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+    <div class="warning shoppingwarning">
+        当前日期没有产品换购信息!
+    </div>
+   
+
+    <div class="list goodselllist">
+        <table class="tabinfo" id="tabgoodsell">
+            <thead>
+                <tr>
+                    <td colspan="9" style="border-bottom:1px solid #aaa; height:25px; text-align:center">
+                        <span style="font-size: 14px;  color:Green">商品销售信息列表</span>
+                    </td>
+                </tr>
+                <tr class="tr_head">
+                    <th align="center" style="width:100px; height:30px;">
+                        储户账号
+                    </th>
+                    <th align="center" style="width:142px;">
+                        商品名
+                    </th>
+                    <th align="center" style="width:80px;">
+                        单价
+                    </th>
+                    <th align="center" style="width:80px;">
+                        数量
+                    </th>
+                    <th align="center" style="width:80px;">
+                        计价单位
+                    </th>
+                    <th align="center" style="width:100px;">
+                        收费
+                    </th>
+                    <th align="center" style="width:100px;">
+                        类型
+                    </th>
+                    <th align="center" style="width:100px;">
+                        营业员
+                    </th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+    <div class="warning goodsellwarning">
+        当前日期没有商品销售信息!
+    </div>
+
+
+    <div class="list Integrallist">
+        <table class="tabinfo" id="tabIntegral">
+            <thead>
+                <tr>
+                    <td colspan="9" style="border-bottom:1px solid #aaa; height:25px; text-align:center">
+                        <span style="font-size: 14px;  color:Green">积分兑换商品列表</span>
+                    </td>
+                </tr>
+                <tr class="tr_head">
+                    <th align="center" style="width:100px; height:30px;">
+                        储户账号
+                    </th>
+                    <th align="center" style="width:160px;">
+                        商品名
+                    </th>
+                    <th align="center" style="width:80px;">
+                        规格
+                    </th>
+                    <th align="center" style="width:80px;">
+                        数量
+                    </th>
+                    <th align="center" style="width:80px;">
+                        折合积分
+                    </th>
+                    <th align="center" style="width:100px;">
+                        营业员
+                    </th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+    <div class="warning Integralwarning">
+        当前日期没有积分兑换信息!
+    </div>
+
+    <div style="display: none;">
+        <input type="text" id="colorName" />
+        <!--被选择的网点ID-->
+        <input type="text" id="WBID" value="" />
+    </div>
+</body>
+</html>

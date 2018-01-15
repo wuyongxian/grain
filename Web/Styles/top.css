@@ -1,0 +1,84 @@
+﻿* {
+    padding: auto;
+    margin: auto;
+}
+
+.CMLogo {
+    position: absolute;
+    left: 0px;
+    top: 0px;
+    width: 55px;
+    height: 60px;
+    background: #00bfff;
+    /*box-shadow: inset 0 0 10px #78cdd1;*/
+    overflow: hidden;
+}
+
+    .CMLogo img {
+        width: 65px;
+        height: 65px;
+    }
+
+.pagehead-box {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    justify-content: center;
+    align-items: center;
+    height: 60px;
+    background: #00bfff;
+    /*box-shadow: inset 0 0 10px #78cdd1;*/
+    margin-left: 55px;
+}
+    /*.pagehead-box .boxinner {      
+                height: 60px;
+            }*/
+
+    .pagehead-box .head-userinfo {
+        /*width: 200px;*/
+        margin-top: 7px;
+        margin-left: 10px;
+    }
+
+        .pagehead-box .head-userinfo p span {
+            font-family: 'Hiragino Sans GB','Microsoft Yahei',"WenQuanYi Micro Hei",SimSun,Tahoma,Arial,Helvetica,STHeiti;
+            font-size: 14px;
+            color: #eee;
+        }
+
+    .pagehead-box .pagetitle {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        margin-top: 10px;
+        font-family: 'Hiragino Sans GB','Microsoft Yahei',"WenQuanYi Micro Hei",SimSun,Tahoma,Arial,Helvetica,STHeiti;
+        font-size: 28px;
+        color: gold;
+    }
+
+    .pagehead-box .head-setting {
+        /*width: 200px;*/
+        padding: 15px;
+    }
+
+        .pagehead-box .head-setting ul {
+        }
+
+            .pagehead-box .head-setting ul li {
+                display: inline-block;
+                padding: 0px 0px;
+            }
+
+                .pagehead-box .head-setting ul li a {
+                    text-decoration: none;
+                    color: #eee;
+                    font-family: 'Hiragino Sans GB','Microsoft Yahei',"WenQuanYi Micro Hei",SimSun,Tahoma,Arial,Helvetica,STHeiti;
+                    font-size: 14px;
+                    padding: 5px 5px;
+                    border-radius: 10px;
+                }
+
+                    .pagehead-box .head-setting ul li a:hover {
+                        background: #b5e7ff;
+                        color: #367459;
+                    }

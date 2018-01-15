@@ -1,0 +1,609 @@
+﻿/** {
+margin:0px auto;
+}
+html {
+width:100%;
+height:100%;
+}
+body {
+    width:100%;
+    height:100%;
+   background: -webkit-repeating-linear-gradient(top,#fff1eb,#ace0f9);
+}*/
+
+/*flex布局*/
+ .flexbox{
+            display: flex;
+             /*flex-flow: <flex-direction> || <flex-wrap>;*/
+            /*flex-direction: row | row-reverse | column | column-reverse;*/
+            flex-direction: row;
+            /*flex-wrap: nowrap | wrap | wrap-reverse;*/
+            flex-wrap: wrap;
+            /*justify-content属性定义了项目在主轴上的对齐方式。*/
+             /*justify-content: flex-start | flex-end | center | space-between | space-around;*/
+             justify-content:space-between;
+             /*align-items属性定义项目在交叉轴上如何对齐。*/
+             /*align-items: flex-start | flex-end | center | baseline | stretch;*/
+             align-items:stretch;
+        }
+
+
+.outputExcel {
+    cursor: pointer;
+    width: 80px;
+    height: 25px;
+    font-size: 14px;
+    font-family: @宋体;
+    border: 1px solid #888;
+    border-radius: 5px;
+    padding-left: 5px;
+    background-color: #8fbc8f;
+}
+
+    .outputExcel:hover {
+        background-color: #96cdcd;
+    }
+
+input[type=text] {
+    width: 200px;
+    height: 25px;
+    font-size: 14px;
+    font-family: @宋体;
+    border: 1px solid #888;
+    border-radius: 5px;
+    padding-left: 5px;
+}
+
+    input[type=text]:hover {
+        background-color: #eeffbb;
+    }
+
+input[type=password] {
+    width: 200px;
+    height: 25px;
+    font-size: 14px;
+    font-family: @宋体;
+    border: 1px solid #888;
+    border-radius: 5px;
+    padding-left: 5px;
+}
+
+    input[type=password]:hover {
+        background-color: #eeffbb;
+    }
+
+    input:disabled {
+            border: 1px solid #aaa;
+            background-color: #eee;
+            color: #333;
+        }
+
+textarea {
+    width: 200px;
+    font-size: 14px;
+    font-family: @宋体;
+    border: 1px solid #888;
+    border-radius: 5px;
+    padding-left: 5px;
+}
+
+    textarea:hover {
+        background-color: #eeffbb;
+    }
+
+
+input[type=button] {
+    width: 100px;
+    height: 30px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #cdc9a5;
+    cursor: pointer;
+}
+
+    input[type=button]:hover {
+        background-color: #8fbc8f;
+    }
+
+.btnDisabled {
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #777;
+    cursor: pointer;
+}
+
+.btnOperate {
+    width: 100px;
+    height: 30px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #cdb38b;
+    cursor: pointer;
+}
+
+    .btnOperate:hover {
+        background-color: #eeb262;
+    }
+
+select {
+    width: 200px;
+    height: 25px;
+    font-size: 14px;
+    border-radius: 5px;
+}
+
+    select:hover {
+        background-color: #eeffbb;
+    }
+
+a {
+    text-decoration: none;
+}
+
+    a:hover {
+        text-decoration: underline;
+        color: #7700ff;
+    }
+
+.divhidden {
+    display: none;
+    margin: 10px 10px;
+}
+
+    .divhidden input {
+        width: 60px;
+    }
+
+
+.pageHead {
+    width: 300px;
+    padding: 2px 0px;
+    margin: 5px auto;
+    background-color: #d6dbe9;
+    border-radius: 15px;
+    border-bottom: 2px solid #36ca61;
+    text-align: center;
+    font-size: 16px;
+    font-family: Microsoft YaHei;
+}
+
+    .pageHead b {
+        font-size:12pt;
+        color: #007dff;
+        margin: 0px 5px;
+    }
+
+     .pageHead img {
+       width:16px;
+       height:16px;
+    }
+
+    .pageHead span {
+        color: #007dff;
+        padding: 2px 20px;
+        cursor: pointer;
+        text-decoration: underline;
+    }
+
+/*查询按钮*/
+.imgQuery {
+    width: 30px;
+    height: 30px;
+    margin: 0px 0px -10px 5px;
+}
+
+.QueryHead {
+    margin: 5px 10px;
+}
+
+.QueryHead input[name=QAccountNumber],.QueryHead input[name=QPassword] {
+    font-size: 16px;
+    font-weight: bolder;
+    width: 120px;
+    height: 30px;
+    background: #f2f2f2;
+    margin-right: 10px;
+}
+
+/*.QueryHead input[type=text] {
+    font-size: 16px;
+    font-weight: bolder;
+    width: 120px;
+    height: 30px;
+    background: #efefef;
+    margin-right: 10px;
+}*/
+
+
+.divWarning {
+    margin: 10px 20px;
+}
+
+    .divWarning b {
+        color: Blue;
+    }
+
+    .divWarning span {
+        color: Red;
+    }
+
+.pageEidtInner {
+    /*background-color: #eaeeee;*/
+    background-color:#f2f2f2;
+    border: 2px solid #96cdcd;
+    border-radius: 5px;
+    margin: 5px 0px;
+    padding:5px 10px;
+}
+
+.pageEidt {
+    position: absolute;
+    left: 150px;
+    top: 50px;
+    background-color: #ebf0ef;
+    /*border: 2px solid #c0cdcd;
+    box-shadow:2px 2px 10px #9ac0cd;*/
+     border: 2px solid #9ac0cd;
+    box-shadow:2px 2px 10px #96cdcd;
+    border-radius: 5px;
+    margin: 0px;
+    padding:10px 20px;
+}
+
+#pageEidt_Close {
+    width: 60px;
+    background-color: #deb888;
+}
+
+    #pageEidt_Close:hover {
+        background-color: #cd853f;
+    }
+
+table.tabData {
+    border-collapse: collapse;
+    border: 1px solid #9CF;
+    text-align: center;
+    font-size: 14px;
+}
+
+    table.tabData thead td, table.set_border th {
+        font-weight: bold;
+         background-color: #e0eee0;
+         padding:5px 0px;
+    }
+    /*table.tabData tr:nth-child(even){background-color:#EAF2D3;}*/
+    table.tabData tr:nth-child(even) {
+        background-color: #efefef;
+    }
+
+    table.tabData td, table.border th {
+        border: 1px solid #C3C3C3;
+        text-align: center;
+    }
+
+table.tabEdit {
+    border-collapse: collapse;
+    /*border: 1px solid #9CF;*/
+    font-size: 14px;
+}
+
+    table.tabEdit thead td, table.set_border th {
+        font-weight: bold;
+        background-color: #e0eeee;
+    }
+
+    table.tabEdit td, table.border th {
+        height:30px;
+        border-bottom:1px solid #C3C3C3;
+        border-top:1px solid #C3C3C3;
+         padding:2px 2px 2px 5px;
+    }
+
+     table.tabEdit td.td_left {
+        text-align:left;
+    }
+      table.tabEdit td.td_right {
+        text-align:right;
+    }
+      table .tabEdit .tr_head {
+    text-align:left;
+}
+
+
+table.tabinfo {
+    border-collapse: collapse;
+    border: 1px solid #9CF;
+    font-size: 14px;
+}
+
+ table.tabinfo thead td, table.set_border th {
+    font-weight: bold;
+    background-color: #e0eee0;
+}
+
+table.tabinfo td, table.border th {
+    border: 1px solid #C3C3C3;
+    background-color: #e0eeee;
+    text-align: center;
+    padding:2px 2px 2px 5px;
+}
+
+.tr_head {
+    background-color: #ccddff;
+    height: 30px;
+}
+
+
+.pageHelp {
+    padding: 5px 20px;
+    background: #c5c1aa;
+    border: 1px solid #668b8b;
+    border-radius: 10px;
+    display: none;
+}
+
+
+/*自定义radio*/
+.custom-radio {
+    display: none;
+}
+
+    .custom-radio + label {
+        -webkit-appearance: none;
+        background-color: #e9ecee;
+        border: 1px solid #adb8c0;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.05), inset 0px -15px 10px -12px rgba(0,0,0,0.05);
+        padding: 9px;
+        border-radius: 50px;
+        display: inline-block;
+        position: relative;
+        cursor: pointer;
+        margin-bottom:-5px;
+    }
+
+    .custom-radio:checked + label:after {
+        content: ' ';
+        width: 12px;
+        height: 12px;
+        border-radius: 50px;
+        position: absolute;
+        top: 3px;
+        background: #7ccd7c;
+        box-shadow: inset 0px 0px 10px rgba(0,0,0,0.3);
+        text-shadow: 0px;
+        left: 3px;
+        font-size: 32px;
+    }
+
+    .custom-radio:checked + label {
+        background-color: #fafafa;
+        border: 1px solid #cacece;
+        color: #7ccd7c;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.05), inset 0px -15px 10px -12px rgba(0,0,0,0.05), inset 15px 10px -12px rgba(255,255,255,0.1), inset 0px 0px 10px rgba(0,0,0,0.1);
+    }
+
+        .custom-radio + label:active, .custom-radio:checked + label:active {
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05), inset 0px 1px 3px rgba(0,0,0,0.1);
+        }
+
+/*自定义checkbox*/
+.custom-checkbox {
+    display: none;
+}
+
+    .custom-checkbox + label {
+        background-color: #e9ecee;
+        border: 1px solid #adb8c0;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.05), inset 0px -15px 10px -12px rgba(0,0,0,0.05);
+        padding: 9px;
+        border-radius: 3px;
+        display: inline-block;
+        position: relative;
+        margin-bottom:-5px;
+         cursor: pointer;
+    }
+
+        .custom-checkbox + label:active, .custom-checkbox:checked + label:active {
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05), inset 0px 1px 3px rgba(0,0,0,0.1);
+        }
+
+    .custom-checkbox:checked + label {
+        background-color: #fafafa;
+        border: 1px solid #cacece;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.05), inset 0px -15px 10px -12px rgba(0,0,0,0.05), inset 15px 10px -12px rgba(255,255,255,0.1);
+        color: #228b22;
+    }
+
+        .custom-checkbox:checked + label:after {
+            content: '\2714';
+            font-size: 14px;
+            position: absolute;
+            top: 0px;
+            left: 3px;
+            color: #228b22;
+        }
+
+
+/*提示框*/
+
+.msgOverlay {
+    background: #666;
+    position: fixed;
+    left: 0px;
+    top: 0px;
+    opacity: 0.5;
+    z-index: 1000;
+    width: 980px;
+    height: 624px;
+    display: none;
+}
+
+.mesg-window {
+    position: fixed;
+    top: 40%;
+    left: 50%;
+    opacity: 1;
+    box-shadow: 1px 1px 5px 1px rgba(0,0,0,.7);
+    background: #fff;
+    font-size: 12px;
+    min-width: 200px;
+    min-height: 120px;
+    max-width: 500px;
+    max-height: 300px;
+    /*display: none;*/
+    margin-left: -118px;
+    margin-top: 7px;
+    z-index: 1001;
+}
+
+    .mesg-window .mesg-header {
+        background: linear-gradient(#45C9BC, #28A5B9);
+        padding: 10px;
+        cursor: move;
+    }
+
+        .mesg-window .mesg-header .btn-close {
+            line-height: 14px;
+            font-size: 14px;
+            padding: 3px 6px;
+            border-radius: 30px;
+            background: #262B2F;
+            float: right;
+            display: block;
+            color: #fff;
+            cursor: pointer;
+        }
+
+    .mesg-window .mesg-content {
+        padding: 10px 10px 5px 10px;
+        text-align: center;
+    }
+
+    .mesg-window .mesg-cont {
+        font-family: 微软雅黑;
+        font-size: 18px;
+        color: #666;
+        word-wrap: break-word;
+    }
+
+    .mesg-window .mesg-content .altokbtn {
+        background: #66cc9a;
+        color: #fff;
+        height: 30px;
+        width: 60px;
+        line-height: 30px;
+        display: inline-block;
+        margin-top: 10px;
+        border-radius: 24px;
+        text-decoration: none;
+    }
+
+    .mesg-window .mesg-content .altokbtn-confirm {
+        background: #66cc9a;
+        color: #fff;
+        height: 30px;
+        width: 60px;
+        line-height: 30px;
+        display: inline-block;
+        margin-top: 10px;
+        border-radius: 24px;
+        text-decoration: none;
+        margin-right: 20px;
+    }
+
+    .mesg-window .mesg-content .cancelbtn-confirm {
+        background: #aaa;
+        color: #fff;
+        height: 30px;
+        width: 60px;
+        line-height: 30px;
+        display: inline-block;
+        margin-top: 10px;
+        border-radius: 24px;
+        text-decoration: none;
+    }
+
+
+
+
+
+/*弹出推送消息*/
+.divPushMsg {
+    position: fixed;
+    right: 0px;
+    bottom: 0px;
+    width: 400px;
+    height: 400px;
+    display: none;
+    background: #d3d7d4;
+    border: 1px solid #666;
+    border-radius: 10px;
+    box-shadow: 0px 0px 20px #000;
+    margin: 0px;
+    padding: 9px 9px;
+    /*overflow: auto;*/
+    overflow: hidden;
+    opacity: 0.5;
+    z-index: 1000;
+}
+
+    .divPushMsg .divPushMsg_title {
+        margin: 0 auto;
+        text-align: center;
+        font-size: larger;
+        padding-bottom: 10px;
+        padding-top: 25px;
+        color: green;
+        cursor: pointer;
+    }
+
+    .divPushMsg .divPushMsg_content {
+        padding-bottom: 10px;
+    }
+
+    .divPushMsg .divPushMsg_time {
+        float: right;
+        font-size: small;
+        color: #666;
+    }
+
+    .divPushMsg .divPushMsg_close {
+        float: right;
+    }
+
+        .divPushMsg .divPushMsg_close #noticeclose {
+            font-size: 18pt;
+            color: red;
+            background: #efefef;
+            border-radius: 50%;
+            border: 1px solid #ccc;
+            width: 30px;
+            height: 30px;
+            cursor: pointer;
+        }
+
+
+    .divPushMsg .divPushMsg_confirm {
+        position: absolute;
+        bottom: 10px;
+        right: 10px;
+    }
+
+        .divPushMsg .divPushMsg_confirm #pushmsgid {
+            display: none;
+        }
+
+        .divPushMsg .divPushMsg_confirm a {
+            text-decoration: none;
+            cursor: pointer;
+            padding: 2px 5px;
+            border-radius: 5px;
+            color: #145b7d;
+            font-weight: 500;
+        }
+
+            .divPushMsg .divPushMsg_confirm a:hover {
+                text-decoration: none;
+                cursor: pointer;
+                background: #aaa;
+            }

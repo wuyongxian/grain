@@ -1,0 +1,177 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head id="Head1">
+    <title>定期存储查询</title>
+    <script src="../../Scripts/jquery-1.4.1.js" type="text/javascript"></script>
+    <script src="../../Scripts/WebInner.js" type="text/javascript"></script>
+    <script src="../../Scripts/Common.js" type="text/javascript"></script>
+    <link href="../../Styles/Common.css" rel="stylesheet" type="text/css" />
+    <link href="../../Styles/storage.css" rel="stylesheet" type="text/css" />
+    <script src="../../Scripts/fakeLoader.js" type="text/javascript"></script>
+    <link href="../../Styles/fakeLoader.css" rel="stylesheet" />
+    <script type="text/javascript">
+        /*--------窗体启动设置和基本设置--------*/
+        /*--loadFuntion--*/
+        $(function () {
+            var optionType = getQueryString('optionType');
+            if (!isNull(optionType)) {
+                $('#optionType').val(optionType);
+                console.log('slect optionType:' + optionType);
+                GetRegularStorage();
+            }
+           // GetRegularStorage();
+            $('#QSelect').click(function () {
+                GetRegularStorage();
+            })
+        });
+
+
+        function GetRegularStorage() {
+            $(".fakeloader").fakeLoader({
+                timeToHide: 12000000,
+                 bgColor: "transparent",
+                spinner: "spinner7"
+            });
+
+            var optionType = $('#optionType').val();//选择的查询类型
+            var optionTime = 7;//近期到期查询的时间段范围为7天
+            var AccountNumber = $('#QAccountNumber').val();
+            var url = '/User/Query/depositor.ashx?type=GetRegularStorage';
+            var para = 'AccountNumber=' + AccountNumber + '&optionType=' + optionType + '&optionTime=' + optionTime;
+            $.ajax({
+                url: url,
+                type: 'post',
+                data: para,
+                dataType: 'json',
+                success: function (r) {
+                    $(".fakeloader").fakeCloser();
+                    var jsondata = r;
+                    var strhtml = '';
+                    for (var i = 0; i < jsondata.length; i++) {
+                        var daylast = jsondata[i].daylast;
+                        if (daylast < 0) { daylast = 0;}
+                        strhtml += '<tr class="tr_datainfo" onmouseover="change_colorOver(this)" onmouseout="change_colorOut(this)">';
+                        strhtml += '<td style="height:25px;">' + jsondata[i].AccountNumber + '</td>';
+                        strhtml += '<td>' + jsondata[i].Dep_Name + '</td>';
+                        strhtml += '<td>' + jsondata[i].PhoneNO + '</td>';
+                        strhtml += '<td>' + jsondata[i].VarietyName + '</td>';
+                        strhtml += '<td>' + jsondata[i].TimeName + '</td>';
+                        strhtml += '<td>' + jsondata[i].StorageNumberRaw + '</td>';
+                        strhtml += '<td>' + jsondata[i].StorageNumber + '</td>';
+                        strhtml += '<td>' + jsondata[i].InterestDate + '</td>';
+                        strhtml += '<td>' + jsondata[i].numStorageDate + '</td>';
+                        strhtml += '<td>' + jsondata[i].daycount + '</td>';
+                        strhtml += '<td><span style="font-weight:bold;">' + daylast + '</span></td>';
+                        if (daylast == 0) {
+                            strhtml += '<td><span style="font-weight:bold;color:green">已到期</span></td>';
+                        } else {
+                            strhtml += '<td><span style="font-weight:bold;color:red">未到期</span></td>';
+                        }
+                        strhtml += '</tr>'
+                    }
+                    $('#tabdatalist .tr_datainfo').remove();
+                    $('#tabdatalist').append(strhtml);
+                    $('.datalist').fadeIn();
+                }, error: function (r) {
+                    $(".fakeloader").fakeCloser();
+                    console.log('----------获取信息失败!');
+                    $('.datalist').fadeOut();
+                }
+            });
+        }
+
+    
+     
+
+    </script>
+
+    <style type="text/css">
+        .datalist {
+            display: none;
+            margin: 10px 20px;
+        }
+
+            .datalist #tabdatalist {
+                /*width: 850px;*/
+            }
+    </style>
+
+</head>
+<body>
+
+    <div class="pageHead">
+        <b>定期存储查询</b><span id="spanHelp" style="cursor: pointer">帮助</span>
+    </div>
+
+    <div id="divHelp" class="pageHelp">
+        <p>
+            提示1：近期到期存粮查询最近一周将要到期的定期存粮。
+        </p>
+    </div>
+
+    <div class="pageQuery">
+        <table>
+            <tr>
+                <td style="width:150px; text-align:right;font-weight:bold;">
+                    <select id="optionType" style="width:120px;">
+                        <option value="0" selected="selected">--全部--</option>
+                        <option value="1">已到期存粮</option>
+                        <option value="2">近期到期存粮</option>
+                    </select>
+                </td>
+                <td style="width:80px; text-align:right;font-weight:bold;">储户账号:</td>
+                <td style="width:130px;"><input type="text" id="QAccountNumber" /></td>
+                <td style="width:50px; text-align:right;font-weight:bold;"><input type="button" value="" id="QSelect" /></td>
+            </tr>
+        </table>
+    </div>
+
+
+    <div class="datalist">
+        <table class="tabData" id="tabdatalist">
+            <tr class="tr_head">
+                <th style="width: 100px; height:20px; text-align: center;">
+                    储户账号
+                </th>
+                <th style="width: 100px; text-align: center;">
+                    姓名
+                </th>
+                <th style="width: 100px; text-align: center;">
+                    手机号
+                </th>
+                <th style="width: 120px; text-align: center;">
+                    商品
+                </th>
+                <th style="width: 100px; text-align: center;">
+                    存期
+                </th>
+                <th style="width: 100px; text-align: center;">
+                    原始数量
+                </th>
+                <th style="width: 100px; text-align: center;">
+                    剩余数量
+                </th>
+                <th style="width: 100px; text-align: center;">
+                    存入日期
+                </th>
+                <th style="width: 60px; text-align: center;">
+                    存储期限
+                </th>
+                <th style="width: 60px; text-align: center;">
+                    已存天数
+                </th>
+                <th style="width: 60px; text-align: center;">
+                    剩余天数
+                </th>
+                <th style="width: 80px; text-align: center;">
+                    状态
+                </th>
+            </tr>
+        </table>
+    </div>
+    <div style="display:none;">
+        <%--定义背景色的隐藏域--%>
+        <input type="hidden" id="colorName" value="" />
+    </div>
+</body>
+</html>

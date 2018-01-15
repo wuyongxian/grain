@@ -1,0 +1,512 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title></title>
+    <script src="../../Scripts/jquery.js"></script>
+    <script src="../../Scripts/Common.js" type="text/javascript"></script>
+    <link href="../../Styles/Common.css" rel="stylesheet" type="text/css" />
+    <style type="text/css">
+        * {
+            margin: 0 auto;
+        }
+        .divContainer {
+            margin: 20px 50px;
+            text-align: center;
+            position: absolute;
+            display: block;
+            font-size: 12px;
+            width: 600px;
+            /*border: 2px solid green;*/
+            border-radius: 2px;
+        }
+
+            .divContainer #tabContainer {
+                width: 600px;
+            }
+
+            .divContainer #tabResponse {
+                width: 600px;
+                margin-top:20px;
+            }
+        input, textarea {
+            margin: 2px 5px;
+        }
+         .divContainer #tabContainer .td_title {
+            width: 100px;
+            text-align: right;
+            font-weight: bold;
+            padding: 2px 5px;
+        }
+
+                .divContainer #tabContainer td .td_conent {
+                    width: 500px;
+                    text-align: left;
+                    padding: 2px 5px;
+                }
+            .divContainer #tabResponse td .td_conent {
+                width: 500px;
+                text-align: left;
+                padding: 2px 5px;
+            }
+      
+        .divhidden {
+            display: none;
+            margin: 10px 10px;
+        }
+
+            .divhidden input {
+                width: 60px;
+            }
+
+        #tabContainer td {
+            padding: 5px;
+        }
+        
+    </style>
+    <script type="text/javascript">
+
+        var resSNNO;
+        $(function () {
+            initUserInfo();
+            var ReqNO = localStorage.getItem('ReqNO');
+           // var webSiteCode = $('input[name=webSiteCode]').val();
+            var apiurl = localStorage.getItem('apiurl');
+            var apiUri = apiurl + "/api/RequirementOrder/GetRequirentmentOrder?reqID="+ReqNO;
+            $.ajax({
+                url: apiUri,
+                type: 'get',
+                contentType: 'application/json',
+                cache: false,
+                data: '',
+                success: function (data) {
+                    var jsondata = JSON.parse(data);
+                    if (jsondata.length <= 0) {
+                        showMsg('获取详细信息失败！');
+                    }
+                    else {
+                        showDetail(jsondata);
+                    }
+                },
+                error: function (data) {
+                    showMsg('获取详细信息失败！');
+                }
+            });
+
+       
+            
+        })
+
+        function initUserInfo() {
+            $.ajax({
+                url: '/Admin/Info/info.ashx?type=getWBContact',
+                type: 'post',
+                data: '',
+                dataType: 'json',
+                success: function (r) {
+                    if (r.state == 'success') {
+                        $('input[name=webSiteCode]').val(r.webSiteCode);
+                        $('input[name=ComName]').val(r.ComName);
+                        $('input[name=ComAddresss]').val(r.ComAddresss);
+                        $('input[name=Contact]').val(r.Contact);
+                        $('input[name=ContactPhoneNo]').val(r.ContactPhoneNo);
+                    }
+                }, error: function (r) { }
+            });
+        }
+
+        function showDetail(jsondata) {
+            //var jsondata =JSON.parse( localStorage.getItem('trademsg'));
+            
+            $('#tranType').html(jsondata.TransactionType + ' ' + jsondata.CommodityName);
+           
+            if (jsondata.TransactionType == '买入') {
+                $('input[name=tranType]').val('2');
+                $('#res_tranType').html("卖出");
+            }
+            else {
+                $('input[name=tranType]').val('1');
+                $('#res_tranType').html("买入");
+            }
+            $('input[name=ReqNO]').val(jsondata.RequirementOrderRefID);
+            $('#tranTitle').html(jsondata.TransactionTitle);
+            $('input[name=tranTitle]').val(jsondata.TransactionTitle);
+            //$('#CommodityName').html(jsondata.CommodityName);
+            $('input[name=CommodityName]').val(jsondata.CommodityName);
+            $('#res_CommodityName').html(jsondata.CommodityName);
+            $('#CommodityLevel').html(jsondata.Level);
+            //$('#Quantity').html(jsondata.TradeQuantity + jsondata.UnitName);
+            //$('#SurplusQuantity').html(jsondata.SurplusTradeQuantity + jsondata.UnitName);
+            
+            var SurplusQuantity = parseFloat(jsondata.SurplusTradeQuantity);
+            $('input[name=SurplusQuantity]').val(SurplusQuantity);
+            if (SurplusQuantity <= 0) {
+                $('#tabResponse').hide();//可交易量小于0时，将不能再回复信息
+            }
+            var Quantity = parseFloat(jsondata.TradeQuantity);
+            var percent = accDiv(Quantity - SurplusQuantity, Quantity);
+             
+            percent = parseInt( accMul(percent, 100));
+            //$('#span-Quantity').css('width', percent+'%');
+            $('#span-Quantity').html('申请数量:' + Quantity +jsondata.UnitName+ ' 剩余可交易量:' + SurplusQuantity +jsondata.UnitName+ ' 达成率:' + percent+'%');
+
+            $('.spanunit').html(jsondata.UnitName);
+            $('input[name=UnitName]').val(jsondata.UnitName);
+            $('#strDate').html(getDate( jsondata.BeginDate) + '~' + getDate( jsondata.EndDate));
+            $('#Price_range').html(jsondata.UnitPriceRange);
+            $('input[name=Price_range]').val(jsondata.UnitPriceRange);
+            $('#PaymentType').html(jsondata.PaymentType);
+            $('#FreightType').html(jsondata.FreightType);
+            if (jsondata.IsGuarantee) {
+                $('#Guarantee').html('需要担保');
+            } else {
+                $('#Guarantee').html('不需要担保');
+            }
+
+            $('#dt_add').html('('+getDate( jsondata.CreateTime)+')');
+            //$('#QualityReq').html(jsondata.QualityDescription);
+            //$('#AcceptStandard').html(jsondata.AcceptStandard);
+            var QualityReq =replaceAll( jsondata.QualityDescription,'\n', '<br />');
+            var AcceptStandard =replaceAll(  jsondata.AcceptStandard,'\n', '<br />');
+            var Remark = replaceAll( jsondata.Remark,'\n', '<br />');
+            //Remark=Remark.replace('\r\n', '<br />');
+            $('#tdQualityReq').html(QualityReq);
+            $('#tdAcceptStandard').html(AcceptStandard);
+            $('#tdstrRemark').html(Remark);
+            var EnableReplaceSet = jsondata.EnableReplaceSet;//是否允许替换联系人
+            var OperatorName = jsondata.OperatorName;
+            var OperatorCode = jsondata.OperatorCode;
+            if (EnableReplaceSet) {
+                var ReplaceInfoJson =JSON.parse( jsondata.ReplaceInfoJson);//替换联系方式
+                $('#Contact').html('联系人:' + ReplaceInfoJson.Contacts + ' 联系方式:' + ReplaceInfoJson.ContactPhoneNo);
+                $('#ComName').html('单位:' + ReplaceInfoJson.OrganizationName + ' 地址:' + ReplaceInfoJson.ContactAddress);
+            } else {
+                $('#Contact').html('联系人:' + jsondata.Contacts + ' 联系方式:' + jsondata.ContactPhoneNo);
+                $('#ComName').html('单位:' + jsondata.OrganizationName + ' 地址:' + jsondata.ContactAddress);
+            }
+          
+
+        }
+
+
+        //请求交易回复
+        function FunSubmit() {
+            if (!FunSubmitCheck()) { return false; }
+            var msg = '确认您已认真检查输入信息，并提交吗？';
+            showConfirm(msg, function (obj) {
+                if (obj == 'yes') {
+                    //alert('你点击了确定！');
+                    //提交
+                    $.ajax({
+                        url: '/Admin/Info/info.ashx?type=Add_TSRes',
+                        type: 'post',
+                        data: $('#form1').serialize(),
+                        dataType: 'json',
+                        success: function (r) {
+                            if (r.state == 'success') {
+                                resSNNO = r.resSNNO;
+                                $('.divContainer input[type=text]').attr('disabled', 'disabled');
+                                $('.divContainer select').attr('disabled', 'disabled');
+                                $('.divContainer textarea').attr('disabled', 'disabled');
+                                //$('.divContainer input[type=button]').attr('disabled', 'disabled');
+                                //$('.divContainer #btnsave').css('background', '#ccc');
+                                //$('.divContainer #btnreq').removeAttr('disabled');
+                                TransactionRes();//提交回复
+                            }
+                        }, error: function (r) { }
+                    });
+                } else {
+                    //alert('你点击了取消！');
+                }
+            })
+        }
+
+
+        function FunSubmitCheck() {
+           
+            if (!CheckNumDecimal($('input[name=Quantity_trade]').val(), '申请数量', 2)) {
+                return false;
+            }
+            var Quantity_trade = parseFloat($('input[name=Quantity_trade]').val());
+            var SurplusQuantity = parseFloat( $('input[name=SurplusQuantity]').val());
+            if (Quantity_trade > SurplusQuantity) {
+                showMsg('申请数量最多不能超出' + SurplusQuantity +  $('.spanunit').html()+ '!');
+                return false;
+            }
+           
+            if ($('input[name=Contact]').val() == '') {
+                showMsg('请输入联系人信息!');
+                return false;
+            }
+            if ($('input[name=ContactPhoneNo]').val() == '') {
+                showMsg('请输入联系方式!');
+                return false;
+            }
+            return true;
+        }
+
+
+        //将信息提交至粮食商城平台
+        function TransactionRes() {
+            var UnitName = $('select[name=UnitName]').find('option:selected').text();
+            var Price_range = $('select[name=Price_range]').find('option:selected').text();
+            if ($('select[name=Price_range]').find('option:selected').text() == '价格区间') {
+                Price_range = $('input[name=]').val() + '元/' + UnitName + '~' + $('input[name=]').val() + '元/' + UnitName;
+            }
+            var IsGuarantee = true;
+            if ($('select[name=UnitName]').find('option:selected').val() == '2') { IsGuarantee = false; }
+
+            var TransactionType = '买入';
+            if ($('input[name=tranType]').val() == '2') { TransactionType = '卖出';}
+            var takeInfo = {
+                WebsiteCode: $('input[name=webSiteCode]').val(),//站点代码
+                RequirementOrderRefID: $('input[name=ReqNO]').val(),//需求系统编号（最长字符串为50）
+                TakeOrderRefID: resSNNO,//请求交易系统编号（最长字符串为50）
+                TransactionType: TransactionType,//交易类型（最长字符串为20）
+                TakeNo: resSNNO,//交易单号（最长字符串为50）
+                TradeQuantity: $('input[name=Quantity_trade]').val(),//交易数量（decimal类型）
+                OrganizationName: $('input[name=ComName]').val(),//请求交易组织
+                Contacts: $('input[name=Contact]').val(),//联系人
+                ContactPhoneNo: $('input[name=ContactPhoneNo]').val(),//联系电话
+                ContactAddress: $('input[name=ComAddresss]').val(),//联系地址
+                Remark: $('textarea[name=strRemark]').val(),//备注信息内容
+                OperatorCode: "",//操作人员代码（最长字符串为50）
+                OperatorName: ""//操作人员姓名（最长字符串为50）
+            }
+            var webSiteCode = $('input[name=webSiteCode]').val();
+            var apiurl = localStorage.getItem('apiurl');
+            var apiUri = apiurl + "/api/TakeOrder/SaveTakeOrder";
+            $.ajax({
+                url: apiUri,
+                type: 'post',
+                contentType: 'application/json',
+                cache: false,
+                data: JSON.stringify(takeInfo),
+                success: function (data) {
+                    //showMsg('申请信息已提交！');
+                    //改变提交信息的状态
+                    if (JSON.parse(data).state == 'error') {
+                        showMsg('申请信息提交失败！');
+                        return false;
+                    }
+                    var para = 'state=2&resSNNO=' + resSNNO;
+                    $('.divContainer #btnreq').css('background', '#ccc');
+                    $('.divContainer #btnreq').attr('disabled', 'disabled');
+                    $.ajax({
+                        url: '/Admin/Info/info.ashx?type=Update_TSRes_State',
+                        type: 'post',
+                        data: para,
+                        dataType: 'text',
+                        success: function (r) {
+                            if (r != '0') {
+                                //showMsg('申请信息已提交！');
+                            }
+                        }, error: function (r) {
+                            //showMsg('申请信息已提交！');
+                        }
+                    });
+                    showMsg('申请信息已提交！');
+                },
+                error: function (data) {
+                    showMsg('申请信息提交失败！');
+                }
+            });
+        }
+    </script>
+</head>
+<body>
+    <div class="divContainer">
+        <!--<div style="float:right">
+
+        </div>-->
+        <table class="tabinfo" id="tabContainer">
+
+
+            <tr>
+                <td colspan="2" style="text-align:center;height:30px;">
+                    <span id="tranTitle" style="font-size:14px;font-weight:bold;color:green;"> 公告详情</span>
+                    <span id="dt_add" style="font-size:12px;color:#666"></span>
+                </td>
+
+            </tr>
+            <tr>
+                <td class="td_title"><span>交易类型:</span></td>
+                <td class="td_content" style="text-align:left;padding-left:5px;"><span id="tranType" style="font-weight:bold;"></span></td>
+            </tr>
+
+          
+            <!--<tr>
+                <td class="td_title"><span>商品:</span></td>
+                <td class="td_content" style="text-align:left;padding-left:5px;"><span id="CommodityName"></span></td>
+            </tr>-->
+
+
+            <tr>
+                <td class="td_title"><span>数量:</span></td>
+                <td class="td_content" style="text-align:left;padding-left:5px;">
+                    <!--<div class="percent" id="div-Quantity"><span class="percent-blue" id="span-Quantity"></span></div>-->
+                    <span class="percent-blue" id="span-Quantity"></span>
+                </td>
+            </tr>
+            <tr>
+                <td class="td_title"><span>价格区间:</span></td>
+                <td class="td_content" style="text-align:left;padding-left:5px;"><span id="Price_range"></span></td>
+            </tr>
+
+            <tr>
+                <td class="td_title"><span>有效期:</span></td>
+                <td class="td_content" style="text-align:left;padding-left:5px;"><span id="strDate"></span></td>
+            </tr>
+
+            
+            <tr>
+                <td class="td_title"><span>付款方式:</span></td>
+                <td class="td_content" style="text-align:left;padding-left:5px;"><span id="PaymentType"></span></td>
+            </tr>
+
+            <tr>
+                <td class="td_title"><span>运费支付方式:</span></td>
+                <td class="td_content" style="text-align:left;padding-left:5px;"><span id="FreightType"></span></td>
+            </tr>
+
+            <tr>
+                <td class="td_title"><span>第三方担保:</span></td>
+                <td class="td_content" style="text-align:left;padding-left:5px;"><span id="Guarantee"></span></td>
+            </tr>
+
+            <!--<tr>
+                <td class="td_title"><span>申请时间:</span></td>
+                <td class="td_content" style="text-align:left;padding-left:5px;"><span id="dt_add"></span></td>
+            </tr>-->
+
+            <tr>
+                <td class="td_title"><span>质量要求:</span></td>
+                <td id="tdQualityReq" class="td_content" style="text-align:left;padding-left:5px;"><!--<span id="QualityReq"></span>--></td>
+            </tr>
+
+            <tr>
+                <td class="td_title"><span>验收标准:</span></td>
+                <td id="tdAcceptStandard" class="td_content" style="text-align:left;padding-left:5px;"><!--<span id="AcceptStandard"></span>--></td>
+            </tr>
+
+            <tr>
+                <td class="td_title"><span>商品描述:</span></td>
+                <td id="tdstrRemark" class="td_content" style="text-align:left;padding-left:5px;"><!--<span id="strRemark"></span>--></td>
+            </tr>
+            <tr>
+                <td class="td_title"><span>联系人信息:</span></td>
+                <td class="td_content" style="text-align:left;padding-left:5px;"><span id="Contact"></span></td>
+            </tr>
+            <tr>
+                <td class="td_title"><span>单位信息:</span></td>
+                <td class="td_content" style="text-align:left;padding-left:5px;"><span id="ComName"></span></td>
+            </tr>
+
+
+        </table>
+
+        <form id="form1">
+            <table class="tabinfo" id="tabResponse">
+
+
+                <tr>
+                    <td colspan="2" style="text-align:center;height:30px;">
+                        <span style="font-size:14px;font-weight:bold;color:green;"> 我的回复</span>
+
+                    </td>
+
+                </tr>
+
+                <tr>
+                    <td class="td_title" style="width: 100px; text-align:right"><span>数量:</span></td>
+                    <td  class="td_content" style="text-align:left;padding-left:0px;">
+                      <span style="margin-left:5px;">申请</span><span id="res_tranType"></span><span id="res_CommodityName"></span>  <input type="text" name="Quantity_trade" style="width: 100px;font:700 16px 微软雅黑;color:blue;" />
+                        <span class="spanunit"></span>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="width: 100px; text-align:right">
+                        <span>说明:</span>
+                    </td>
+                    <td  style=" text-align:left">
+                        <textarea name="strRemark" style="width: 450px; height: 40px; "></textarea>
+                    </td>
+
+                </tr>
+                <tr>
+                    <td style="text-align:right">
+                        <span>联系人:</span>
+                    </td>
+                    <td style="text-align:left">
+                        <input type="text" name="Contact" style="width: 200px;" />
+                        <span class="spanmust">*</span>
+                    </td>
+                   
+                </tr>
+
+                <tr>
+                    <td style="text-align:right">
+                        <span>联系方式:</span>
+                    </td>
+                    <td style="text-align:left">
+                        <input type="text" name="ContactPhoneNo" style="width: 200px;" />
+                        <span class="spanmust">*</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="text-align:right">
+                        <span>单位名称:</span>
+                    </td>
+                    <td style="text-align:left">
+                        <input type="text" name="ComName" style="width: 200px;" />
+                    </td>
+                    
+                </tr>
+
+                <tr>
+                    <td style="text-align:right">
+                        <span>单位地址:</span>
+                    </td>
+                    <td style="text-align:left">
+                        <input type="text" name="ComAddresss" style="width: 200px;" />
+                    </td>
+                </tr>
+
+
+
+                <tr id="trSell">
+                    <td></td>
+                    <td colspan="3" style="text-align:left">
+                        <!--<input type="button" id="btnsave" style="font-weight:bold;font-size:16px; color:blue" value="保存信息" onclick="FunSubmit();">
+                        <input type="button" id="btnreq" style="font-weight:bold;font-size:16px; color:blue" value="提交审核" onclick="TransactionRes();">-->
+                        <input type="button" id="btnsave" style="font-weight:bold;font-size:16px; color:blue" value="提交" onclick="FunSubmit();">
+                    </td>
+
+                </tr>
+
+
+            </table>
+            <div class="divhidden">
+                <span>交易类型</span>
+                <input type="text" name="tranType" value="" />
+                <span>网站代码</span>
+                <input type="text" name="webSiteCode" value="" />
+                <span>标题</span>
+                <input type="text" name="tranTitle" value="" />
+                <span>商品名</span>
+                <input type="text" name="CommodityName" value="" />
+                <span>单位</span>
+                <input type="text" name="UnitName" value="" />
+                <span>交易单号</span>
+                <input type="text" name="ReqNO" value="" />
+                <span>价格区间</span>
+                <input type="text" name="Price_range" value="" />
+
+                <span>剩余可交易量</span>
+                <input type="text" name="SurplusQuantity" value="" />
+            </div>
+        </form>
+    </div>
+   
+</body>
+</html>

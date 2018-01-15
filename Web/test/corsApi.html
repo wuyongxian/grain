@@ -1,0 +1,29 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title></title>
+    <script src="../Scripts/jquery.min.js"></script>
+    <script type="text/javascript">
+        jQuery.support.cors = true;
+       // var ApiUrl = 'http://localhost:50709';
+        var ApiUrl = 'http://grainapi.lsyh888.com:8099';
+        $.ajax({//url的参数中model=shopping标志这是
+            url:ApiUrl+ '/api/Test',
+            type: 'post',
+            data: '{"id":2,"name":"name01"}',
+            dataType: 'json',
+            contentType: 'application/json',
+            success: function (data) {
+                console.log(data);
+                console.log(data.name);
+            }, error: function (data) {
+                console.log(data.responseText);
+            }
+        });
+    </script>
+</head>
+<body>
+
+</body>
+</html>

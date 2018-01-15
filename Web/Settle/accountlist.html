@@ -1,0 +1,617 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title></title>
+    <script src="../../Scripts/jquery-1.4.1.js" type="text/javascript"></script>
+    <link href="../../Styles/Common.css" rel="stylesheet" type="text/css" />
+    <script src="../../Scripts/Common.js" type="text/javascript"></script>
+    <script src="../../Scripts/WebInner.js" type="text/javascript"></script>
+    <script src="../../Lodop6.198/LodopFuncs.js" type="text/javascript"></script>
+    <script src="../../Scripts/LodopPrint.js"></script>
+    <style type="text/css">
+        .spanwarning {
+            font-size: 12px;
+            color: red;
+        }
+
+        .spanwarning_choose {
+            font-size: 12px;
+            color: red;
+        }
+    </style>
+    <script type="text/javascript">
+        /*--------窗体启动设置和基本设置--------*/
+        var Authority_A = false;//新增权限
+        var Authority_E = false;//编辑权限
+        $(function () {
+            GetMenuAuthority();//加载菜单权限
+
+            GetWB();//只获取还没有开户的网点
+
+            GetAddressXian();
+            //编辑列表选项
+            $('select[name=XianID]').change(function () {
+                var XianID = $('select[name=XianID] option:selected').val();
+                $('select[name=XiangID]').empty();
+                $('select[name=CunID]').empty();
+                GetAddressXiang(XianID);
+            });
+
+            $('select[name=XiangID]').change(function () {
+                var XiangID = $('select[name=XiangID] option:selected').val();
+                $('select[name=CunID]').empty();
+                GetAddressCun(XiangID);
+            });
+
+            $('select[name=CunID]').change(function () {
+                var strXian = $('select[name=XianID] option:selected').text();
+                var strXiang = $('select[name=XiangID] option:selected').text();
+                var strCun = $('select[name=CunID] option:selected').text();
+
+                $('input[name=strAddress]').val(strXian + ' ' + strXiang + ' ' + strCun);
+                //$('input[name=strAddress]').val(strXian  + strXiang  + strCun);
+            });
+
+        });
+
+        function GetMenuAuthority() {
+            var MenuID = getQueryString('MenuID');
+            $.ajax({
+                url: '/ashx/wbinfo.ashx?type=GetMenuAuthority&MenuID=' + MenuID,
+                type: 'post',
+                data: '',
+                dataType: 'json',
+                success: function (r) {
+                    Authority_A = r.A;
+                    Authority_E = r.E;
+                    initDataInfo();
+                    if (Authority_A) {
+                        $('#Menu_A').append("<a href='#' onclick='ShowFrm_Add(0)'>添加出库账户</a>");
+                    }
+                }, error: function (r) {
+                    showMsg('加载菜单权限失败 ！');
+                }
+            });
+        }
+
+        function GetNewAccountNumber() {
+            $.ajax({
+                url: '/Ashx/settlebasic.ashx?type=GetNewAccountNumber',
+                type: 'post',
+                data: '',
+                dataType: 'text',
+                success: function (r) {
+                    $('input[name=AccountNumber]').val(r);
+                }, error: function (r) {
+                    showMsg('加载信息失败 ！');
+
+                }
+            });
+        }
+
+        function GetWB() {
+            $('select[name=WBID]').html('');
+            $.ajax({
+                url: '/Ashx/settlebasic.ashx?type=Get_WBSA',
+                type: 'post',
+                data: '',
+                dataType: 'json',
+                success: function (r) {
+
+                    for (var i = 0; i < r.length; i++) {
+                        $('select[name=WBID]').append("<option value='" + r[i].ID + "'>" + r[i].strName + "</option>");
+                    }
+                }, error: function (r) {
+                    if (r.responseText != "Error") {
+                        showMsg('加载网点信息失败 ！');
+                    }
+                }
+            });
+        }
+
+
+        function GetAddressXian() {
+            $.ajax({
+                url: '/Ashx/settlebasic.ashx?type=Get_Address_Xian',
+                type: 'post',
+                data: '',
+                dataType: 'json',
+                success: function (r) {
+                    var XianID = r[0].ID;
+                    GetAddressXiang(XianID); //设置县名
+                    for (var i = 0; i < r.length; i++) {
+                        $('select[name=XianID]').append("<option value='" + r[i].ID + "'>" + r[i].strName + "</option>");
+                    }
+                }, error: function (r) {
+                    if (r.responseText != "Error") {
+                        showMsg('加载信息失败 ！');
+                    }
+                }
+            });
+        }
+
+        function GetAddressXiang(XianID,XiangID,CunID) {
+            $.ajax({
+                url: '/Ashx/settlebasic.ashx?type=Get_Address_Xiang&XianID=' + XianID,
+                type: 'post',
+                data: '',
+                dataType: 'json',
+                success: function (r) {
+
+                    if (!isNull(XiangID)) {
+                        if (!isNull(CunID)) {
+                            GetAddressCun(XiangID, CunID);//根据乡名加载村名
+                        } else {
+                            GetAddressCun(XiangID);//根据乡名加载村名
+                        }
+
+                    } else {
+                        GetAddressCun(r[0].ID);//根据乡名加载村名
+                    }
+                    for (var i = 0; i < r.length; i++) {
+                        if (!isNull(XiangID) && XiangID == r[i].ID) {
+                            $('select[name=XiangID]').append("<option value='" + r[i].ID + "' selected='selected'>" + r[i].strName + "</option>");
+                        } else {
+                            $('select[name=XiangID]').append("<option value='" + r[i].ID + "'>" + r[i].strName + "</option>");
+                        }
+                    }
+                }, error: function (r) {
+                    if (r.responseText != "Error") {
+                        showMsg('加载信息失败 ！');
+                    }
+                }
+            });
+
+        }
+
+        function GetAddressCun(XiangID,CunID) {
+            $.ajax({
+                url: '/Ashx/settlebasic.ashx?type=Get_Address_Cun&XiangID=' + XiangID,
+                type: 'post',
+                data: '',
+                dataType: 'json',
+                success: function (r) {
+                    for (var i = 0; i < r.length; i++) {
+                        if (!isNull(CunID) && CunID == r[i].ID) {
+                            $('select[name=CunID]').append("<option value='" + r[i].ID + "' selected='selected'>" + r[i].strName + "</option>");
+                        } else {
+                            $('select[name=CunID]').append("<option value='" + r[i].ID + "'>" + r[i].strName + "</option>");
+                        }
+                    }
+                    var strXian = $('select[name=XianID] option:selected').text();
+                    var strXiang = $('select[name=XiangID] option:selected').text();
+                    var strCun = $('select[name=CunID] option:selected').text();
+
+                    $('input[name=strAddress]').val(strXian + ' ' + strXiang + ' ' + strCun);
+                }, error: function (r) {
+                    if (r.responseText != "Error") {
+                        showMsg('加载信息失败 ！');
+                    }
+                }
+            });
+        }
+
+
+        function initDataInfo() {
+           
+            $.ajax({
+                url: '/Ashx/settlebasic.ashx?type=Get_SA_AccountAll',
+                type: 'post',
+                data: '',
+                dataType: 'json',
+                success: function (r) {
+                    if (r == null || r.length <= 0) {
+                        showMsg('没有查询到任何信息!');
+                        $('.datainfo').hide();
+                        return;
+                    }
+                    $('.datainfo').show();
+                    var strhtml = '';
+                    $('.datainfo .tabData .tr_append').remove();//清除上一次的查询结果
+                    for (var i = 0; i < r.length; i++) {
+                        strhtml += '<tr class="tr_append" style="height:30px;">';
+                        strhtml += '<td>' + r[i].WBName + '</td>';
+                        strhtml += '<td>' + r[i].AccountNumber + '</td>';
+                        strhtml += '<td>' + r[i].strName + '</td>';
+                        strhtml += '<td>' + r[i].IDCard + '</td>';
+                        strhtml += '<td>' + r[i].PhoneNO + '</td>';
+                        strhtml += '<td>' + r[i].strAddress + '</td>';
+                        if (Authority_E) {
+                            strhtml += '<td><input type="Button" style="width:80px; height:25px;"  onclick="ShowFrm(' + r[i].ID + ')" value="查看/修改"></td>';
+                            strhtml += '<td><input type="Button" style="width:60px; height:25px;"  onclick="FunDelete(' + r[i].ID + ',' + r[i].AccountNumber + ')" value="删除"></td>';
+                            strhtml += '<td><input type="Button" style="width:80px; height:25px;"  onclick="FunPrint(' + r[i].AccountNumber + ')"  value="补打存折"></td>';
+                        }
+                        else {
+                            strhtml += '<td><input type="Button" style="width:80px; height:25px;" disabled="disabled"  value="查看/修改"></td>';
+                            strhtml += '<td><input type="Button" style="width:60px; height:25px;"  disabled="disabled" value="删除"></td>';
+                            strhtml += '<td><input type="Button" style="width:80px; height:25px;"  disabled="disabled" value="补打存折"></td>';
+                        }
+                        strhtml += '</tr>'
+                    }
+                    $('.datainfo .tabData').append(strhtml);
+
+
+                }, error: function (r) {
+                    showMsg('没有查询到任何信息!');
+                    $('.datainfo').hide();
+                }
+            });
+        }
+     
+
+        //显示新增数据窗口
+        function ShowFrm_Add(wbid) {
+            showBodyCenter($('#divfrm'));
+            $('#btnAdd').show();
+            $('#btnUpdate').hide();
+            $('#btnAdd').css('background', '#0081bc');
+            $('#btnAdd').removeAttr('disabled');
+            $('#btnPrint').css('background', '#aaa');
+            $('#btnPrint').attr('disabled', '#disabled');
+
+            $('#trWBAdd').show();
+            $('#trWBUpdate').hide();
+           
+            GetNewAccountNumber();//获取新的账号
+            $('input[name=strName]').val('');
+            $('input[name=IDCard]').val('');
+            $('input[name=PhoneNO]').val('');
+
+        }
+        //显示更新数据窗口
+        function ShowFrm_Update(wbid) {
+            showBodyCenter($('#divfrm'));
+            $('#btnAdd').hide();
+            $('#btnUpdate').show();
+            $('#btnUpdate').css('background', '#0081bc');
+            $('#btnUpdate').removeAttr('disabled');
+            $('#btnPrint').css('background', '#aaa');
+            $('#btnPrint').attr('disabled', '#disabled');
+
+            $('#trWBAdd').hide();
+            $('#trWBUpdate').show();
+            $('#WBID').val(wbid);
+           
+            var ID = $('#WBID').val();
+            $.ajax({
+                url: '/Ashx/settlebasic.ashx?type=Get_SA_AccountByID&ID='+ID,
+                type: 'post',
+                data: '',
+                dataType: 'json',
+                success: function (r) {
+                    if (r == null || r.length == 0) {
+                        showMsg('没有查询到任何信息!');
+                        return;
+                    }
+                    var jsondata = r[0];
+                    $('input[name=strName]').val(jsondata.strName);
+                    $('input[name=IDCard]').val(jsondata.IDCard);
+                    $('input[name=PhoneNO]').val(jsondata.PhoneNO);
+                    $('input[name=AccountNumber]').val(jsondata.AccountNumber);
+                    $('#spanWB').html(jsondata.WBName);
+                   // $('input[name=strAddress]').val(jsondata.strAddress);
+                    $("select[name=XianID]  option[value='" + jsondata.XianID + "'] ").attr("selected", 'selected');
+                    GetAddressXiang(jsondata.XianID, jsondata.XiangID, jsondata.CunID);
+
+                }, error: function (r) {
+                    showMsg('没有查询到任何信息!');
+                   
+                }
+            });
+        }
+
+
+        function CloseFrm() {
+            $('#divfrm').fadeOut();
+        }
+
+        //新增数据方法
+        function FunAdd() {
+            if (isNull($("select[name=WBID]").val())) {
+                showMsg('请选择网点');
+                return;
+            }
+            if (!SubmitCheck()) {//检测输入内容
+                return false;
+            }
+            var msg = '您确认已经仔细检查输入信息，并继续操作吗？';
+            showConfirm(msg, function (obj) {
+                if (obj == 'yes') {
+                    //alert('你点击了确定！');
+                    $.ajax({
+                        url: '/Ashx/settlebasic.ashx?type=Add_SA_Account',
+                        type: 'post',
+                        data: $('#form1').serialize(),
+                        dataType: 'text',
+                        success: function (r) {
+                            if (r == "OK") {
+                                GetWB();
+                                initDataInfo();
+                                showMsg("新增网点账户成功!");
+                                $('#btnAdd').attr('disabled', 'disabled');
+                                $('#btnAdd').css('background', '#aaa');
+                                $('#btnPrint').removeAttr('disabled');
+                                $('#btnPrint').css('background', '#0081bc');
+                            } else if (r == "1") {
+                                showMsg("系统中已存在相同的网点账户信息，请修改后再添加!");
+
+                            }
+                        }, error: function (r) {
+                            showMsg('添加网点账户失败 ！');
+                        }
+                    });
+
+                } else {
+                    //alert('你点击了取消！');
+                }
+            });
+        }
+        //更新数据方法
+        function FunUpdate() {
+            if (!SubmitCheck()) {//检测输入内容
+                return false;
+            }
+
+            var wbid = $('#WBID').val();
+            var msg = '您确认已经仔细检查输入信息，并继续操作吗？';
+            showConfirm(msg, function (obj) {
+                if (obj == 'yes') {
+                    //alert('你点击了确定！');
+                    $.ajax({
+                        url: '/Ashx/settlebasic.ashx?type=Update_SA_Account&ID='+wbid,
+                        type: 'post',
+                        data: $('#form1').serialize(),
+                        dataType: 'text',
+                        success: function (r) {
+                            if (r == "OK") {
+                                showMsg("编辑网点账户成功!");
+                                initDataInfo();
+                                $('#btnUpdate').attr('disabled', 'disabled');
+                                $('#btnUpdate').css('background', '#aaa');
+                                $('#btnPrint').removeAttr('disabled');
+                                $('#btnPrint').css('background', '#0081bc');
+
+                            } else if (r == "1") {
+                                showMsg("系统中已存在相同的网点账户信息!");
+
+                            }
+                        }, error: function (r) {
+                            showMsg('添加网点账户失败 ！');
+                        }
+                    });
+
+                } else {
+                    //alert('你点击了取消！');
+                }
+            });
+        }
+
+        //删除数据方法
+        function FunDelete(wbid, SA_AN) {
+           // SingleDataDelete('storage.ashx?type=DeleteStorageRateByID&ID=' + wbid);
+            var msg = '您确认已经仔细检查输入信息，并删除['+SA_AN+']吗？';
+           
+            showConfirm(msg, function (obj) {
+                if (obj == 'yes') {
+                    //alert('你点击了确定！');
+                    $.ajax({
+                        url: '/Ashx/settlebasic.ashx?type=DeleteByID_SA_Account&ID=' + wbid + '&SA_AN=' + SA_AN,
+                        type: 'post',
+                        data: '',
+                        dataType: 'text',
+                        success: function (r) {
+                            if (r == "OK") {
+                                showMsg("删除网点账户成功!");
+                            } else if (r == "Exit") {
+                                showMsg("该账户已经使用，不可以删除!");
+
+                            }
+                        }, error: function (r) {
+                            showMsg('添加网点账户失败 ！');
+                        }
+                    });
+
+                } else {
+                    //alert('你点击了取消！');
+                }
+            });
+        }
+
+        //提交检测
+        function SubmitCheck() {
+
+
+            if ($('input[name=strName]').val() == '') {
+                showMsg('请输入姓名！');
+                $('input[name=strName]').focus();
+                return false;
+            }
+
+
+            if ($('select[name=XianID] option:selected').val() == "") {
+                showMsg('县名不能为空 ！');
+                return false;
+            }
+            if ($('select[name=XiangID] option:selected').text() == "") {
+                showMsg('乡名不能为空 ！');
+                return false;
+            }
+            if ($('select[name=CunID] option:selected').text() == "") {
+                showMsg('村名不能为空 ！');
+                return false;
+            }
+            return true;
+        }
+
+
+        function FunPrint(AccountNumber) {
+            if (isNull(AccountNumber)) {
+                AccountNumber = $('input[name=AccountNumber]').val();
+            }
+            //查询社员信息
+            $.ajax({
+                url: '/Ashx/settlebasic.ashx?type=PrintSAAccount&AccountNumber=' + AccountNumber,
+                type: 'post',
+                data: '',
+                dataType: 'text',
+                success: function (r) {
+                    $('#divPrint').html('');
+                    $('#divPrint').append(r);
+                    CreateOneFormPage();
+                    LODOP.PREVIEW(); //打印存折
+                }, error: function (r) {
+                    showMsg('加载打印坐标时出现错误 ！');
+                }
+            });
+
+        }
+
+    </script>
+</head>
+<body>
+    <div id="divPrint" style="display:none"> </div>
+    <form id="form1">
+        <div class="pageHead">
+            <b>网点出库账户管理</b>
+        </div>
+
+        <div class="Query">
+            <table>
+                <tr>
+                    <td><b>出库账户列表</b></td>
+                  
+                    <td id="Menu_A"></td>
+                </tr>
+
+            </table>
+        </div>
+
+        <div class="datainfo" style="display:none;">
+            <table class="tabData">
+                <tr class="tr_head">
+                    <th style="width:150px; text-align:center;">
+                        网点
+                    </th>
+                    <th style="width:100px; text-align:center;">
+                        账号
+                    </th>
+                    <th style="width:100px; text-align:center;">
+                        代理人
+                    </th>
+                    <th style="width:120px; text-align:center;">
+                        身份证号
+                    </th>
+                    <th style="width:80px; text-align:center;">
+                        手机号
+                    </th>
+                    <th style="width:200px; text-align:center;">
+                        地址
+                    </th>
+                    <th style="width:100px; text-align:center;">
+                        查看/修改
+                    </th>
+                    <th style="width:80px; text-align:center;">
+                        删除
+                    </th>
+                    <th style="width:80px; text-align:center;">
+                        补打存折
+                    </th>
+                </tr>
+            </table>
+        </div>
+
+        <div class="divWarning">
+            <b>特别提示:</b><span>这是系统关键数据，最好不要添加、修改、删除!</span>
+        </div>
+
+        <div id="divfrm" class="pageEidt" style="display:none; ">
+
+            <img class="imgclose" src="../../images/winClose.png" alt="关闭窗口" style="float:right; cursor:pointer;" onclick="CloseFrm()" />
+            <table class="tabEdit">
+                <tr>
+                    <td align="right" style="width: 100px;">
+                        <span>网点账号:</span>
+                    </td>
+                    <td>
+                        <input type="text" name="AccountNumber" readonly="readonly" style="width: 200px; font-weight:bolder; background-color:#ccc;font-size:16px; color:green" />
+
+                    </td>
+                </tr>
+
+                <tr id="trWBAdd">
+                    <td align="right">
+                        <span>网点:</span>
+                    </td>
+                    <td>
+                        <select name="WBID" style="width:200px;"></select>
+                    </td>
+                </tr>
+
+                <tr id="trWBUpdate">
+                    <td align="right">
+                        <span>网点:</span>
+                    </td>
+                    <td>
+                       <span id="spanWB"></span>
+                    </td>
+                </tr>
+                <tr>
+                    <td align="right">
+                        <span>代理人姓名:</span>
+                    </td>
+                    <td>
+                        <input name="strName" type="text" style="width: 200px;" />
+                    </td>
+                </tr>
+                <tr id="trAdd">
+                    <td align="right">
+                        <span>身份证号:</span>
+                    </td>
+                    <td>
+                        <input name="IDCard" type="text" style="width: 200px;" />
+                    </td>
+                </tr>
+                <tr>
+                    <td align="right">
+                        <span>手机号:</span>
+                    </td>
+                    <td>
+                        <input name="PhoneNO" type="text" style="width: 200px;" />
+
+                    </td>
+                </tr>
+                <tr >
+                    <td align="right">
+                        <span>储户住址:</span>
+                    </td>
+                    <td>
+                        <select name="XianID" style="width:100px"></select>
+                        <select name="XiangID" style="width:100px"></select>
+                        <select name="CunID" style="width:100px"></select>
+                        <input type="text" name="strAddress" style="display:none;"></td>
+                </tr>
+
+                <tr>
+                    <td></td>
+                    <td>
+                        <input type="button" id="btnAdd" value="添加账户" onclick="FunAdd()" />
+                        <input type="button" id="btnUpdate" value="修改" onclick="FunUpdate()" />
+                        <input type="button" id="btnPrint" disabled="disabled" value="打印存折" onclick="FunPrint()" />
+                    </td>
+                </tr>
+
+        </div>
+
+       
+    </form>
+    <div style="display:none;">
+        <!--定义编号-->
+        <input type="hidden" id="WBID" value="" />
+        <!--定义编号-->
+        <!--<input type="text" id="strAddress" value="" />-->
+        <!--定义背景色的隐藏域-->
+        <input type="hidden" id="colorName" value="" />
+    </div>
+
+</body>
+</html>

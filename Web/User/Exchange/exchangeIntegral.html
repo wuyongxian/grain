@@ -1,0 +1,539 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head id="Head1">
+    <title>积分兑换</title>
+
+    <script src="../../Scripts/jquery-1.4.1.js" type="text/javascript"></script>
+    <script src="../../Scripts/WebInner.js" type="text/javascript"></script>
+    <script src="../../Scripts/Common.js" type="text/javascript"></script>
+    <link href="../../Styles/Common.css" rel="stylesheet" type="text/css" />
+    <link href="../../Styles/storage.css" rel="stylesheet" type="text/css" />
+    <script src="../../Lodop6.198/LodopFuncs.js" type="text/javascript"></script>
+    <script src="../../Scripts/LodopPrint.js"></script>
+    <script src="../../Scripts/codeKeyboard.js"></script>
+    <script src="../../Scripts/fakeLoader.js" type="text/javascript"></script>
+    <link href="../../Styles/fakeLoader.css" rel="stylesheet" />
+    <script type="text/javascript">
+
+
+        var arrayex = new Array();//存放列表
+        var BusinessNO = '';//结账后产生的序列号
+
+        $(function () {
+           // $('#QAccountNumber').val('0030000004');
+            $('.pageQuery #QSelect').click(function () {
+                // $('.divloading').fadeIn();
+                FunDepSelect();
+            });
+            $('#QAccountNumber').focus(function () { $('#QAccountNumber').val(''); });//储户账号
+            $('#QPassword').focus(function () { $('#QPassword').val(''); });//储户密码
+
+            InitSelect('/Ashx/good.ashx?type=Get_WBWareHouse', 'select_WBWareHouse', '加载网点仓库信息失败！'); //网点仓库
+            $('select[name=select_WBWareHouse]').change(function () {
+                GetGoodStorage();//获取商品储量
+            })
+        })
+
+
+        /***************查询操作****************/
+
+
+        //储户查询
+        function FunDepSelect() {
+            var datapara = 'AccountNumber=' + $('#QAccountNumber').val().trim() + '&Password=' + $('#QPassword').val().trim()
+            if ($('#QAccountNumber').val().trim().length != 10) {
+                showMsg('请输入储户账号');
+                return false;
+            }
+
+            $(".fakeloader").fakeLoader({
+                timeToHide: 12000000,
+                 bgColor: "transparent",
+                spinner: "spinner7"
+            });
+            var url = '/User/Exchange/exchange.ashx?type=getDepositorInfo';
+            $.ajax({
+                url: url,
+                type: 'post',
+                data: datapara,
+                dataType: 'json',
+                success: function (r) {
+                    $(".fakeloader").fakeCloser();
+
+                    $('.depositorInfo').fadeOut();
+                    $('.exchangeChoose').fadeOut();
+                    if (r.state == false) {
+                        showMsg(r.msg);
+                        return false;
+                    }
+                  
+                    var dep = JSON.parse(r.dep);
+                    addDepositor(dep);
+                }, error: function (r) {
+                    $(".fakeloader").fakeCloser();
+                    showMsg('获取储户信息失败 ！');
+                }
+            });
+        }
+
+        function FunDepIntegral() {
+            
+            var datapara = 'AccountNumber=' + $('#QAccountNumber').val().trim();
+
+            var url = '/User/Exchange/exchange.ashx?type=getDep_IntegralLast';
+            $.ajax({
+                url: url,
+                type: 'post',
+                data: datapara,
+                dataType: 'json',
+                success: function (r) {
+                    if (r != null && r.length != 0) {
+                        $('#span_integral_Total').html(r[0].integral_Total);
+                    } else {
+                        showMsg('获取储户积分信息失败 ！');
+                    }
+                }, error: function (r) {
+                    showMsg('获取储户积分信息失败 ！');
+                }
+            });
+        }
+
+        function addDepositor(dep) {
+            if (dep.length > 0) {//添加储户基本信息
+                $('#tabdepositorInfo .trappend').remove();
+                var numState = "正常";
+                if (dep[0].numState == '0') {
+                    numState = "禁用";
+                }
+                var integral_Total = dep[0].integral_Total;
+                if (integral_Total == null || integral_Total == undefined || integral_Total == '') {
+                    integral_Total = '0';
+                }
+                var strdep = '<tr class="trappend">';
+                strdep += ' <td style="height:30px;"><span id="span_AccountNumber">' + dep[0].AccountNumber + '</span></td>';
+                strdep += ' <td><span id="span_strName">' + dep[0].strName + '</span></td>';
+                strdep += ' <td>' + dep[0].PhoneNO + '</td>';         
+                strdep += ' <td>' + numState + '</td>';
+                strdep += ' <td>' + dep[0].IDCard + '</td>';
+                strdep += ' <td>' + dep[0].strAddress + '</td>';              
+                strdep += ' <td><span id="span_integral_Total" style="color:green;font-weight:bolder;font-size:18pt;">0</td>';
+                strdep += '</tr>'
+                $('#tabdepositorInfo').append(strdep);
+                $('#QAccountNumber').attr('disabled', 'disabled');
+                $('.pageQuery #QSelect').attr('disabled', 'disabled');
+                FunDepIntegral();//加载储户积分
+                InitGoodList();//加载商品列表
+                
+            }
+            $('.depositorInfo').fadeIn();
+        }
+
+        //初始化可用于兑换的商品
+        function InitGoodList() {
+
+            var strName = '';
+            var strUrl = '/Ashx/good.ashx?type=Get_IntegralGood&strName=' + strName;
+            $.ajax({
+                url: strUrl,
+                type: 'post',
+                data: '',
+                dataType: 'json',
+                success: function (r) {
+                    if (r == null || r.length == 0) {
+                        showMsg('系统中没有可以积分兑换的商品！');
+                        return false;
+                    }
+                    $('.exchangeChoose').fadeIn();
+                    $('#tabexchangeChoose #tdselect_goodlist').html('');
+                    var strselect_goodlist = '';
+                    strselect_goodlist += '<select name="select_goodlist" style="width:120px;">';
+                    for (var i = 0; i < r.length; i++) {
+                        strselect_goodlist += '<option value="' + r[i].ID + '" Integralvalue="' + r[i].Integralvalue+ '">' + r[i].strName + '</option>';
+                    }
+                    strselect_goodlist += '</select>';
+                    $('#tabexchangeChoose #tdselect_goodlist').append(strselect_goodlist);
+                    GetGoodStorage();
+                    $('select[name=select_goodlist]').change(function () { //选择兑换商品
+                        //获取商品数量
+                        GetGoodStorage();
+                    });
+
+                }, error: function (r) {
+                    showMsg('系统中没有可以积分兑换的商品！');
+                }
+            });
+        }
+        /***************添加兑换****************/
+        //获取指定产品库存
+        function GetGoodStorage() {
+            var GoodID = $('select[name=select_goodlist] option:selected').val();
+            var Integralvalue = $('select[name=select_goodlist] option:selected').attr('Integralvalue');
+            $('#span_Integralvalue').html(Integralvalue);
+            //console.log('Integralvalue:' + Integralvalue);
+            var WBWareHouseID = $('select[name=select_WBWareHouse] option:selected').val();
+            var para = 'GoodID=' + GoodID + '&WBWareHouseID=' + WBWareHouseID
+            $.ajax({
+                url: '/Ashx/storage.ashx?type=GetGoodStoreByGoodID',
+                type: 'post',
+                data: para,
+                dataType: 'json',
+                success: function (r) {
+
+                    //仓库中的商品剩余数
+
+                    $('#GoodStorage').html(r[0].numStore);
+
+                    $('#GoodUnit').html('元/' + r[0].UnitName);
+                    $('#Good_UnitName').val(r[0].UnitName);
+                    $('#Good_SpecName').val(r[0].SpecName);
+                    // $('#GoodPrice').html(r[0].Price_XiaoShou);//销售价
+                    $('#GoodPrice').html(r[0].Price_Stock);//销售价
+                 
+
+                }, error: function (r) {
+                    $('#GoodStorage').html('0');
+                    $('#GoodUnit').html('');
+                }
+            });
+        }
+
+        //添加销售商品
+        function addGoodSell() {
+
+            //计算折合原粮和收费
+            var GoodPrice = parseFloat($('#GoodPrice').html()); //商品兑换价格
+            var GoodCount = parseFloat($('input[name=ExchangeCount]').val()); //商品数量
+            var GoodValue = accMul(GoodPrice, GoodCount); //商品价值金额
+            var Integralvalue = $('#span_Integralvalue').html();
+            var integral_Change = parseFloat(Integralvalue) * parseFloat(GoodCount);
+            var integral_Total = $('#span_integral_Total').html();
+            if (parseFloat(integral_Change) > parseFloat(integral_Total)) {
+                showMsg('当前储户的积分余额不足，无法完成积分兑换操作。');
+                return false;
+            }
+            //查询当前仓库中的商品存储数量是否足够
+            var GoodStorage = $('#GoodStorage').html();; //仓库库存
+            if (parseFloat(GoodStorage) < parseFloat(GoodCount)) {//判断仓库库存是否足够
+                showMsg('仓库中的商品数量已不足，进货后方可兑换该商品 ！');
+                ExchangeEnd();
+                return false;
+            }
+
+            var GoodID = $('select[name=select_goodlist] option:selected').val(); //已选择的商品类型
+            var GoodName = $('select[name=select_goodlist] option:selected').text(); //已选择的商品类型
+            var SpecName = $('#Good_SpecName').val();
+            var UnitName = $('#Good_UnitName').val();
+            var WBWareHouseID = $('select[name=select_WBWareHouse] option:selected').val(); //已选择的商品仓库
+            var GoodStorage = $('#GoodStorage').html();; //仓库库存
+            $('#GoodStorage').html(parseInt(GoodStorage) - parseInt(GoodCount));
+         
+            var AccountNumber = $('#QAccountNumber').val();//储户账号
+            var guid = new GUID();
+            var exinfo = { id: guid.newGUID(), BusinessName: '商品销售', GoodID: GoodID, WBWareHouseID: WBWareHouseID, GoodName: GoodName, SpecName: SpecName, UnitName: UnitName, GoodPrice: GoodPrice, GoodCount: GoodCount, GoodValue: GoodValue, integral_Change: integral_Change, integral_Total: integral_Total }
+            //arrayex.push(exinfo);//添加一条兑换信息
+            //exarrayPush(arrayex, exinfo);//添加一条兑换信息
+            arrayex.length = 0;
+            arrayex.push(exinfo);
+            ShowExChangeInfo()
+        }
+
+        function ShowExChangeInfo() {
+         
+            $('#tabexchangelist .tr_exchangelist').remove();//清空原来的兑换列表
+            if (arrayex.length != 0) {
+                $('.exchangelist').fadeIn();
+                $('.actionlist').fadeIn();
+                var exinfo = arrayex[0];
+                var tr_ex = ' <tr class="tr_exchangelist">';
+                tr_ex += '<td style="height:30px;width:90px;">' + exinfo.BusinessName + '</td>';
+                tr_ex += '<td style="width:100px;">' + exinfo.GoodName + '</td>';
+                tr_ex += '<td style="width:80px;">' + exinfo.SpecName + '</td>';
+                tr_ex += '<td style="width:80px;">' + changeTwoDecimal_f(exinfo.GoodCount) + '</td>';
+                tr_ex += '<td style="width:80px;">' + changeTwoDecimal_f(exinfo.integral_Change) + '</td>';
+                var integral_Total = $('#span_integral_Total').html();
+                tr_ex += '<td style="width:80px;">' + changeTwoDecimal_f(parseFloat(integral_Total)-parseFloat( exinfo.integral_Change)) + '</td>';
+                tr_ex += '</tr>';
+                $('#tabexchangelist tbody').append(tr_ex);
+               
+            } else {
+                $('.exchangelist').fadeOut();
+                $('.actionlist').fadeOut();
+            }
+            $('body').scrollTop(10000);//定位到最后
+
+        }
+
+
+        //重启兑换操作
+        function ExchangeActive() {
+            //$('#btnJieZhang').removeAttr('disabled');
+            //$('#btnJieZhang').css("background", "#cdc9a5");
+        }
+        //结束兑换操作
+        function ExchangeEnd() {
+            console.log('-------------------ExchangeEnd');
+        }
+
+        /***************结账和打印****************/
+        function FunJieZhang() {
+            var AccountNumber = $('#span_AccountNumber').html();
+            var strName = $('#span_strName').html();
+            var para = 'AccountNumber=' + AccountNumber + '&strName=' + strName + '&exlist=' + JSON.stringify(arrayex);
+            $.ajax({
+                url: '/User/Exchange/exchange.ashx?type=Add_GoodExchangeIntegral',
+                type: 'post',
+                data: para,
+                dataType: 'json',
+                success: function (r) {
+                    if (r.state == "error") {
+                        showMsg(r.msg);
+                        return false;
+                    } else {
+                        $('#tabexchangeChoose input[name=btnAddEx]').attr('disabled', 'disabled');
+                        $('#tabexchangelist .exchangelistdel').attr('disabled', 'disabled');
+                        BusinessNO = r.BusinessNO;//兑换序列号，用于打印
+                        showMsg(r.msg);
+
+                        $('#btnJieZhang').attr('disabled', 'disabled');
+                        $('#btnJieZhang').css('background', '#aaa');
+
+                        $('#btnPrintPage').removeAttr('disabled');
+                    }
+                }, error: function (r) {
+                    showMsg('兑换商品失败 ！');
+                }
+            });
+        }
+
+        function PrintPage() {
+            var url = '/User/Exchange/exchange.ashx?type=PrintGoodExchangeIntegral';
+            // var para = 'AccountNumber=' + $('#QAccountNumber').val() + '&BusinessNO=' + BusinessNO + '&model=';
+            var para = 'AccountNumber=' + $('#QAccountNumber').val() + '&BusinessNO=' + BusinessNO
+            $.ajax({
+                url: url,
+                type: 'post',
+                data: para,
+                dataType: 'text',
+                success: function (r) {
+                    if (r == '') {
+                        showMsg('打印内容不可以为空!');
+                        return false;
+                    }
+                    $('#divPrintPaper').html('');
+                    $('#divPrintPaper').append(r);
+                    CreatePage();
+                    LODOP.PREVIEW(); //打印存折
+                }, error: function (r) {
+                    showMsg('加载打印坐标时出现错误 ！');
+                }
+            });
+        }
+
+
+    </script>
+    <style type="text/css">
+        .exchangeChoose {
+            display: none;
+            margin: 10px 10px;
+        }
+
+            .exchangeChoose #tabexchangeChoose {
+                background-color: #ececec;
+                border: 1px solid #aaa;
+                border-radius: 5px;
+                margin: 10px 0px;
+                width: 750px;
+            }
+
+            .exchangeChoose input[name=ExchangeCount] {
+                color: blue;
+                font-size: 16px;
+                font-weight: bold;
+            }
+
+        .exchangePolicy {
+            display: none;
+            margin: 5px 10px;
+            padding: 5px 18px;
+            background-color: #ececec;
+            border: 1px solid #aaa;
+            border-radius: 5px;
+            width: 712px;
+            font-size: 14px;
+            color: red;
+        }
+
+            .exchangePolicy #spanexchangePolicyTitle {
+                font-weight: bold;
+            }
+
+        .exchangelist {
+            display: none;
+            margin: 10px 10px;
+        }
+
+            .exchangelist #tabexchangelist {
+                width: 750px;
+            }
+
+        .actionlist {
+            display: none;
+            margin: 5px 10px;
+            padding: 5px 18px;
+            background-color: #ececec;
+            border: 1px solid #aaa;
+            border-radius: 5px;
+            width: 712px;
+        }
+
+            .actionlist input {
+                margin: 5px 10px;
+                width: 80px;
+                border: 1px solid #666;
+            }
+
+            .actionlist #btnJieZhang {
+                font-size: 16px;
+                font-weight: 600;
+                color: blue;
+            }
+
+            .actionlist #btnPrintFanYe {
+                display: none;
+            }
+
+        input[name=btnAddEx] {
+            border: 1px solid #666;
+            color: green;
+            font-weight: bold;
+            width: 60px;
+            height: 25px;
+            border-radius: 8px;
+        }
+
+        .exchangelist .exchangelistdel {
+            width: 60px;
+            height: 20px;
+            font-size: 12px;
+            color: red;
+            background: #ccc;
+            border: 1px solid #999;
+            border-radius: 10px;
+        }
+
+            .exchangelist .exchangelistdel:hover {
+                background: #eee;
+                border: 1px solid #999;
+            }
+    </style>
+</head>
+<body>
+
+
+    <div class="pageHead">
+        <b>积分兑换</b>
+    </div>
+
+
+    <div class="pageQuery">
+        <table>
+            <tr>
+                <td style="width:80px; text-align:right;font-weight:bold;">储户账号:</td>
+                <td style="width:130px;"><input type="text" id="QAccountNumber" /></td>
+                <td style="width:50px; text-align:right;font-weight:bold;">密码:</td>
+                <td style="width:100px;"><input type="password" id="QPassword" /></td>
+                <td style="width:50px; text-align:right;font-weight:bold;"><input type="button" value="" id="QSelect" /></td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="depositorInfo">
+        <table class="tabinfo" id="tabdepositorInfo">
+            <thead>
+                <tr>
+                    <td colspan="7" style="border-bottom:1px solid #aaa; height:25px; text-align:center">
+                        <span style="font-size: 14px;  color:Green">储户基本信息</span>
+                    </td>
+                </tr>
+                <tr class="tr_head">
+                    <th align="center" style="width:100px; height:30px;">
+                        储户账号
+                    </th>
+                    <th align="center" style="width:100px;">
+                        储户姓名
+                    </th>
+                    <th align="center" style="width:100px;">
+                        移动电话
+                    </th>
+                    <th align="center" style="width:80px;">
+                        当前状态
+                    </th>
+                    <th align="center" style="width:100px;">
+                        身份证号
+                    </th>
+                    <th align="center" style="width:200px;">
+                        储户地址
+                    </th>
+                    <th align="center" style="width:70px;">
+                        可用积分
+                    </th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+
+
+    <div class="exchangeChoose">
+        <table id="tabexchangeChoose">
+            <thead>
+                <tr>
+
+                    <td align="right" style="width: 40px"><span>商品:</span></td>
+                    <td id="tdselect_goodlist" style="width: 140px; border-right: 1px solid #999"><!--<select name="select_goodlist" style="width:120px;"><option value="122">XX面粉25KG</option></select>--></td>
+                    <td align="right" style="width: 120px"><select name="select_WBWareHouse" style="width:120px;"></select></td>
+                    <td align="right" style="width: 40px"><span>库存:</span></td>
+                    <td style="width: 60px; border-right: 1px solid #999"><span id="GoodStorage" style="color:green;font-size:16pt;">0</span></td>
+                    <td align="right" style="width: 70px"><span>兑换积分:</span></td>
+                    <td style="width: 40px; border-right: 1px solid #999;"><span id="span_Integralvalue" style="color:Green;font-weight:bold;font-size:16pt;"></span></td>
+                    <td style="width: 100px; border-right: 1px solid #999;display:none;"><span id="GoodPrice" style="color:Green;font-weight:bold;"></span><span id="GoodUnit" style="color:Green"></span></td>
+                    <td align="right" style="width: 40px"><span>数量:</span></td>
+                    <td style="width: 60px; "><input type="text" name="ExchangeCount" value="1" style="width:60px;"></td>
+                    <td style="width: 80px;text-align:center;"> <input type="button" name="btnAddEx" value="选择" onclick="addGoodSell();" class="btnOperate" style="width: 60px;"></td>
+                </tr>
+            </thead>
+        </table>
+    </div>
+
+
+    <div class="exchangelist">
+        <table class="tabinfo" id="tabexchangelist">
+            <thead>
+                <tr>
+                    <td colspan="10" style="border-bottom:1px solid #aaa; height:25px; text-align:center"><span style="font-size: 14px;  color:Green">兑换信息</span></td>
+                </tr>
+                <tr class="tr_head">
+                    <th style="width: 80px; height:30px; text-align: center;"> 业务名称 </th>
+                    <th style="width: 100px; text-align: center;"> 商品名 </th>
+                    <th style="width: 80px; text-align: center;"> 规格 </th>
+                    <th style="width: 80px; text-align: center;"> 数量 </th>
+                    <th style="width: 80px; text-align: center;">  消费积分 </th>
+                    <th style="width: 80px; text-align: center;"> 剩余积分 </th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <div class="actionlist">
+        <input type="button" id="btnJieZhang" value="兑换" onclick="FunJieZhang();" />
+        <input type="button" id="btnPrintPage" disabled="disabled" value="打印小票" onclick=" PrintPage();" />
+
+    </div>
+
+    <div class="divhidden">
+        <span>已选择商品</span>
+        <input type="text" id="Good_UnitName" value="" />
+        <input type="text" id="Good_SpecName" value="" />
+    </div>
+</body>
+</html>

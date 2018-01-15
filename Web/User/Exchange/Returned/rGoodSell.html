@@ -1,0 +1,457 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head id="Head1">
+    <title>退还兑换</title>
+
+    <script src="../../../Scripts/jquery-1.4.1.js" type="text/javascript"></script>
+    <script src="../../../Scripts/WebInner.js" type="text/javascript"></script>
+    <script src="../../../Scripts/Common.js" type="text/javascript"></script>
+    <link href="../../../Styles/Common.css" rel="stylesheet" type="text/css" />
+    <link href="../../../Styles/storage.css" rel="stylesheet" type="text/css" />
+    <script src="../../../Lodop6.198/LodopFuncs.js" type="text/javascript"></script>
+    <script src="../../../Scripts/LodopPrint.js"></script>
+    <script src="../../../Scripts/codeKeyboard.js"></script>
+    <script src="../../../Scripts/fakeLoader.js" type="text/javascript"></script>
+    <link href="../../../Styles/fakeLoader.css" rel="stylesheet" />
+    <script src="../../../Scripts/storage.js"></script>
+    <script src="../../../Scripts/My97DatePicker/WdatePicker.js" type="text/javascript"></script>
+    <script type="text/javascript">
+        /*--------窗体启动设置和基本设置--------*/
+
+        var BNOList = '';//退还产生的业务列表
+    
+        var ISHQ = false;
+        $(function () {
+            //$('#QAccountNumber').val('0030000004');
+            var wbinfo = JSON.parse(localStorage.getItem('wbinfo'));
+            ISHQ = wbinfo[0].ISHQ;
+            if (!ISHQ) {
+                $('#td_date').hide();
+            } else {
+                $('#td_date').show();
+                //获取一周前的时间
+                var now = new Date();
+                var date_week = new Date(now.getTime() - 7 * 24 * 3600 * 1000);
+                $('#date_begin').val(getDate(date_week));
+                $('#date_end').val(getDateNow());
+            }
+            $('.pageQuery #QSelect').click(function () {
+                $('#select_AccountNumber').val($('#QAccountNumber').val());
+                FunDepSelect();
+            });
+            $('#QAccountNumber').focus(function () { $('#QAccountNumber').val(''); });//储户账号
+            $('#QPassword').focus(function () { $('#QPassword').val(''); });//储户密码
+
+
+
+            //非储户销售退还，查询模拟储户
+            $('#QSimulate').click(function () {
+                FunDep_Simulate();
+            })
+
+        });
+
+        /***************查询操作****************/
+
+        //查询模拟储户
+        function FunDep_Simulate() {
+
+            $(".fakeloader").fakeLoader({
+                timeToHide: 12000000,
+                bgColor: "transparent",
+                spinner: "spinner7"
+            });
+
+            var url = '/User/Exchange/exchange.ashx?type=getDepositor_Simulate';
+            $.ajax({
+                url: url,
+                type: 'post',
+                data: '',
+                dataType: 'json',
+                success: function (r) {
+                    $(".fakeloader").fakeCloser();
+                    $('.depositorInfo').fadeOut();
+                    $('.exchangeChoose').fadeOut();
+                    if (r == null) {
+                        showMsg("操作失败，请重新选择[非储户销售]操作! ");
+                        return;
+                    } else {
+                        addDepositor(r);
+
+                        //$('.exchangeChoose').fadeIn();
+                        //initGoodStorage();//加载商品信息
+                    }
+                }, error: function (r) {
+                    $(".fakeloader").fakeCloser();
+                    showMsg('获取储户信息失败 ！');
+                }
+            });
+        }
+
+
+
+        //储户查询
+        function FunDepSelect() {
+            var datapara = 'AccountNumber=' + $('#QAccountNumber').val().trim() + '&Password=' + $('#QPassword').val().trim()
+            if ($('#QAccountNumber').val().trim().length != 10) {
+                showMsg('请输入储户账号');
+                return false;
+            }
+         
+            var url = '/User/Exchange/exchange.ashx?type=getDepositorStorageInfo';
+            $.ajax({
+                url: url,
+                type: 'post',
+                data: datapara,
+                dataType: 'json',
+                success: function (r) {
+                    $('.depositorInfo').fadeOut();
+                    if (r.state == false) {
+                        showMsg(r.msg);
+                        return false;
+                    }
+                    var dep = JSON.parse(r.dep);
+                    addDepositor(dep);
+                }, error: function (r) {
+                    showMsg('获取储户信息失败 ！');
+                }
+            });
+        }
+
+        function addDepositor(dep) {
+            if (dep.length > 0) {//添加储户基本信息
+
+                $('#select_AccountNumber').val(dep[0].AccountNumber);//当前选择的储户账号
+                $('#tabdepositorInfo .trappend').remove();
+
+                var strdep = '<tr class="trappend">';
+                strdep += ' <td style="height:30px;"><span id="span_AccountNumber">' + dep[0].AccountNumber + '</span></td>';
+                strdep += ' <td><span id="span_strName">' + dep[0].strName + '</span></td>';
+                strdep += ' <td>' + dep[0].PhoneNO + '</td>';
+                var strState = '正常';
+                if (dep[0].numState == '0') {
+                    strState = '禁用';
+                }
+                strdep += ' <td>' + strState + '</td>';
+                strdep += ' <td>' + dep[0].IDCard + '</td>';
+                strdep += ' <td>' + dep[0].strAddress + '</td>';
+                strdep += '</tr>'
+                $('#tabdepositorInfo').append(strdep);
+                $('#QAccountNumber').attr('disabled', 'disabled');
+                $('.pageQuery #QSelect').attr('disabled', 'disabled');
+                showExchange();//加载商品列表
+            }
+            $('.depositorInfo').fadeIn();
+        }
+      
+
+        //产品兑换信息
+        function showExchange() {
+            var para = 'AccountNumber=' + $('#select_AccountNumber').val();
+            if (ISHQ) {
+                para += '&date_begin=' + $('#date_begin').val() + '&date_end=' + $('#date_end').val();
+            }
+            $.ajax({
+                url: 'return.ashx?type=get_rGoodSell&AccountNumber=' + $('#D_AccountNumber').html(),
+                type: 'post',
+                data: para,
+                dataType: 'json',
+                success: function (r) {
+                    var jsondata = r;
+                    if (jsondata.state == 'success') {
+                        pageState(true);
+                        //遍历兑换列表
+                        var exdata = JSON.parse(jsondata.data);
+                        var strhtml = '';
+                        for (var i = 0; i < exdata.length; i++) {
+                            strhtml += '<tr class="tr_data">';
+                            strhtml += '  <td style="height: 25px;">' + exdata[i]["GoodName"] + '</td>';
+                            strhtml += '  <td>' + exdata[i]["GoodPrice"] + '</td>';
+                            strhtml += '  <td>' + exdata[i]["GoodCount"] + '</td>';
+                            strhtml += '  <td>' + exdata[i]["UnitName"] + '</td>';
+                            strhtml += '  <td>' + exdata[i]["GoodValue"] + '</td>';
+                            strhtml += '  <td>' + exdata[i]["dt_Sell"] + '</td>';
+                            strhtml += '  <td>  <input type="checkbox" id="select-' + i + '"  name="exselect" onclick="FunSelect(this,' + exdata[i].ID + ')" value="' + exdata[i].ID + '" class="custom-checkbox"  /><label for="select-' + i + '"></label></td>';
+                            strhtml += '</tr>';
+                        }
+                        $('#tabdatalist .tr_data').remove();
+                        $('#tabdatalist').append(strhtml);
+                    } else {
+                        pageState(false);
+                        showMsg(jsondata.msg);
+                    }
+
+                }, error: function (r) {
+                    pageState(false);
+                    //showMsg(r.msg);
+                }
+            });
+
+        }
+
+        function pageState(flag) {
+            if (flag) {
+                $('.datalist').fadeIn();
+                $('.actionlist').fadeIn();
+                $('.divWarning').fadeOut();
+            } else {
+                $('.datalist').fadeOut();
+                $('.actionlist').fadeOut();
+                $('.divWarning').fadeIn();
+            }
+        }
+
+        //选择兑换商品
+        function FunSelect(obj, exid) {
+
+            var IDList = $('#IDList').val();
+            var arrayObj = new Array();
+            arrayObj = IDList.split(',');
+
+            IDList = '';
+            if (obj.checked) {//当前节点被选中
+                arrayObj.push(exid); //添加被选中节点
+                for (var i = 0; i < arrayObj.length; i++) {
+                    if (IDList == '') {
+                        IDList = arrayObj[i];
+                    }
+                    else {
+                        IDList += ',' + arrayObj[i];
+                    }
+                }
+            } else { //当前节点没被选中
+                for (var i = 0; i < arrayObj.length; i++) {
+                    if (arrayObj[i] != exid) {
+                        if (IDList == '') {
+                            IDList = arrayObj[i];
+                        }
+                        else {
+                            IDList += ',' + arrayObj[i];
+                        }
+                    }
+                }
+            }
+            $('#IDList').val(IDList);
+        }
+
+
+        function frmSubmit() {
+            var IDList = $('#IDList').val();
+            var AccountNumber = $('#select_AccountNumber').val();
+            if ($.trim(IDList) == '') {
+                showMsg(' 请选择要退还的商品 ！');
+                return;
+            } else {
+                var msg = '您确认已经仔细检查输入信息，并继续操作吗？';
+                showConfirm(msg, function (obj) {
+                    if (obj == 'yes') {
+
+                        $.ajax({
+                            url: 'return.ashx?type=Return_GoodSell&IDList=' + IDList + '&AccountNumber=' + AccountNumber,
+                            type: 'post',
+                            data: '',
+                            dataType: 'json',
+                            success: function (r) {
+                                if (r.state == "success") {
+                                    showMsg(r.msg);
+                                    $('#btnJieZhang').attr('disabled', 'disabled');
+                                    $('#btnJieZhang').css('background', '#aaa');
+                               
+                                    $('#btnPrintPage').removeAttr('disabled');
+                                    BNOList = r.BNList;
+                                    $('#QSelect').attr('disabled', 'disabled')
+                                }
+
+
+                            }, error: function (r) {
+                                showMsg(' 退还操作失败 ！');
+                            }
+                        });
+                    } else {
+                        //console.log('你点击了取消！');
+                    }
+                });
+            }
+
+        }
+
+        /*----打印----*/
+        function PrintPage() {
+            var AccountNumber = $('#select_AccountNumber').val();
+            var url = '/User/Exchange/exchange.ashx?type=PrintGoodSellList';
+            var para = 'AccountNumber=' + AccountNumber + '&BNOList=' + BNOList + '&model=t';
+            $.ajax({
+                url: url,
+                type: 'post',
+                data: para,
+                dataType: 'text',
+                success: function (r) {
+                    if (r == '') {
+                        showMsg('打印内容不可以为空!');
+                        return false;
+                    }
+                    $('#divPrintPaper').html('');
+                    $('#divPrintPaper').append(r);
+                    CreatePage();
+                    LODOP.PREVIEW(); //打印存折
+                }, error: function (r) {
+                    showMsg('加载打印坐标时出现错误 ！');
+                }
+            });
+        }
+    </script>
+    <style type="text/css">
+        .datalist {
+            display: none;
+            margin: 10px 10px;
+        }
+
+            .datalist #tabdatalist {
+                width: 750px;
+            }
+
+        .actionlist {
+            display: none;
+            margin: 5px 10px;
+            padding: 5px 18px;
+            background-color: #ececec;
+            border: 1px solid #aaa;
+            border-radius: 5px;
+            width: 712px;
+        }
+
+            .actionlist input {
+                margin: 5px 10px;
+                width: 80px;
+                border: 1px solid #666;
+            }
+
+            .actionlist #btnJieZhang {
+                font-size: 16px;
+                width: 120px;
+                font-weight: 600;
+                color: blue;
+            }
+
+            .actionlist #btnPrintFanYe {
+                display: none;
+            }
+    </style>
+</head>
+<body>
+
+    <div id="divPrint" style="display:none"></div>
+    <div id="divPrintPaper" style="display:none"></div>
+  
+
+    <div class="pageHead">
+        <b>退还销售商品</b>
+    </div>
+    
+    <div class="pageQuery">
+        <table>
+            <tr>
+                <td style="width:80px; text-align:right;font-weight:bold;">储户账号:</td>
+                <td style="width:130px;"><input type="text" id="QAccountNumber" /></td>
+                <td style="width:50px; text-align:right;font-weight:bold;">密码:</td>
+                <td style="width:100px;"><input type="password" id="QPassword" /></td>
+                <td id="td_date" style="width:300px; text-align:left;font-weight:bold;display:none;">
+                    <span style="margin-right:5px;">日期:</span>
+                    <input type="text" id="date_begin" onclick="WdatePicker();" style="font-size:16px;width:100px; font-weight:bolder;" />
+                    <span>-</span>
+                    <input type="text" id="date_end" onclick="WdatePicker()" style="font-size:16px;width:100px; font-weight:bolder;" />
+                </td>
+                <td style="width:50px; text-align:right;font-weight:bold;"><input type="button" value="" id="QSelect" /></td>
+                <td style="width:150px; text-align:right;font-weight:bold;"><input type="button" id="QSimulate" style="font-weight:bold;color:blue" value="非储户退还" /></td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="depositorInfo">
+        <table class="tabinfo" id="tabdepositorInfo">
+            <thead>
+                <tr>
+                    <td colspan="6" style="border-bottom:1px solid #aaa; height:25px; text-align:center">
+                        <span style="font-size: 14px;  color:Green">储户基本信息</span>
+                    </td>
+                </tr>
+                <tr class="tr_head">
+                    <th align="center" style="width:100px; height:30px;">
+                        储户账号
+                    </th>
+                    <th align="center" style="width:100px;">
+                        储户姓名
+                    </th>
+                    <th align="center" style="width:100px;">
+                        移动电话
+                    </th>
+                    <th align="center" style="width:100px;">
+                        当前状态
+                    </th>
+                    <th align="center" style="width:150px;">
+                        身份证号
+                    </th>
+                    <th align="center" style="width:200px;">
+                        储户地址
+                    </th>
+
+                </tr>
+            </thead>
+        </table>
+    </div>
+
+    
+
+    <div class="datalist">
+        <table class="tabinfo" id="tabdatalist">
+            <thead>
+                <tr>
+                    <td colspan="8" style="border-bottom:1px solid #aaa; height:25px; text-align:center">
+                        <span style="font-size: 14px;  color:Green">商品销售信息</span>
+                    </td>
+                </tr>
+                <tr class="tr_head">
+
+                    <th align="center" style="width:150px;">
+                        商品名
+                    </th>
+                    <th align="center" style="width:80px;">
+                        单价
+                    </th>
+                    <th align="center" style="width:80px;">
+                        数量
+                    </th>
+                    <th align="center" style="width:80px;">
+                        计价单位
+                    </th>
+                    <th align="center" style="width:100px;">
+                        金额
+                    </th>
+                    <th align="center" style="width:100px;">
+                        时间
+                    </th>
+                    <th align="center" style="width:60px;">
+                        退还
+                    </th>
+
+                </tr>
+            </thead>
+        </table>
+    </div>
+
+    <div class="actionlist">
+        <input type="button" id="btnJieZhang" value="确认并退还" onclick="frmSubmit();">
+       
+        <input type="button" id="btnPrintPage" disabled="disabled" value="打印小票" onclick=" PrintPage();">
+    </div>
+    <div class="divWarning">没有查找到商品销售信息!</div>
+    <div class="divhidden">
+        <!--兑换业务编号集合-->
+        <input type="text" id="IDList" />
+        <input type="text" id="select_AccountNumber" />
+    </div>
+
+</body>
+</html>
+
+

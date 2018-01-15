@@ -1,0 +1,1701 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>
+    </ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{14592A01-3D53-4CF9-915F-9D2B55AAF5B9}</ProjectGuid>
+    <ProjectTypeGuids>{349c5851-65df-11da-9384-00065b846f21};{fae04ec0-301f-11d3-bf4b-00c04f79efbc}</ProjectTypeGuids>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Web</RootNamespace>
+    <AssemblyName>Web</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <UseIISExpress>false</UseIISExpress>
+    <FileUpgradeFlags>
+    </FileUpgradeFlags>
+    <UpgradeBackupLocation>
+    </UpgradeBackupLocation>
+    <OldToolsVersion>4.0</OldToolsVersion>
+    <IISExpressSSLPort />
+    <IISExpressAnonymousAuthentication />
+    <IISExpressWindowsAuthentication />
+    <IISExpressUseClassicPipelineMode />
+    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
+    <RestorePackages>true</RestorePackages>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Accessibility">
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+    </Reference>
+    <Reference Include="AspNetPager, Version=7.4.5.0, Culture=neutral, PublicKeyToken=fb0a0fe055d40fd4, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\AspNetPager.dll</HintPath>
+    </Reference>
+    <Reference Include="LitJson">
+      <HintPath>C:\Users\ly_wy\Desktop\LitJson.dll</HintPath>
+    </Reference>
+    <Reference Include="log4net, Version=2.0.8.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\log4net.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Build.Framework" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Newtonsoft.Json.6.0.8\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="sharpziplib, Version=0.85.1.271, Culture=neutral, PublicKeyToken=1b03e6acf1164f73, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\sharpziplib.dll</HintPath>
+    </Reference>
+    <Reference Include="ShortMessage, Version=1.0.4553.33811, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\ShortMessage.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Net.Http.Formatting, Version=5.2.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Microsoft.AspNet.WebApi.Client.5.2.3\lib\net45\System.Net.Http.Formatting.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.Cors">
+      <HintPath>..\packages\Microsoft.AspNet.Cors.5.2.3\lib\net45\System.Web.Cors.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.Extensions" />
+    <Reference Include="System.Web.Http, Version=5.2.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Microsoft.AspNet.WebApi.Core.5.2.3\lib\net45\System.Web.Http.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.Http.Cors">
+      <HintPath>..\packages\Microsoft.AspNet.WebApi.Cors.5.2.3\lib\net45\System.Web.Http.Cors.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.Mvc, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Web" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Web.Services" />
+    <Reference Include="System.EnterpriseServices" />
+    <Reference Include="System.Web.DynamicData" />
+    <Reference Include="System.Web.Entity" />
+    <Reference Include="System.Web.ApplicationServices" />
+    <Reference Include="System.Xml.Linq" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Account_System\Menu_Admin.aspx" />
+    <Content Include="Account_System\Menu_User.aspx" />
+    <Content Include="Account_System\Operate_Log.aspx" />
+    <Content Include="Account_System\StorageRate.aspx" />
+    <Content Include="Account_System\StorageVariety.aspx" />
+    <Content Include="Account_System\StorageVarietyLevel.aspx" />
+    <Content Include="Account_System\strSql2.aspx" />
+    <Content Include="Account_System\SystemIndex.ascx" />
+    <Content Include="Account_System\SystemIndex.aspx" />
+    <Content Include="Admin\Approval\ASalePrice.aspx" />
+    <Content Include="Admin\Approval\AToSell.aspx" />
+    <Content Include="Admin\Commune\BusinessStatistics.aspx" />
+    <Content Include="Admin\Commune\CommuneEdit.aspx" />
+    <Content Include="Admin\Commune\CommuneQuery.aspx" />
+    <Content Include="Admin\Commune\CommuneStatistics.aspx" />
+    <Content Include="Admin\Good\Custom.aspx" />
+    <Content Include="Admin\Good\GoodInfo.aspx" />
+    <Content Include="Admin\Good\GoodJinHuo.aspx" />
+    <Content Include="Admin\Good\goodjinhuo.html" />
+    <Content Include="Admin\Good\GoodJinHuoList.aspx" />
+    <Content Include="Admin\Good\GoodJinHuoListHQ.aspx" />
+    <Content Include="Admin\Good\GoodSupplyApply.aspx" />
+    <Content Include="Admin\Good\GoodSupplyInfo.aspx" />
+    <Content Include="Admin\Good\GoodSupplyJinHuo.aspx" />
+    <Content Include="Admin\Good\QueryGoodStock.aspx" />
+    <Content Include="Admin\Good\QuerySupplyStock.aspx" />
+    <Content Include="Admin\Good\Supplier.aspx" />
+    <Content Include="Admin\Good\WBSupplyList.aspx" />
+    <Content Include="Admin\Good\WBSupplyListHQ.aspx" />
+    <Content Include="Admin\Info\InfoAdd.aspx" />
+    <Content Include="Admin\Info\InfoDetail.aspx" />
+    <Content Include="Admin\Info\InfoList.aspx" />
+    <Content Include="Admin\Info\InfoNotice.aspx" />
+    <Content Include="Admin\Info\InfoType.aspx" />
+    <Content Include="Admin\Info\MyInfo.aspx" />
+    <Content Include="Admin\Info\NoticeList.html" />
+    <Content Include="Admin\Info\TradeAdd.html" />
+    <Content Include="Admin\Info\TradeDetail.html" />
+    <Content Include="Admin\Info\TradeList.html" />
+    <Content Include="Admin\Info\TradeList_per.html" />
+    <Content Include="Admin\Log\LExchange.aspx" />
+    <Content Include="Admin\Log\LStorage.aspx" />
+    <Content Include="Admin\Log\LUserOnline.aspx" />
+    <Content Include="Admin\Query\DepositorEdit.aspx" />
+    <Content Include="Admin\Query\DepositorQuery.aspx" />
+    <Content Include="Admin\Query\QByAccount.aspx" />
+    <Content Include="Admin\Query\QByCun.aspx" />
+    <Content Include="Admin\Query\QByName.aspx" />
+    <Content Include="Admin\Query\QByPhoneNO.aspx" />
+    <Content Include="Admin\Query\QRich.aspx" />
+    <Content Include="Admin\Report\rexchange.html" />
+    <Content Include="Admin\Report\rexchangechart.html" />
+    <Content Include="Admin\Report\rexchangeIntegral.html" />
+    <Content Include="Admin\Report\rgoodsell.html" />
+    <Content Include="Admin\Report\rsell.html" />
+    <Content Include="Admin\Report\rsellchart.html" />
+    <Content Include="Admin\Report\rshopping.html" />
+    <Content Include="Admin\Report\storage.html" />
+    <Content Include="Admin\Report\storagelog.html" />
+    <Content Include="Admin\Returned\REGoods.aspx" />
+    <Content Include="Admin\Returned\RStorage.aspx" />
+    <Content Include="Admin\Returned\RStoreToSell.aspx" />
+    <Content Include="Admin\UserControl\LoginError.aspx" />
+    <Content Include="Admin\UserControl\UserManager.aspx" />
+    <Content Include="Admin\UserControl\UserMenu.aspx" />
+    <Content Include="Admin\WebSiteSetting\WBControl.aspx" />
+    <Content Include="Admin\WebSiteSetting\WBParameter.aspx" />
+    <Content Include="Admin\WebSiteSetting\WBSimulate.aspx" />
+    <Content Include="Admin\WebSiteSetting\WBType.aspx" />
+    <Content Include="BasicData\Charges\SetExchangePara.aspx" />
+    <Content Include="BasicData\Data\Address_Cun.aspx" />
+    <Content Include="BasicData\Data\Address_Xian.aspx" />
+    <Content Include="BasicData\Data\Address_Xiang.aspx" />
+    <Content Include="BasicData\Data\Address_Zu.aspx" />
+    <Content Include="BasicData\Data\GoodCategory.aspx" />
+    <Content Include="BasicData\Data\help.html" />
+    <Content Include="BasicData\Data\helpfile\install_lodop32.exe" />
+    <Content Include="BasicData\Data\helpfile\install_lodop64.exe" />
+    <Content Include="BasicData\Data\helpfile\南天PR2E  XP驱动.exe" />
+    <Content Include="BasicData\Data\helpfile\南天PR2Ewin7  win10驱动.exe" />
+    <Content Include="BasicData\Data\MeasuringUnit.aspx" />
+    <Content Include="BasicData\Data\PackingSpec.aspx" />
+    <Content Include="BasicData\Data\question.html" />
+    <Content Include="BasicData\HQStorage\HQSAdd.aspx" />
+    <Content Include="BasicData\StoragePara\SetStorageFee.aspx" />
+    <Content Include="BasicData\StoragePara\StorageRate.aspx" />
+    <Content Include="BasicData\StoragePara\storagerate.html" />
+    <Content Include="BasicData\StoragePara\storagerateLog.html" />
+    <Content Include="BasicData\StoragePara\StorageTime.aspx" />
+    <Content Include="BasicData\StoragePara\StorageUserType.aspx" />
+    <Content Include="BasicData\StoragePara\StorageVariety.aspx" />
+    <Content Include="BasicData\StoragePara\StorageVarietyLevel.aspx" />
+    <Content Include="fs\homepage.html" />
+    <Content Include="fs\index.htm" />
+    <Content Include="fs\left.html" />
+    <Content Include="fs\pushmessage.html" />
+    <Content Include="error.html" />
+    <Content Include="images\frmclose.png" />
+    <Content Include="images\home_notice.jpg" />
+    <Content Include="images\home_trade.jpg" />
+    <Content Include="images\home_trade.png" />
+    <Content Include="images\icon-back.png" />
+    <Content Include="images\LOGO.png" />
+    <Content Include="images\mainback.jpg" />
+    <Content Include="images\menuClose.png" />
+    <Content Include="images\menuOpen.png" />
+    <Content Include="images\menu_cunliang.png" />
+    <Content Include="images\menu_czx.png" />
+    <Content Include="images\menu_duihuan.png" />
+    <Content Include="images\menu_kaihu.png" />
+    <Content Include="images\pulldown.png" />
+    <Content Include="images\pullup.png" />
+    <Content Include="images\search_blue.png" />
+    <Content Include="images\search_red.png" />
+    <Content Include="images\wheat.png" />
+    <Content Include="images\winClose.png" />
+    <Content Include="images\winClose2.png" />
+    <Content Include="index.html" />
+    <Content Include="kindeditor\asp.net\bin\LitJSON.dll" />
+    <Content Include="kindeditor\asp.net\demo.aspx" />
+    <Content Include="kindeditor\asp.net\README.txt" />
+    <Content Include="kindeditor\asp\demo.asp" />
+    <Content Include="kindeditor\asp\file_manager_json.asp" />
+    <Content Include="kindeditor\asp\JSON_2.0.4.asp" />
+    <Content Include="kindeditor\asp\UpLoad_Class.asp" />
+    <Content Include="kindeditor\asp\upload_json.asp" />
+    <Content Include="kindeditor\examples\auto-height.html" />
+    <Content Include="kindeditor\examples\colorpicker.html" />
+    <Content Include="kindeditor\examples\custom-plugin.html" />
+    <Content Include="kindeditor\examples\custom-theme.html" />
+    <Content Include="kindeditor\examples\default.html" />
+    <Content Include="kindeditor\examples\dialog.html" />
+    <Content Include="kindeditor\examples\dynamic-load.html" />
+    <Content Include="kindeditor\examples\file-dialog.html" />
+    <Content Include="kindeditor\examples\file-manager.html" />
+    <Content Include="kindeditor\examples\filter-mode.html" />
+    <Content Include="kindeditor\examples\image-dialog.html" />
+    <Content Include="kindeditor\examples\index.css" />
+    <Content Include="kindeditor\examples\index.html" />
+    <Content Include="kindeditor\examples\jquery-ui.html" />
+    <Content Include="kindeditor\examples\jquery-ui\css\smoothness\images\ui-bg_flat_0_aaaaaa_40x100.png" />
+    <Content Include="kindeditor\examples\jquery-ui\css\smoothness\images\ui-bg_flat_75_ffffff_40x100.png" />
+    <Content Include="kindeditor\examples\jquery-ui\css\smoothness\images\ui-bg_glass_55_fbf9ee_1x400.png" />
+    <Content Include="kindeditor\examples\jquery-ui\css\smoothness\images\ui-bg_glass_65_ffffff_1x400.png" />
+    <Content Include="kindeditor\examples\jquery-ui\css\smoothness\images\ui-bg_glass_75_dadada_1x400.png" />
+    <Content Include="kindeditor\examples\jquery-ui\css\smoothness\images\ui-bg_glass_75_e6e6e6_1x400.png" />
+    <Content Include="kindeditor\examples\jquery-ui\css\smoothness\images\ui-bg_glass_95_fef1ec_1x400.png" />
+    <Content Include="kindeditor\examples\jquery-ui\css\smoothness\images\ui-bg_highlight-soft_75_cccccc_1x100.png" />
+    <Content Include="kindeditor\examples\jquery-ui\css\smoothness\images\ui-icons_222222_256x240.png" />
+    <Content Include="kindeditor\examples\jquery-ui\css\smoothness\images\ui-icons_2e83ff_256x240.png" />
+    <Content Include="kindeditor\examples\jquery-ui\css\smoothness\images\ui-icons_454545_256x240.png" />
+    <Content Include="kindeditor\examples\jquery-ui\css\smoothness\images\ui-icons_888888_256x240.png" />
+    <Content Include="kindeditor\examples\jquery-ui\css\smoothness\images\ui-icons_cd0a0a_256x240.png" />
+    <Content Include="kindeditor\examples\jquery-ui\css\smoothness\jquery-ui-1.9.2.custom.css" />
+    <Content Include="kindeditor\examples\jquery-ui\css\smoothness\jquery-ui-1.9.2.custom.min.css" />
+    <Content Include="kindeditor\examples\jquery-ui\js\jquery-ui-1.9.2.custom.js" />
+    <Content Include="kindeditor\examples\jquery-ui\js\jquery-ui-1.9.2.custom.min.js" />
+    <Content Include="kindeditor\examples\jquery.html" />
+    <Content Include="kindeditor\examples\jquery.js" />
+    <Content Include="kindeditor\examples\multi-image-dialog.html" />
+    <Content Include="kindeditor\examples\multi-language.html" />
+    <Content Include="kindeditor\examples\newline.html" />
+    <Content Include="kindeditor\examples\node.html" />
+    <Content Include="kindeditor\examples\paste-type.html" />
+    <Content Include="kindeditor\examples\qqstyle.html" />
+    <Content Include="kindeditor\examples\readonly.html" />
+    <Content Include="kindeditor\examples\simple.html" />
+    <Content Include="kindeditor\examples\uploadbutton.html" />
+    <Content Include="kindeditor\examples\url-type.html" />
+    <Content Include="kindeditor\examples\word-count.html" />
+    <Content Include="kindeditor\jsp\lib\commons-fileupload-1.2.1.jar" />
+    <Content Include="kindeditor\jsp\lib\commons-io-1.4.jar" />
+    <Content Include="kindeditor\jsp\lib\json_simple-1.1.jar" />
+    <Content Include="kindeditor\jsp\README.txt" />
+    <Content Include="kindeditor\kindeditor-all-min.js" />
+    <Content Include="kindeditor\kindeditor-all.js" />
+    <Content Include="kindeditor\kindeditor-min.js" />
+    <Content Include="kindeditor\kindeditor.js" />
+    <Content Include="kindeditor\lang\ar.js" />
+    <Content Include="kindeditor\lang\en.js" />
+    <Content Include="kindeditor\lang\ko.js" />
+    <Content Include="kindeditor\lang\zh_CN.js" />
+    <Content Include="kindeditor\lang\zh_TW.js" />
+    <Content Include="kindeditor\license.txt" />
+    <Content Include="kindeditor\plugins\anchor\anchor.js" />
+    <Content Include="kindeditor\plugins\autoheight\autoheight.js" />
+    <Content Include="kindeditor\plugins\baidumap\baidumap.js" />
+    <Content Include="kindeditor\plugins\baidumap\index.html" />
+    <Content Include="kindeditor\plugins\baidumap\map.html" />
+    <Content Include="kindeditor\plugins\clearhtml\clearhtml.js" />
+    <Content Include="kindeditor\plugins\code\code.js" />
+    <Content Include="kindeditor\plugins\code\prettify.css" />
+    <Content Include="kindeditor\plugins\code\prettify.js" />
+    <Content Include="kindeditor\plugins\emoticons\emoticons.js" />
+    <Content Include="kindeditor\plugins\emoticons\images\0.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\1.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\10.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\100.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\101.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\102.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\103.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\104.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\105.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\106.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\107.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\108.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\109.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\11.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\110.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\111.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\112.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\113.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\114.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\115.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\116.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\117.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\118.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\119.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\12.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\120.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\121.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\122.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\123.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\124.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\125.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\126.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\127.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\128.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\129.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\13.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\130.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\131.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\132.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\133.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\134.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\14.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\15.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\16.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\17.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\18.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\19.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\2.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\20.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\21.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\22.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\23.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\24.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\25.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\26.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\27.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\28.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\29.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\3.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\30.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\31.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\32.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\33.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\34.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\35.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\36.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\37.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\38.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\39.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\4.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\40.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\41.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\42.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\43.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\44.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\45.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\46.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\47.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\48.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\49.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\5.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\50.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\51.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\52.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\53.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\54.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\55.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\56.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\57.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\58.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\59.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\6.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\60.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\61.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\62.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\63.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\64.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\65.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\66.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\67.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\68.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\69.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\7.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\70.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\71.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\72.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\73.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\74.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\75.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\76.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\77.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\78.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\79.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\8.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\80.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\81.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\82.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\83.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\84.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\85.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\86.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\87.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\88.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\89.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\9.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\90.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\91.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\92.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\93.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\94.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\95.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\96.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\97.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\98.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\99.gif" />
+    <Content Include="kindeditor\plugins\emoticons\images\static.gif" />
+    <Content Include="kindeditor\plugins\filemanager\filemanager.js" />
+    <Content Include="kindeditor\plugins\filemanager\images\file-16.gif" />
+    <Content Include="kindeditor\plugins\filemanager\images\file-64.gif" />
+    <Content Include="kindeditor\plugins\filemanager\images\folder-16.gif" />
+    <Content Include="kindeditor\plugins\filemanager\images\folder-64.gif" />
+    <Content Include="kindeditor\plugins\filemanager\images\go-up.gif" />
+    <Content Include="kindeditor\plugins\flash\flash.js" />
+    <Content Include="kindeditor\plugins\image\image.js" />
+    <Content Include="kindeditor\plugins\image\images\align_left.gif" />
+    <Content Include="kindeditor\plugins\image\images\align_right.gif" />
+    <Content Include="kindeditor\plugins\image\images\align_top.gif" />
+    <Content Include="kindeditor\plugins\image\images\refresh.png" />
+    <Content Include="kindeditor\plugins\insertfile\insertfile.js" />
+    <Content Include="kindeditor\plugins\lineheight\lineheight.js" />
+    <Content Include="kindeditor\plugins\link\link.js" />
+    <Content Include="kindeditor\plugins\map\map.html" />
+    <Content Include="kindeditor\plugins\map\map.js" />
+    <Content Include="kindeditor\plugins\media\media.js" />
+    <Content Include="kindeditor\plugins\multiimage\images\image.png" />
+    <Content Include="kindeditor\plugins\multiimage\images\select-files-en.png" />
+    <Content Include="kindeditor\plugins\multiimage\images\select-files-zh_CN.png" />
+    <Content Include="kindeditor\plugins\multiimage\images\swfupload.swf" />
+    <Content Include="kindeditor\plugins\multiimage\multiimage.js" />
+    <Content Include="kindeditor\plugins\pagebreak\pagebreak.js" />
+    <Content Include="kindeditor\plugins\plainpaste\plainpaste.js" />
+    <Content Include="kindeditor\plugins\preview\preview.js" />
+    <Content Include="kindeditor\plugins\quickformat\quickformat.js" />
+    <Content Include="kindeditor\plugins\table\table.js" />
+    <Content Include="kindeditor\plugins\template\html\1.html" />
+    <Content Include="kindeditor\plugins\template\html\2.html" />
+    <Content Include="kindeditor\plugins\template\html\3.html" />
+    <Content Include="kindeditor\plugins\template\template.js" />
+    <Content Include="kindeditor\plugins\wordpaste\wordpaste.js" />
+    <Content Include="kindeditor\themes\common\anchor.gif" />
+    <Content Include="kindeditor\themes\common\blank.gif" />
+    <Content Include="kindeditor\themes\common\flash.gif" />
+    <Content Include="kindeditor\themes\common\loading.gif" />
+    <Content Include="kindeditor\themes\common\media.gif" />
+    <Content Include="kindeditor\themes\common\rm.gif" />
+    <Content Include="kindeditor\themes\default\background.png" />
+    <Content Include="kindeditor\themes\default\default.css" />
+    <Content Include="kindeditor\themes\default\default.png" />
+    <Content Include="kindeditor\themes\qq\editor.gif" />
+    <Content Include="kindeditor\themes\qq\qq.css" />
+    <Content Include="kindeditor\themes\simple\simple.css" />
+    <Content Include="Lodop6.198\install_lodop32.exe" />
+    <Content Include="Lodop6.198\install_lodop64.exe" />
+    <Content Include="Lodop6.198\LodopFuncs.js" />
+    <Content Include="Scripts\chart.min.js" />
+    <Content Include="Scripts\codeKeyboard.js" />
+    <Content Include="Scripts\colorpicker.js" />
+    <Content Include="Scripts\Common.js" />
+    <Content Include="Lodop6.198\lang\en.js" />
+    <Content Include="Lodop6.198\lang\zh-cn.js" />
+    <Content Include="Lodop6.198\lang\zh-tw.js" />
+    <Content Include="Scripts\excelhelper.js" />
+    <Content Include="Scripts\fakeLoader.js" />
+    <Content Include="Scripts\jquery.js" />
+    <Content Include="Scripts\jquery.min.js" />
+    <Content Include="Scripts\jquery.pagination.js" />
+    <Content Include="Scripts\LodopPrint.js" />
+    <Content Include="Scripts\My97DatePicker\calendar.js" />
+    <Content Include="Scripts\My97DatePicker\lang\en.js" />
+    <Content Include="Scripts\My97DatePicker\lang\zh-cn.js" />
+    <Content Include="Scripts\My97DatePicker\lang\zh-tw.js" />
+    <Content Include="Scripts\My97DatePicker\skin\datePicker.gif" />
+    <Content Include="Scripts\My97DatePicker\skin\default\datepicker.css" />
+    <Content Include="Scripts\My97DatePicker\skin\default\img.gif" />
+    <Content Include="Scripts\My97DatePicker\skin\WdatePicker.css" />
+    <Content Include="Scripts\My97DatePicker\skin\whyGreen\bg.jpg" />
+    <Content Include="Scripts\My97DatePicker\skin\whyGreen\datepicker.css" />
+    <Content Include="Scripts\My97DatePicker\skin\whyGreen\img.gif" />
+    <Content Include="Scripts\My97DatePicker\WdatePicker.js" />
+    <Content Include="Scripts\My97DatePicker\开发包\lang\en.js" />
+    <Content Include="Scripts\My97DatePicker\开发包\lang\zh-cn.js" />
+    <Content Include="Scripts\My97DatePicker\开发包\lang\zh-tw.js" />
+    <Content Include="Scripts\My97DatePicker\开发包\readme.txt" />
+    <Content Include="Scripts\My97DatePicker\开发包\skin\datePicker.gif" />
+    <Content Include="Scripts\My97DatePicker\开发包\skin\default\datepicker.css" />
+    <Content Include="Scripts\My97DatePicker\开发包\skin\default\img.gif" />
+    <Content Include="Scripts\My97DatePicker\开发包\skin\WdatePicker.css" />
+    <Content Include="Scripts\My97DatePicker\开发包\skin\whyGreen\bg.jpg" />
+    <Content Include="Scripts\My97DatePicker\开发包\skin\whyGreen\datepicker.css" />
+    <Content Include="Scripts\My97DatePicker\开发包\skin\whyGreen\img.gif" />
+    <Content Include="Scripts\pushmsg.js" />
+    <Content Include="Scripts\storage.js" />
+    <Content Include="Scripts\WebInner.js" />
+    <Content Include="images\close.jpg" />
+    <Content Include="images\list_black.png" />
+    <Content Include="images\list_blue.png" />
+    <Content Include="images\minus.gif" />
+    <Content Include="images\open.jpg" />
+    <Content Include="images\plus.gif" />
+    <Content Include="images\seach_brown.png" />
+    <Content Include="images\search2_blue.png" />
+    <Content Include="images\search_black.png" />
+    <Content Include="Settle\accountlist.html" />
+    <Content Include="Settle\AddAccount.aspx" />
+    <Content Include="Settle\BasicData\Accountant.aspx" />
+    <Content Include="Settle\BasicData\Quality.aspx" />
+    <Content Include="Settle\BasicData\StockType.aspx" />
+    <Content Include="Settle\BasicData\Weigh.aspx" />
+    <Content Include="Settle\CheckOut.aspx" />
+    <Content Include="Settle\checkout.html" />
+    <Content Include="Settle\CheckOutDetail.aspx" />
+    <Content Include="Settle\checkoutdetail.html" />
+    <Content Include="Settle\CheckOutEdit.aspx" />
+    <Content Include="Settle\CheckOutFinal.aspx" />
+    <Content Include="Settle\CheckOutHistory.aspx" />
+    <Content Include="Settle\checkouthistory.html" />
+    <Content Include="Settle\SettleList.aspx" />
+    <Content Include="Settle\Settle_AgentFee.aspx" />
+    <Content Include="Settle\Settle_Exchange.aspx" />
+    <Content Include="Settle\Settle_Sell.aspx" />
+    <Content Include="Settle\Settle_Shopping.aspx" />
+    <Content Include="Styles\colorpicker.css" />
+    <Content Include="Styles\Common.css" />
+    <Content Include="Styles\fakeLoader.css" />
+    <Content Include="Styles\left.css" />
+    <Content Include="Styles\pagination.css" />
+    <Content Include="Styles\Site.css" />
+    <Content Include="Global.asax" />
+    <Content Include="Scripts\jquery-1.4.1-vsdoc.js" />
+    <Content Include="Scripts\jquery-1.4.1.js" />
+    <Content Include="Scripts\jquery-1.4.1.min.js" />
+    <Content Include="fs\top.htm" />
+    <Content Include="Styles\storage.css" />
+    <Content Include="Styles\top.css" />
+    <Content Include="sysindex.html" />
+    <Content Include="test\corsApi.html" />
+    <Content Include="test\log4netTest.aspx" />
+    <Content Include="User\Commune\BusinessStatistics.aspx" />
+    <Content Include="User\Commune\CommuneAdd.aspx" />
+    <Content Include="User\Commune\CommuneQuery.aspx" />
+    <Content Include="User\Commune\GoodSupply.aspx" />
+    <Content Include="User\Commune\GoodSupplyReturn.aspx" />
+    <Content Include="User\Commune\OperateLog.aspx" />
+    <Content Include="User\Commune\PreDefine.aspx" />
+    <Content Include="User\Exchange\Apply\ApplyResult.aspx" />
+    <Content Include="User\Exchange\Apply\applyresult.html" />
+    <Content Include="User\Exchange\Apply\ApplySalePrice.aspx" />
+    <Content Include="User\Exchange\Apply\ApplyToSell.aspx" />
+    <Content Include="User\Exchange\Apply\applytosell.html" />
+    <Content Include="User\Exchange\ex.html" />
+    <Content Include="User\Exchange\exchange.html" />
+    <Content Include="User\Exchange\exchangegroup.html" />
+    <Content Include="User\Exchange\exchangeIntegral.html" />
+    <Content Include="User\Exchange\goodsell.html" />
+    <Content Include="User\Exchange\Returned\rExchange.html" />
+    <Content Include="User\Exchange\Returned\rGoodSell.html" />
+    <Content Include="User\Exchange\Returned\rSell.html" />
+    <Content Include="User\Exchange\Returned\rShopping.html" />
+    <Content Include="User\Exchange\shopping.html" />
+    <Content Include="User\Exchange\storagesell.html" />
+    <Content Include="User\Goods\usergoodallocate.html" />
+    <Content Include="User\Goods\userGoodInfo.aspx" />
+    <Content Include="User\Goods\userGoodJinHuo.aspx" />
+    <Content Include="User\Goods\usergoodjinhuo.html" />
+    <Content Include="User\Goods\userStorageAdd.aspx" />
+    <Content Include="User\Goods\userSupplier.aspx" />
+    <Content Include="User\Goods\userSupplyInfo.aspx" />
+    <Content Include="User\Goods\userSupplyJinHuo.aspx" />
+    <Content Include="User\Log\LogBusiness.aspx" />
+    <Content Include="User\Log\logbusiness.html" />
+    <Content Include="User\Log\LogOnline.aspx" />
+    <Content Include="User\OtherOperate\ChangeBankBook.aspx" />
+    <Content Include="User\OtherOperate\ChangeBankBook_Commune.aspx" />
+    <Content Include="User\OtherOperate\CommuneClosing.aspx" />
+    <Content Include="User\OtherOperate\CommuneLoss.aspx" />
+    <Content Include="User\OtherOperate\DepositorClosing.aspx" />
+    <Content Include="User\OtherOperate\Loss.aspx" />
+    <Content Include="User\Query\DepositorInfo.aspx" />
+    <Content Include="User\Query\OperateLogDep.aspx" />
+    <Content Include="User\Query\Qexchangegroup.html" />
+    <Content Include="User\Query\QueryBalance.aspx" />
+    <Content Include="User\Query\QueryCurrentStorage.html" />
+    <Content Include="User\Query\QueryDepositor.aspx" />
+    <Content Include="User\Query\QueryIntegral.html" />
+    <Content Include="User\Query\QueryLoss.aspx" />
+    <Content Include="User\Query\QueryRegularStorage.html" />
+    <Content Include="User\Storage\addDepositor.html" />
+    <Content Include="User\Storage\EditError.aspx" />
+    <Content Include="User\Storage\storage.html" />
+    <Content Include="User\Storage\storageerror.html" />
+    <Content Include="User\Storage\storagerenew.html" />
+    <Content Include="User\Storage\storagevirtual.html" />
+    <Content Include="User\SystemControl\PrintSetting.aspx" />
+    <Content Include="User\SystemControl\PrintSettingModel.aspx" />
+    <Content Include="User\SystemControl\PrintSetting_Dep.aspx" />
+    <Content Include="User\SystemControl\PrintSetting_DepModel.aspx" />
+    <Content Include="User\SystemControl\SystemExit.aspx" />
+    <Content Include="User\SystemControl\UpdatePassword.aspx" />
+    <Content Include="User\SystemControl\UpdatePWD.aspx" />
+    <Content Include="Web.config">
+      <SubType>Designer</SubType>
+    </Content>
+    <Content Include="Web.Debug.config">
+      <DependentUpon>Web.config</DependentUpon>
+    </Content>
+    <Content Include="Web.Release.config">
+      <DependentUpon>Web.config</DependentUpon>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Account_System\Menu_Admin.ashx.cs">
+      <DependentUpon>Menu_Admin.ashx</DependentUpon>
+    </Compile>
+    <Compile Include="Account_System\Menu_Admin.aspx.cs">
+      <DependentUpon>Menu_Admin.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Account_System\Menu_Admin.aspx.designer.cs">
+      <DependentUpon>Menu_Admin.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Account_System\Menu_User.ashx.cs">
+      <DependentUpon>Menu_User.ashx</DependentUpon>
+    </Compile>
+    <Compile Include="Account_System\Menu_User.aspx.cs">
+      <DependentUpon>Menu_User.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Account_System\Menu_User.aspx.designer.cs">
+      <DependentUpon>Menu_User.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Account_System\Operate_Log.aspx.cs">
+      <DependentUpon>Operate_Log.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Account_System\Operate_Log.aspx.designer.cs">
+      <DependentUpon>Operate_Log.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Account_System\StorageRate.aspx.cs">
+      <DependentUpon>StorageRate.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Account_System\StorageRate.aspx.designer.cs">
+      <DependentUpon>StorageRate.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Account_System\StorageVariety.aspx.cs">
+      <DependentUpon>StorageVariety.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Account_System\StorageVariety.aspx.designer.cs">
+      <DependentUpon>StorageVariety.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Account_System\StorageVarietyLevel.aspx.cs">
+      <DependentUpon>StorageVarietyLevel.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Account_System\StorageVarietyLevel.aspx.designer.cs">
+      <DependentUpon>StorageVarietyLevel.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Account_System\strSql2.aspx.cs">
+      <DependentUpon>strSql2.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Account_System\strSql2.aspx.designer.cs">
+      <DependentUpon>strSql2.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Account_System\SystemIndex.ascx.cs">
+      <DependentUpon>SystemIndex.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Account_System\SystemIndex.ascx.designer.cs">
+      <DependentUpon>SystemIndex.ascx</DependentUpon>
+    </Compile>
+    <Compile Include="Account_System\SystemIndex.aspx.cs">
+      <DependentUpon>SystemIndex.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Account_System\SystemIndex.aspx.designer.cs">
+      <DependentUpon>SystemIndex.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\Approval\ASalePrice.aspx.cs">
+      <DependentUpon>ASalePrice.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\Approval\ASalePrice.aspx.designer.cs">
+      <DependentUpon>ASalePrice.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\Approval\AToSell.aspx.cs">
+      <DependentUpon>AToSell.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\Approval\AToSell.aspx.designer.cs">
+      <DependentUpon>AToSell.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\Commune\BusinessStatistics.aspx.cs">
+      <DependentUpon>BusinessStatistics.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\Commune\BusinessStatistics.aspx.designer.cs">
+      <DependentUpon>BusinessStatistics.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\Commune\CommuneEdit.aspx.cs">
+      <DependentUpon>CommuneEdit.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\Commune\CommuneEdit.aspx.designer.cs">
+      <DependentUpon>CommuneEdit.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\Commune\CommuneQuery.aspx.cs">
+      <DependentUpon>CommuneQuery.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\Commune\CommuneQuery.aspx.designer.cs">
+      <DependentUpon>CommuneQuery.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\Commune\CommuneStatistics.aspx.cs">
+      <DependentUpon>CommuneStatistics.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\Commune\CommuneStatistics.aspx.designer.cs">
+      <DependentUpon>CommuneStatistics.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\Good\Custom.aspx.cs">
+      <DependentUpon>Custom.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\Good\Custom.aspx.designer.cs">
+      <DependentUpon>Custom.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\Good\GoodJinHuoList.aspx.cs">
+      <DependentUpon>GoodJinHuoList.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\Good\GoodJinHuoList.aspx.designer.cs">
+      <DependentUpon>GoodJinHuoList.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\Good\GoodJinHuoListHQ.aspx.cs">
+      <DependentUpon>GoodJinHuoListHQ.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\Good\GoodJinHuoListHQ.aspx.designer.cs">
+      <DependentUpon>GoodJinHuoListHQ.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\Good\GoodSupplyApply.aspx.cs">
+      <DependentUpon>GoodSupplyApply.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\Good\GoodSupplyApply.aspx.designer.cs">
+      <DependentUpon>GoodSupplyApply.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\Good\GoodSupplyInfo.aspx.cs">
+      <DependentUpon>GoodSupplyInfo.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\Good\GoodSupplyInfo.aspx.designer.cs">
+      <DependentUpon>GoodSupplyInfo.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\Good\GoodSupplyJinHuo.aspx.cs">
+      <DependentUpon>GoodSupplyJinHuo.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\Good\GoodSupplyJinHuo.aspx.designer.cs">
+      <DependentUpon>GoodSupplyJinHuo.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\Good\QueryGoodStock.aspx.cs">
+      <DependentUpon>QueryGoodStock.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\Good\QueryGoodStock.aspx.designer.cs">
+      <DependentUpon>QueryGoodStock.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\Good\QuerySupplyStock.aspx.cs">
+      <DependentUpon>QuerySupplyStock.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\Good\QuerySupplyStock.aspx.designer.cs">
+      <DependentUpon>QuerySupplyStock.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\Good\WBSupplyList.aspx.cs">
+      <DependentUpon>WBSupplyList.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\Good\WBSupplyList.aspx.designer.cs">
+      <DependentUpon>WBSupplyList.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\Good\WBSupplyListHQ.aspx.cs">
+      <DependentUpon>WBSupplyListHQ.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\Good\WBSupplyListHQ.aspx.designer.cs">
+      <DependentUpon>WBSupplyListHQ.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\Info\reqstate.cs" />
+    <Compile Include="Admin\Query\DepositorEdit.aspx.cs">
+      <DependentUpon>DepositorEdit.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\Query\DepositorEdit.aspx.designer.cs">
+      <DependentUpon>DepositorEdit.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\Query\DepositorQuery.aspx.cs">
+      <DependentUpon>DepositorQuery.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\Query\DepositorQuery.aspx.designer.cs">
+      <DependentUpon>DepositorQuery.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\Report\report.ashx.cs">
+      <DependentUpon>report.ashx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\UserControl\LoginError.aspx.cs">
+      <DependentUpon>LoginError.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\UserControl\LoginError.aspx.designer.cs">
+      <DependentUpon>LoginError.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\UserControl\user.ashx.cs">
+      <DependentUpon>user.ashx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\UserControl\UserMenu.aspx.cs">
+      <DependentUpon>UserMenu.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\UserControl\UserMenu.aspx.designer.cs">
+      <DependentUpon>UserMenu.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Ashx\basicdata.ashx.cs">
+      <DependentUpon>basicdata.ashx</DependentUpon>
+    </Compile>
+    <Compile Include="Ashx\commune.ashx.cs">
+      <DependentUpon>commune.ashx</DependentUpon>
+    </Compile>
+    <Compile Include="Ashx\depositor.ashx.cs">
+      <DependentUpon>depositor.ashx</DependentUpon>
+    </Compile>
+    <Compile Include="Ashx\good.ashx.cs">
+      <DependentUpon>good.ashx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\Good\GoodInfo.aspx.cs">
+      <DependentUpon>GoodInfo.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\Good\GoodInfo.aspx.designer.cs">
+      <DependentUpon>GoodInfo.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\Good\GoodJinHuo.aspx.cs">
+      <DependentUpon>GoodJinHuo.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\Good\GoodJinHuo.aspx.designer.cs">
+      <DependentUpon>GoodJinHuo.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\Good\Supplier.aspx.cs">
+      <DependentUpon>Supplier.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\Good\Supplier.aspx.designer.cs">
+      <DependentUpon>Supplier.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\Info\info.ashx.cs">
+      <DependentUpon>info.ashx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\Info\InfoAdd.aspx.cs">
+      <DependentUpon>InfoAdd.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\Info\InfoAdd.aspx.designer.cs">
+      <DependentUpon>InfoAdd.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\Info\InfoDetail.aspx.cs">
+      <DependentUpon>InfoDetail.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\Info\InfoDetail.aspx.designer.cs">
+      <DependentUpon>InfoDetail.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\Info\InfoList.aspx.cs">
+      <DependentUpon>InfoList.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\Info\InfoList.aspx.designer.cs">
+      <DependentUpon>InfoList.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\Info\InfoNotice.aspx.cs">
+      <DependentUpon>InfoNotice.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\Info\InfoNotice.aspx.designer.cs">
+      <DependentUpon>InfoNotice.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\Info\InfoType.aspx.cs">
+      <DependentUpon>InfoType.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\Info\InfoType.aspx.designer.cs">
+      <DependentUpon>InfoType.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\Info\MyInfo.aspx.cs">
+      <DependentUpon>MyInfo.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\Info\MyInfo.aspx.designer.cs">
+      <DependentUpon>MyInfo.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\Log\LExchange.aspx.cs">
+      <DependentUpon>LExchange.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\Log\LExchange.aspx.designer.cs">
+      <DependentUpon>LExchange.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\Log\LStorage.aspx.cs">
+      <DependentUpon>LStorage.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\Log\LStorage.aspx.designer.cs">
+      <DependentUpon>LStorage.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\Log\LUserOnline.aspx.cs">
+      <DependentUpon>LUserOnline.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\Log\LUserOnline.aspx.designer.cs">
+      <DependentUpon>LUserOnline.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\Query\QByAccount.aspx.cs">
+      <DependentUpon>QByAccount.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\Query\QByAccount.aspx.designer.cs">
+      <DependentUpon>QByAccount.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\Query\QByCun.aspx.cs">
+      <DependentUpon>QByCun.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\Query\QByCun.aspx.designer.cs">
+      <DependentUpon>QByCun.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\Query\QByName.aspx.cs">
+      <DependentUpon>QByName.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\Query\QByName.aspx.designer.cs">
+      <DependentUpon>QByName.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\Query\QByPhoneNO.aspx.cs">
+      <DependentUpon>QByPhoneNO.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\Query\QByPhoneNO.aspx.designer.cs">
+      <DependentUpon>QByPhoneNO.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\Query\QRich.aspx.cs">
+      <DependentUpon>QRich.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\Query\QRich.aspx.designer.cs">
+      <DependentUpon>QRich.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\Returned\REGoods.aspx.cs">
+      <DependentUpon>REGoods.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\Returned\REGoods.aspx.designer.cs">
+      <DependentUpon>REGoods.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\Returned\RStorage.aspx.cs">
+      <DependentUpon>RStorage.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\Returned\RStorage.aspx.designer.cs">
+      <DependentUpon>RStorage.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\Returned\RStoreToSell.aspx.cs">
+      <DependentUpon>RStoreToSell.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\Returned\RStoreToSell.aspx.designer.cs">
+      <DependentUpon>RStoreToSell.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Ashx\operatelog.ashx.cs">
+      <DependentUpon>operatelog.ashx</DependentUpon>
+    </Compile>
+    <Compile Include="Ashx\settle.ashx.cs">
+      <DependentUpon>settle.ashx</DependentUpon>
+    </Compile>
+    <Compile Include="Ashx\settlebasic.ashx.cs">
+      <DependentUpon>settlebasic.ashx</DependentUpon>
+    </Compile>
+    <Compile Include="Ashx\settle_checkout.ashx.cs">
+      <DependentUpon>settle_checkout.ashx</DependentUpon>
+    </Compile>
+    <Compile Include="Ashx\user.ashx.cs">
+      <DependentUpon>user.ashx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\UserControl\UserManager.aspx.cs">
+      <DependentUpon>UserManager.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\UserControl\UserManager.aspx.designer.cs">
+      <DependentUpon>UserManager.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\WebSiteSetting\WBControl.aspx.cs">
+      <DependentUpon>WBControl.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\WebSiteSetting\WBControl.aspx.designer.cs">
+      <DependentUpon>WBControl.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\WebSiteSetting\WBParameter.aspx.cs">
+      <DependentUpon>WBParameter.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\WebSiteSetting\WBParameter.aspx.designer.cs">
+      <DependentUpon>WBParameter.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\WebSiteSetting\WBSimulate.aspx.cs">
+      <DependentUpon>WBSimulate.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\WebSiteSetting\WBSimulate.aspx.designer.cs">
+      <DependentUpon>WBSimulate.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\WebSiteSetting\WBType.aspx.cs">
+      <DependentUpon>WBType.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\WebSiteSetting\WBType.aspx.designer.cs">
+      <DependentUpon>WBType.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\WebSiteSetting\ws.ashx.cs">
+      <DependentUpon>ws.ashx</DependentUpon>
+    </Compile>
+    <Compile Include="Ashx\storage.ashx.cs">
+      <DependentUpon>storage.ashx</DependentUpon>
+    </Compile>
+    <Compile Include="Ashx\userlogin.ashx.cs">
+      <DependentUpon>userlogin.ashx</DependentUpon>
+    </Compile>
+    <Compile Include="Ashx\wbinfo.ashx.cs">
+      <DependentUpon>wbinfo.ashx</DependentUpon>
+    </Compile>
+    <Compile Include="Ashx\exchangeprop.ashx.cs">
+      <DependentUpon>exchangeprop.ashx</DependentUpon>
+    </Compile>
+    <Compile Include="BasicData\Charges\SetExchangePara.aspx.cs">
+      <DependentUpon>SetExchangePara.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="BasicData\Charges\SetExchangePara.aspx.designer.cs">
+      <DependentUpon>SetExchangePara.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="BasicData\Data\addr.ashx.cs">
+      <DependentUpon>addr.ashx</DependentUpon>
+    </Compile>
+    <Compile Include="BasicData\Data\Address_Cun.aspx.cs">
+      <DependentUpon>Address_Cun.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="BasicData\Data\Address_Cun.aspx.designer.cs">
+      <DependentUpon>Address_Cun.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="BasicData\Data\Address_Xian.aspx.cs">
+      <DependentUpon>Address_Xian.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="BasicData\Data\Address_Xian.aspx.designer.cs">
+      <DependentUpon>Address_Xian.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="BasicData\Data\Address_Xiang.aspx.cs">
+      <DependentUpon>Address_Xiang.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="BasicData\Data\Address_Xiang.aspx.designer.cs">
+      <DependentUpon>Address_Xiang.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="BasicData\Data\Address_Zu.aspx.cs">
+      <DependentUpon>Address_Zu.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="BasicData\Data\Address_Zu.aspx.designer.cs">
+      <DependentUpon>Address_Zu.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="BasicData\Data\GoodCategory.aspx.cs">
+      <DependentUpon>GoodCategory.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="BasicData\Data\GoodCategory.aspx.designer.cs">
+      <DependentUpon>GoodCategory.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="BasicData\Data\MeasuringUnit.aspx.cs">
+      <DependentUpon>MeasuringUnit.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="BasicData\Data\MeasuringUnit.aspx.designer.cs">
+      <DependentUpon>MeasuringUnit.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="BasicData\Data\PackingSpec.aspx.cs">
+      <DependentUpon>PackingSpec.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="BasicData\Data\PackingSpec.aspx.designer.cs">
+      <DependentUpon>PackingSpec.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="BasicData\HQStorage\HQSAdd.aspx.cs">
+      <DependentUpon>HQSAdd.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="BasicData\HQStorage\HQSAdd.aspx.designer.cs">
+      <DependentUpon>HQSAdd.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="BasicData\HQStorage\storage.ashx.cs">
+      <DependentUpon>storage.ashx</DependentUpon>
+    </Compile>
+    <Compile Include="BasicData\StoragePara\SetStorageFee.aspx.cs">
+      <DependentUpon>SetStorageFee.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="BasicData\StoragePara\SetStorageFee.aspx.designer.cs">
+      <DependentUpon>SetStorageFee.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="BasicData\StoragePara\storage.ashx.cs">
+      <DependentUpon>storage.ashx</DependentUpon>
+    </Compile>
+    <Compile Include="BasicData\StoragePara\StorageRate.aspx.cs">
+      <DependentUpon>StorageRate.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="BasicData\StoragePara\StorageRate.aspx.designer.cs">
+      <DependentUpon>StorageRate.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="BasicData\StoragePara\StorageTime.aspx.cs">
+      <DependentUpon>StorageTime.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="BasicData\StoragePara\StorageTime.aspx.designer.cs">
+      <DependentUpon>StorageTime.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="BasicData\StoragePara\StorageUserType.aspx.cs">
+      <DependentUpon>StorageUserType.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="BasicData\StoragePara\StorageUserType.aspx.designer.cs">
+      <DependentUpon>StorageUserType.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="BasicData\StoragePara\StorageVariety.aspx.cs">
+      <DependentUpon>StorageVariety.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="BasicData\StoragePara\StorageVariety.aspx.designer.cs">
+      <DependentUpon>StorageVariety.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="BasicData\StoragePara\StorageVarietyLevel.aspx.cs">
+      <DependentUpon>StorageVarietyLevel.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="BasicData\StoragePara\StorageVarietyLevel.aspx.designer.cs">
+      <DependentUpon>StorageVarietyLevel.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Common\common.cs" />
+    <Compile Include="Common\commondb.cs" />
+    <Compile Include="Common\Fun.cs" />
+    <Compile Include="Common\JsonExtension.cs" />
+    <Compile Include="Common\JsonHelper.cs" />
+    <Compile Include="Common\SQLHelper.cs" />
+    <Compile Include="fs\frm.ashx.cs">
+      <DependentUpon>frm.ashx</DependentUpon>
+    </Compile>
+    <Compile Include="Global.asax.cs">
+      <DependentUpon>Global.asax</DependentUpon>
+    </Compile>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Settle\AddAccount.aspx.cs">
+      <DependentUpon>AddAccount.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Settle\AddAccount.aspx.designer.cs">
+      <DependentUpon>AddAccount.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Settle\BasicData\Accountant.aspx.cs">
+      <DependentUpon>Accountant.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Settle\BasicData\Accountant.aspx.designer.cs">
+      <DependentUpon>Accountant.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Settle\BasicData\Quality.aspx.cs">
+      <DependentUpon>Quality.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Settle\BasicData\Quality.aspx.designer.cs">
+      <DependentUpon>Quality.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Settle\BasicData\StockType.aspx.cs">
+      <DependentUpon>StockType.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Settle\BasicData\StockType.aspx.designer.cs">
+      <DependentUpon>StockType.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Settle\BasicData\Weigh.aspx.cs">
+      <DependentUpon>Weigh.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Settle\BasicData\Weigh.aspx.designer.cs">
+      <DependentUpon>Weigh.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Settle\CheckOut.aspx.cs">
+      <DependentUpon>CheckOut.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Settle\CheckOut.aspx.designer.cs">
+      <DependentUpon>CheckOut.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Settle\CheckOutDetail.aspx.cs">
+      <DependentUpon>CheckOutDetail.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Settle\CheckOutDetail.aspx.designer.cs">
+      <DependentUpon>CheckOutDetail.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Settle\CheckOutEdit.aspx.cs">
+      <DependentUpon>CheckOutEdit.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Settle\CheckOutEdit.aspx.designer.cs">
+      <DependentUpon>CheckOutEdit.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Settle\CheckOutFinal.aspx.cs">
+      <DependentUpon>CheckOutFinal.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Settle\CheckOutFinal.aspx.designer.cs">
+      <DependentUpon>CheckOutFinal.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Settle\CheckOutHistory.aspx.cs">
+      <DependentUpon>CheckOutHistory.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Settle\CheckOutHistory.aspx.designer.cs">
+      <DependentUpon>CheckOutHistory.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Settle\SettleList.aspx.cs">
+      <DependentUpon>SettleList.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Settle\SettleList.aspx.designer.cs">
+      <DependentUpon>SettleList.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Settle\Settle_AgentFee.aspx.cs">
+      <DependentUpon>Settle_AgentFee.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Settle\Settle_AgentFee.aspx.designer.cs">
+      <DependentUpon>Settle_AgentFee.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Settle\Settle_Exchange.aspx.cs">
+      <DependentUpon>Settle_Exchange.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Settle\Settle_Exchange.aspx.designer.cs">
+      <DependentUpon>Settle_Exchange.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Settle\Settle_Sell.aspx.cs">
+      <DependentUpon>Settle_Sell.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Settle\Settle_Sell.aspx.designer.cs">
+      <DependentUpon>Settle_Sell.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Settle\Settle_Shopping.aspx.cs">
+      <DependentUpon>Settle_Shopping.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Settle\Settle_Shopping.aspx.designer.cs">
+      <DependentUpon>Settle_Shopping.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="test\log4netTest.aspx.cs">
+      <DependentUpon>log4netTest.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="test\log4netTest.aspx.designer.cs">
+      <DependentUpon>log4netTest.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Common\MyLog4NetInfo.cs" />
+    <Compile Include="User\Commune\BusinessStatistics.aspx.cs">
+      <DependentUpon>BusinessStatistics.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="User\Commune\BusinessStatistics.aspx.designer.cs">
+      <DependentUpon>BusinessStatistics.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="User\Commune\CommuneAdd.aspx.cs">
+      <DependentUpon>CommuneAdd.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="User\Commune\CommuneAdd.aspx.designer.cs">
+      <DependentUpon>CommuneAdd.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="User\Commune\CommuneQuery.aspx.cs">
+      <DependentUpon>CommuneQuery.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="User\Commune\CommuneQuery.aspx.designer.cs">
+      <DependentUpon>CommuneQuery.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="User\Commune\GoodSupply.aspx.cs">
+      <DependentUpon>GoodSupply.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="User\Commune\GoodSupply.aspx.designer.cs">
+      <DependentUpon>GoodSupply.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="User\Commune\GoodSupplyReturn.aspx.cs">
+      <DependentUpon>GoodSupplyReturn.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="User\Commune\GoodSupplyReturn.aspx.designer.cs">
+      <DependentUpon>GoodSupplyReturn.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="User\Commune\OperateLog.aspx.cs">
+      <DependentUpon>OperateLog.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="User\Commune\OperateLog.aspx.designer.cs">
+      <DependentUpon>OperateLog.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="User\Commune\PreDefine.aspx.cs">
+      <DependentUpon>PreDefine.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="User\Commune\PreDefine.aspx.designer.cs">
+      <DependentUpon>PreDefine.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="User\Exchange\Apply\ApplyResult.aspx.cs">
+      <DependentUpon>ApplyResult.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="User\Exchange\Apply\ApplyResult.aspx.designer.cs">
+      <DependentUpon>ApplyResult.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="User\Exchange\Apply\ApplySalePrice.aspx.cs">
+      <DependentUpon>ApplySalePrice.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="User\Exchange\Apply\ApplySalePrice.aspx.designer.cs">
+      <DependentUpon>ApplySalePrice.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="User\Exchange\Apply\ApplyToSell.aspx.cs">
+      <DependentUpon>ApplyToSell.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="User\Exchange\Apply\ApplyToSell.aspx.designer.cs">
+      <DependentUpon>ApplyToSell.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="User\Exchange\exchange.ashx.cs">
+      <DependentUpon>exchange.ashx</DependentUpon>
+    </Compile>
+    <Compile Include="User\Exchange\Returned\return.ashx.cs">
+      <DependentUpon>return.ashx</DependentUpon>
+    </Compile>
+    <Compile Include="User\Goods\userGoodInfo.aspx.cs">
+      <DependentUpon>userGoodInfo.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="User\Goods\userGoodInfo.aspx.designer.cs">
+      <DependentUpon>userGoodInfo.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="User\Goods\userGoodJinHuo.aspx.cs">
+      <DependentUpon>userGoodJinHuo.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="User\Goods\userGoodJinHuo.aspx.designer.cs">
+      <DependentUpon>userGoodJinHuo.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="User\Goods\userStorageAdd.aspx.cs">
+      <DependentUpon>userStorageAdd.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="User\Goods\userStorageAdd.aspx.designer.cs">
+      <DependentUpon>userStorageAdd.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="User\Goods\userSupplier.aspx.cs">
+      <DependentUpon>userSupplier.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="User\Goods\userSupplier.aspx.designer.cs">
+      <DependentUpon>userSupplier.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="User\Goods\userSupplyInfo.aspx.cs">
+      <DependentUpon>userSupplyInfo.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="User\Goods\userSupplyInfo.aspx.designer.cs">
+      <DependentUpon>userSupplyInfo.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="User\Goods\userSupplyJinHuo.aspx.cs">
+      <DependentUpon>userSupplyJinHuo.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="User\Goods\userSupplyJinHuo.aspx.designer.cs">
+      <DependentUpon>userSupplyJinHuo.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="User\Log\LogBusiness.aspx.cs">
+      <DependentUpon>LogBusiness.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="User\Log\LogBusiness.aspx.designer.cs">
+      <DependentUpon>LogBusiness.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="User\Log\LogOnline.aspx.cs">
+      <DependentUpon>LogOnline.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="User\Log\LogOnline.aspx.designer.cs">
+      <DependentUpon>LogOnline.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="User\OtherOperate\ChangeBankBook.aspx.cs">
+      <DependentUpon>ChangeBankBook.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="User\OtherOperate\ChangeBankBook.aspx.designer.cs">
+      <DependentUpon>ChangeBankBook.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="User\OtherOperate\ChangeBankBook_Commune.aspx.cs">
+      <DependentUpon>ChangeBankBook_Commune.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="User\OtherOperate\ChangeBankBook_Commune.aspx.designer.cs">
+      <DependentUpon>ChangeBankBook_Commune.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="User\OtherOperate\CommuneClosing.aspx.cs">
+      <DependentUpon>CommuneClosing.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="User\OtherOperate\CommuneClosing.aspx.designer.cs">
+      <DependentUpon>CommuneClosing.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="User\OtherOperate\CommuneLoss.aspx.cs">
+      <DependentUpon>CommuneLoss.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="User\OtherOperate\CommuneLoss.aspx.designer.cs">
+      <DependentUpon>CommuneLoss.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="User\OtherOperate\DepositorClosing.aspx.cs">
+      <DependentUpon>DepositorClosing.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="User\OtherOperate\DepositorClosing.aspx.designer.cs">
+      <DependentUpon>DepositorClosing.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="User\OtherOperate\Loss.aspx.cs">
+      <DependentUpon>Loss.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="User\OtherOperate\Loss.aspx.designer.cs">
+      <DependentUpon>Loss.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="User\Query\depositor.ashx.cs">
+      <DependentUpon>depositor.ashx</DependentUpon>
+    </Compile>
+    <Compile Include="User\Query\DepositorInfo.aspx.cs">
+      <DependentUpon>DepositorInfo.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="User\Query\DepositorInfo.aspx.designer.cs">
+      <DependentUpon>DepositorInfo.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="User\Query\OperateLogDep.aspx.cs">
+      <DependentUpon>OperateLogDep.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="User\Query\OperateLogDep.aspx.designer.cs">
+      <DependentUpon>OperateLogDep.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="User\Query\QueryBalance.aspx.cs">
+      <DependentUpon>QueryBalance.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="User\Query\QueryBalance.aspx.designer.cs">
+      <DependentUpon>QueryBalance.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="User\Query\QueryDepositor.aspx.cs">
+      <DependentUpon>QueryDepositor.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="User\Query\QueryDepositor.aspx.designer.cs">
+      <DependentUpon>QueryDepositor.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="User\Query\QueryLoss.aspx.cs">
+      <DependentUpon>QueryLoss.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="User\Query\QueryLoss.aspx.designer.cs">
+      <DependentUpon>QueryLoss.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="User\Storage\EditError.aspx.cs">
+      <DependentUpon>EditError.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="User\Storage\EditError.aspx.designer.cs">
+      <DependentUpon>EditError.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="User\Storage\storage.ashx.cs">
+      <DependentUpon>storage.ashx</DependentUpon>
+    </Compile>
+    <Compile Include="User\SystemControl\PrintSetting.aspx.cs">
+      <DependentUpon>PrintSetting.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="User\SystemControl\PrintSetting.aspx.designer.cs">
+      <DependentUpon>PrintSetting.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="User\SystemControl\PrintSettingModel.aspx.cs">
+      <DependentUpon>PrintSettingModel.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="User\SystemControl\PrintSettingModel.aspx.designer.cs">
+      <DependentUpon>PrintSettingModel.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="User\SystemControl\PrintSetting_Dep.aspx.cs">
+      <DependentUpon>PrintSetting_Dep.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="User\SystemControl\PrintSetting_Dep.aspx.designer.cs">
+      <DependentUpon>PrintSetting_Dep.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="User\SystemControl\PrintSetting_DepModel.aspx.cs">
+      <DependentUpon>PrintSetting_DepModel.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="User\SystemControl\PrintSetting_DepModel.aspx.designer.cs">
+      <DependentUpon>PrintSetting_DepModel.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="User\SystemControl\SystemExit.aspx.cs">
+      <DependentUpon>SystemExit.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="User\SystemControl\SystemExit.aspx.designer.cs">
+      <DependentUpon>SystemExit.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="User\SystemControl\UpdatePassword.aspx.cs">
+      <DependentUpon>UpdatePassword.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="User\SystemControl\UpdatePassword.aspx.designer.cs">
+      <DependentUpon>UpdatePassword.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="User\SystemControl\UpdatePWD.aspx.cs">
+      <DependentUpon>UpdatePWD.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="User\SystemControl\UpdatePWD.aspx.designer.cs">
+      <DependentUpon>UpdatePWD.aspx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Files\ApplicationImg\" />
+    <Folder Include="Files\CommuneImg\" />
+    <Folder Include="kindeditor\attached\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Admin\WebSiteSetting\ws.ashx" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Ashx\user.ashx" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="BasicData\StoragePara\storage.ashx" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="BasicData\Data\addr.ashx" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="User\Query\depositor.ashx" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="User\Storage\storage.ashx" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="BasicData\HQStorage\storage.ashx" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Ashx\good.ashx" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Admin\Info\info.ashx" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="kindeditor\asp.net\file_manager_json.ashx" />
+    <Content Include="kindeditor\asp.net\upload_json.ashx" />
+    <Content Include="fs\frm.ashx" />
+    <Content Include="Ashx\exchangeprop.ashx" />
+    <Content Include="Ashx\wbinfo.ashx" />
+    <Content Include="Ashx\storage.ashx" />
+    <Content Include="Ashx\depositor.ashx" />
+    <Content Include="Admin\UserControl\user.ashx" />
+    <Content Include="Ashx\commune.ashx" />
+    <Content Include="Ashx\settle.ashx" />
+    <Content Include="Ashx\settlebasic.ashx" />
+    <Content Include="Account_System\Menu_Admin.ashx" />
+    <Content Include="Account_System\Menu_User.ashx" />
+    <Content Include="Ashx\basicdata.ashx" />
+    <Content Include="Ashx\userlogin.ashx" />
+    <Content Include="BasicData\Data\helpfile\打印坐标说明.docx" />
+    <Content Include="Ashx\operatelog.ashx" />
+    <Content Include="Admin\Report\report.ashx" />
+    <Content Include="BasicData\Data\helpfile\系统参数说明.docx" />
+    <Content Include="BasicData\Data\helpfile\软件升级20170807.docx" />
+    <Content Include="BasicData\Data\helpfile\软件升级20170818.docx" />
+    <Content Include="BasicData\Data\helpfile\打印乱码不打印与光敏参数设置办法（南天PR2E）.docx" />
+    <Content Include="BasicData\Data\helpfile\软件升级20170918.docx" />
+    <Content Include="BasicData\Data\helpfile\打印机连接打印不了解决常见办法.doc" />
+    <Content Include="BasicData\Data\helpfile\软件升级20171023.docx" />
+    <Content Include="BasicData\Data\helpfile\软件升级20171124.docx" />
+    <Content Include="BasicData\Data\helpfile\软件升级20171215.docx" />
+    <Content Include="Ashx\settle_checkout.ashx" />
+    <Content Include="BasicData\Data\helpfile\软件升级20180115.docx" />
+    <None Include="kindeditor\jsp\demo.jsp" />
+    <None Include="kindeditor\jsp\file_manager_json.jsp" />
+    <None Include="kindeditor\jsp\upload_json.jsp" />
+    <None Include="kindeditor\php\demo.php" />
+    <None Include="kindeditor\php\file_manager_json.php" />
+    <None Include="kindeditor\php\JSON.php" />
+    <None Include="kindeditor\php\upload_json.php" />
+    <Content Include="User\Exchange\exchange.ashx" />
+    <Content Include="packages.config" />
+    <None Include="Properties\PublishProfiles\配置文件1.pubxml" />
+    <Content Include="User\Exchange\Returned\return.ashx" />
+  </ItemGroup>
+  <PropertyGroup>
+    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
+    <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
+  </PropertyGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <Import Project="$(VSToolsPath)\WebApplications\Microsoft.WebApplication.targets" Condition="'$(VSToolsPath)' != ''" />
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v10.0\WebApplications\Microsoft.WebApplication.targets" Condition="false" />
+  <ProjectExtensions>
+    <VisualStudio>
+      <FlavorProperties GUID="{349c5851-65df-11da-9384-00065b846f21}">
+        <WebProjectProperties>
+          <UseIIS>False</UseIIS>
+          <AutoAssignPort>True</AutoAssignPort>
+          <DevelopmentServerPort>4088</DevelopmentServerPort>
+          <DevelopmentServerVPath>/</DevelopmentServerVPath>
+          <IISUrl>
+          </IISUrl>
+          <NTLMAuthentication>False</NTLMAuthentication>
+          <UseCustomServer>False</UseCustomServer>
+          <CustomServerUrl>
+          </CustomServerUrl>
+          <SaveServerSettingsInUserFile>False</SaveServerSettingsInUserFile>
+        </WebProjectProperties>
+      </FlavorProperties>
+    </VisualStudio>
+  </ProjectExtensions>
+  <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

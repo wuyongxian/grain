@@ -1,0 +1,433 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
+    <script src="Scripts/jquery.js"></script>
+    <!--<script src="Scripts/Common.js"></script>-->
+    <link href="Styles/Common.css" rel="stylesheet" />
+    <title>登陆</title>
+    <link rel="icon" href="/images/wheat.png" type="image/x-icon">
+    <style>
+        body {
+            /* Setting default text color, background and a font stack */
+            font-size: 0.825em;
+            background-color: #efefef;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        #carbonForm {
+            /* The main form container */
+            background-color: #ccc;
+            border: 1px solid #888;
+            margin: 20px auto;
+            padding: 20px;
+            width: 500px;
+            -moz-box-shadow: 0 0 10px #444;
+            -webkit-box-shadow: 0 0 10px #444;
+            box-shadow: 0 0 10px #444;
+        }
+
+        #ptitle {
+            font-family: Century Gothic,Myriad Pro,Arial,Helvetica,sans-serif;
+            font-size: 40px;
+            font-weight: normal;
+            color: blue;
+        }
+
+        #carbonForm h2 {
+            /* The form heading */
+            font-family: Century Gothic,Myriad Pro,Arial,Helvetica,sans-serif;
+            font-size: 30px;
+            font-weight: normal;
+            padding: 0 0 10px 10px;
+            text-align: left;
+            color: #fff;
+        }
+
+        .fieldContainer {
+            /* The light rounded section, which contans the fields */
+            background-color: #888;
+            border: 1px solid #666;
+            padding: 30px 10px; /* CSS3 box shadow, used as an inner glow */
+            -moz-box-shadow: 0 0 20px #444 inset;
+            -webkit-box-shadow: 0 0 20px #444 inset;
+            box-shadow: 0 0 20px #444 inset;
+        }
+
+        #carbonForm, .fieldContainer, .errorTip {
+            /* Rounding the divs at once */
+            -moz-border-radius: 12px;
+            -webkit-border-radius: 12px;
+            border-radius: 12px;
+        }
+
+
+        .formRow {
+            height: 35px;
+            padding: 10px;
+            position: relative;
+            top: 0px;
+            left: 0px;
+            width: 458px;
+        }
+
+        .label {
+            float: left;
+            padding: 0 20px 0 0;
+            text-align: right;
+            width: 140px;
+        }
+
+        label {
+            font-family: Microsoft YaHei;
+            font-size: 18px;
+            letter-spacing: 1px;
+            line-height: 35px;
+        }
+
+        .field {
+            float: left;
+        }
+
+            .field input {
+                /* The text boxes */
+                border: 1px solid white;
+                color: #666;
+                background: #fefefe;
+                font-family: Arial,Helvetica,sans-serif;
+                font-size: 22px;
+                width: 160px;
+                height:25px;
+                padding: 4px 20px;
+                border-radius: 20px;
+                outline: none; /* Preventing the default Safari and Chrome text box highlight */
+            }
+
+            .field select {
+                /* The text boxes */
+                border: 1px solid white;
+                color: #666;
+                background: #fefefe;
+                font-family: Arial,Helvetica,sans-serif;
+                font-size: 22px;
+                width: 200px;
+                height: 35px;
+                padding: 0px 15px;
+                border-radius: 20px;
+                outline: none; /* Preventing the default Safari and Chrome text box highlight */
+            }
+
+        .signupButton {
+            /* The submit button container */
+            text-align: center;
+            padding: 30px 0 10px;
+        }
+
+        #btnSubmit {
+            /* The submit button */
+            cursor: pointer;
+            height: 35px;
+            width: 110px;
+            background-color: #999;
+            border: 1px solid #666;
+            font-family: Century Gothic,Myriad Pro,Arial,Helvetica,sans-serif;
+            font-size: 20px; /* CSS3 box shadow, used as an inner glow */
+            -moz-box-shadow: 0 0 20px #888 inset;
+            -webkit-box-shadow: 0 0 20px #888 inset;
+            box-shadow: 0 0 20px #888 inset;
+            -moz-border-radius: 20px;
+            -webkit-border-radius: 20px;
+            border-radius: 20px;
+        }
+
+
+            #btnSubmit:hover {
+                background-color: #aaa;
+                border: 1px solid white;
+            }
+
+            .btnSubmit:active {
+                c-moz-box-shadow: 0 0 20px #aaa inset;
+                -webkit-box-shadow: 0 0 20px #aaa inset;
+                box-shadow: 0 0 20px #aaa inset;
+            }
+
+        .input:hover, input:focus {
+            -moz-box-shadow: 0 0 8px lightblue;
+            -webkit-box-shadow: 0 0 8px lightblue;
+            box-shadow: 0 0 8px lightblue;
+        }
+
+        .errorTip {
+            /* The error divs */
+            background-color: #970F08;
+            color: white;
+            font-size: 10px;
+            height: 26px;
+            letter-spacing: 0.4px;
+            margin-left: 20px;
+            padding: 5px 0 5px 10px;
+            position: absolute;
+            text-shadow: 1px 1px 0 #555555;
+            width: 200px;
+            right: -130px;
+        }
+
+        .company {
+            position: fixed;
+            width: 100%;
+            height: 30px;
+            right: 0px;
+            bottom: 0px;
+            background: #eee;
+            padding-top: 10px;
+            text-align: center;
+            font-family: Century Gothic,Myriad Pro,Arial,Helvetica,sans-serif;
+            color: #666;
+            font-size: 12px;
+        }
+    </style>
+
+    <script type="text/javascript">
+       
+        $(function () {
+            //$.ajax({
+            //    url: '/Admin/WebSiteSetting/ws.ashx?type=getWBAuthority',
+            //    type: 'post',
+            //    data: '',
+            //    dataType: 'text',
+            //    success: function (r) {
+            //        var msg = JSON.parse(r);
+            //        if (msg[0].ISWBControl) {//启用网点限制
+            //            $('#spanip').html('ip:' + returnCitySN["cip"] + '  地址:' + returnCitySN["cname"]);
+            //            $('#spanip').show();
+            //        } else {//不启用网点限制
+            //            $('#spanip').hide();
+            //        }
+            //    }, error: function (r) {
+            //        // showMsg('加载网点类型失败 ！');
+            //    }
+            //});
+            $('#btnSubmit').attr('disabled', 'disabled');
+            getCompanyName();
+            InituserGroup();
+
+
+
+            var operateType = getQueryString('Type');
+            if (operateType == "loginrep") {
+                console.log('重复登录');
+                for (var i = 0; i < localStorage.length; i++) {
+                    if (localStorage.key(i).indexOf('loginuser') == 0) {
+                        localStorage.removeItem(localStorage.key(i));
+                    }
+                }
+                showMsg('检测到已有其他账号登录，当前登录账号已下线!');
+                return false;
+            }
+            if (operateType == "loginOut") {//执行退出操作
+                for (var i = 0; i < localStorage.length; i++) {
+                    if (localStorage.key(i).indexOf('loginuser') == 0) {
+                        localStorage.removeItem(localStorage.key(i));
+                    }
+                }
+                $.ajax({
+                    url: '/Ashx/userlogin.ashx?type=UpdateUserOperate',
+                    type: 'post',
+                    async: true,
+                    data: $('#from1').serialize(),
+                    dataType: 'json',
+                    beforeSend: function (r) { },
+                    success: function (r) {
+                        console.log('clear session success!');
+                    },
+                    error: function (r) { console.log('clear session fail!'); }
+                });
+            }
+
+        });
+
+        function getCompanyName() {
+            $.ajax({
+                url: '/Ashx/userlogin.ashx?type=GetCompanyInfo',
+                type: 'post',
+                async: true,
+                data: '',
+                dataType: 'text',
+                beforeSend: function (r) { },
+                success: function (r) {
+                    var jsondata = JSON.parse(r);
+                    $('#ptitle').html(jsondata[0].strName);
+                },
+                error: function (r) { }
+            });
+        }
+
+        function InituserGroup() {
+            $.ajax({
+                url: '/Ashx/userlogin.ashx?type=GetLoginUserGroup',
+                type: 'post',
+                async: true,
+                data: '',
+                dataType: 'text',
+                beforeSend: function (r) { },
+                success: function (r) {
+                    var jsondata = JSON.parse(r);
+                    for (var i = 0; i < jsondata.length; i++) {
+                        $('select[name=userGroup]').append('<option value=' + jsondata[i].ID + '>' + jsondata[i].strName + '</option>');
+                    }
+                    $('#btnSubmit').removeAttr('disabled');
+                },
+                error: function (r) { showMsg('获取用户类型失败!');}
+            });
+        }
+
+
+        document.onkeydown = function (event) {
+            var e = event || window.event || arguments.callee.caller.arguments[0];
+            if (e.keyCode == 13) {//确认按键
+                FunSubmit();
+            }
+        };
+
+        function FunSubmit() {
+            var userType='index';
+            if ($("select[name=userGroup]").find("option:selected").text() != '营业员') {
+                userType = "adminindex";
+            }
+            $.ajax({
+                url: '/Ashx/userlogin.ashx?type=UserLogin&user=' + userType,
+                type: 'post',
+                async: true,
+                data: $('#from1').serialize(),
+                dataType: 'text',
+                beforeSend: function (r) { },
+                success: function (r) {
+                    console.log(r);
+                   
+                    if (r.indexOf('wbinfo') != -1) {
+                        var returnValue = JSON.parse(r);
+                        var wbinfo = returnValue.wbinfo;
+                        var userinfo = returnValue.userinfo;
+                        
+                        localStorage.setItem('loginuser' + userinfo[0].ID, new Date());
+                        localStorage.setItem('wbinfo', JSON.stringify(wbinfo));
+                        localStorage.setItem('userinfo', JSON.stringify(userinfo));
+                        window.location.href = "/fs/index.htm";
+                    }
+                    else {
+                        showMsg(r);
+                    }
+                },
+                error: function (r) { }
+            });
+        }
+        function getQueryString(name) {
+            var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i");
+            var r = window.location.search.substr(1).match(reg);
+            if (r != null) return unescape(r[2]); return '';
+        }
+
+        function showMsg(msg) {
+            if ($('.msgOverlay').length > 0) {
+                $('.msgOverlay').remove();
+                $('.mesg-window').remove();
+            }
+            var width = window.screen.width;
+            var height = window.screen.height;
+            var tagOverlay = '<div class="msgOverlay"></div>';
+            $('body').append(tagOverlay);
+            $('.msgOverlay').height(height);
+            $('.msgOverlay').width(width);
+            var tag = '<div class="mesg-window" id="mesgShow">';
+            tag += '    <div class="mesg-header">';
+            tag += '        <span style="color: #fff">操作提示</span><a class="btn-close right">×</a>';
+            tag += '     </div>';
+            tag += '    <div class="mesg-content">';
+            tag += '        <div class="mesg-cont"></div>';
+            tag += '        <a href="javascript:;" class="altokbtn">确认</a>';
+            tag += '    </div>';
+            tag += ' </div>';
+            //$('.msgOverlay').append(tag);
+            $('body').append(tag);
+            $("#mesgShow .mesg-cont").html("").html(msg);
+
+            /*关闭提示框*/
+            $(".mesg-window .btn-close").click(function () {
+                $(".msgOverlay").remove();
+                $(".mesg-window").remove();
+            });
+            $(".mesg-window .altokbtn").click(function () {
+                $(".msgOverlay").remove();
+                $(".mesg-window").remove();
+            });
+
+            $(".msgOverlay").show();
+        }
+    </script>
+
+
+
+
+
+</head>
+
+<body>
+    <div class="company">版权所有：笔直智能科技(上海)有限公司</div>
+    <div id="carbonForm">
+        <!--<center><p id="ptitle"><%=Web.common.GetCompanyName() %></p></center>-->
+        <div style="text-align:center"><p id="ptitle"></p></div>
+        <h2>请登陆……</h2>
+
+        <form id="from1">
+
+            <div class="fieldContainer">
+
+
+                <div class="formRow">
+                    <div class="label">
+                        <label for="pass" style="color:#fff;">账户类型:</label>
+                    </div>
+
+                    <div class="field">
+                       
+                        <select name="userGroup" ></select>
+                    </div>
+                </div>
+
+                <div class="formRow">
+                    <div class="label">
+                        <label for="name" style="color:#fff;">账户:</label>
+                    </div>
+
+                    <div class="field">
+                        <input type="text" id="txtLoginName" name="LoginName"  />
+                    </div>
+                </div>
+
+
+                <div class="formRow">
+                    <div class="label">
+                        <label for="pass" style="color:#fff;">密码:</label>
+                    </div>
+
+                    <div class="field">
+                        <input type="password" id="txtPassword" name="Password"  />
+                    </div>
+                </div>
+
+
+
+            </div> <!-- Closing fieldContainer -->
+
+            <div class="signupButton">
+                <input type="button" id="btnSubmit" value="登陆" onclick="FunSubmit()" />
+            </div>
+
+        </form>
+    </div>
+    <div style="clear:both">
+    </div>
+</body>
+</html>

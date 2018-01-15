@@ -1,0 +1,500 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>网点存转销报表</title>
+    <script src="../../../Scripts/jquery-1.4.1.js" type="text/javascript"></script>
+    <script src="../../../Scripts/WebInner.js" type="text/javascript"></script>
+    <script src="../../../Scripts/Common.js" type="text/javascript"></script>
+    <link href="../../../Styles/Common.css" rel="stylesheet" type="text/css" />
+    <script src="../../Scripts/excelhelper.js"></script>
+    <script src="../../Scripts/My97DatePicker/WdatePicker.js" type="text/javascript"></script>
+    <script src="../../Scripts/fakeLoader.js" type="text/javascript"></script>
+    <link href="../../Styles/fakeLoader.css" rel="stylesheet" />
+    <script type="text/javascript">
+        /*--------窗体启动设置和基本设置--------*/
+        /*--loadFuntion--*/
+        $(function () {
+
+            var wbinfo = JSON.parse(localStorage.getItem('wbinfo'));
+            var ISHQ = wbinfo[0].ISHQ;
+            if (!ISHQ) {
+                $('.QWBInfo').hide();
+                $('#WBID').val(wbinfo[0].ID);//当前的粮食银行
+            } else {
+                $('.QWBInfo').show();
+                InitWBID();
+            }
+            $('#QWBID').change(function () {
+                $('#WBID').val($('#QWBID').find('option:selected').val());//选择查询的粮食银行
+                rebuild_trade_type();
+            })
+            InitVarietyID();
+
+            var now = new Date();
+            var date_month = new Date(now.getTime() - 30 * 24 * 3600 * 1000);
+            $('#Qdtstart').val(getDate(date_month));
+            $('#Qdtend').val(getDateNow());
+
+            $('.imgclose').click(function () {
+                $('.datadetail').fadeOut();
+            })
+
+            $('#excel_export').ExportExcel('dataInfo', '网点存转销报表');
+        });
+        function InitWBID() {
+            var WBName = '';
+            $('#QWBID').empty();
+            $.ajax({
+                url: '/Ashx/wbinfo.ashx?type=GetWBByName&strName=' + WBName,
+                type: 'post',
+                data: '',
+                dataType: 'json',
+                success: function (r) {
+                    $('#QWBID').append("<option value='0'>--请选择--</option>");
+                    if (r.responseText == "Error") { return false; }
+                    for (var i = 0; i < r.length; i++) {
+                        if (WBName == r[i].strName) {
+                            $('#QWBID').append("<option value='" + r[i].ID + "' selected = 'selected'>" + r[i].strName + "</option>");
+                        } else {
+                            $('#QWBID').append("<option value='" + r[i].ID + "'>" + r[i].strName + "</option>");
+                        }
+                    }
+                    rebuild_trade_type();
+
+                }, error: function (r) {
+
+                }
+            });
+        }
+
+        function rebuild_trade_type() {
+            $('#trade_type').empty();
+            var strhtml = '';
+            var wbid = $('#QWBID').find('option:selected').val();
+            if (wbid == '0') {
+                strhtml += '<option value="0">--全部--</option>';
+                strhtml += ' <option value="1">本地存转销</option>';
+                strhtml += '<option value="2">异地存转销</option>';
+            } else {
+                strhtml += '<option value="0">--全部--</option>';
+                strhtml += ' <option value="1">本地存转销</option>';
+                strhtml += '<option value="2">异地存转销</option>';
+                strhtml += ' <option value="3">本行异地存转销</option>';
+                strhtml += ' <option value="4">它行异地存转销</option>';
+            }
+            $('#trade_type').append(strhtml);
+        }
+
+        function InitVarietyID() {
+            $('#QVarietyID').empty();
+            $.ajax({
+                url: '/Ashx/basicdata.ashx?type=GetStorageVariety',
+                type: 'post',
+                data: '',
+                dataType: 'text',
+                success: function (r) {
+                    var jsondata = JSON.parse(r);
+                    $('#QVarietyID').append("<option value='0'>--请选择--</option>");
+                    if (r.responseText == "") { return false; }
+                    for (var i = 0; i < jsondata.length; i++) {
+                        $('#QVarietyID').append("<option value='" + jsondata[i].ID + "'>" + jsondata[i].strName + "</option>");
+                    }
+
+                }, error: function (r) {
+
+                }
+            });
+        }
+
+        function FunQuery() {
+            $(".fakeloader").fakeLoader({
+                timeToHide: 12000000,
+                 bgColor: "transparent",
+                spinner: "spinner7"
+            });
+
+            $('.datadetail').fadeOut();
+            var report_type = $('#report_type').find('option:selected').val();
+            var trade_type = $('#trade_type').find('option:selected').val();
+            var QVarietyID = $('#QVarietyID').find('option:selected').val();
+            var QWBID = $('#WBID').val();
+            var Qdtstart = $('#Qdtstart').val();
+            var Qdtend = $('#Qdtend').val();
+            var para = 'report_type=' + report_type + '&trade_type=' + trade_type + '&QWBID=' + QWBID + '&QVarietyID=' + QVarietyID + '&Qdtstart=' + Qdtstart + '&Qdtend=' + Qdtend;
+            var url = 'report.ashx?type=Get_Sell';
+            $.ajax({
+                url: url,
+                type: 'post',
+                data: para,
+                dataType: 'json',
+                success: function (r) {
+                    $(".fakeloader").fakeCloser();
+                    if (r.state == false) {
+                        $('#dataInfo').fadeOut();
+                        showMsg(r.msg);
+                        return false;
+                    }
+                    var strhtml = '';
+                    var jsondata = JSON.parse(r.data);
+                    for (var i = 0; i < jsondata.length; i++) {
+                        strhtml += '<tr class="trappend"  onmouseover="change_colorOver(this)" onmouseout="change_colorOut(this)">';
+
+                        strhtml += ' <td style="height:25px;">' + jsondata[i].WBName + '</td>';
+                        strhtml += ' <td>' + jsondata[i].TradeWBName + '</td>';
+                        strhtml += ' <td>' + jsondata[i].TimeName + '</td>';
+                        strhtml += ' <td>' + jsondata[i].VarietyName + '</td>';
+                        strhtml += ' <td>' + jsondata[i].VarietyCount + '</td>';
+                        strhtml += ' <td>' + jsondata[i].Price_ShiChang + '</td>';
+                        strhtml += ' <td>' + jsondata[i].VarietyInterest + '元</td>';
+                        strhtml += ' <td>' + jsondata[i].StorageMoney + '元</td>';
+                        strhtml += ' <td>' + jsondata[i].VarietyMoney + '元</td>';
+                        strhtml += ' <td><input type="button" value="详细"  class="btndetail" TradeWBID="' + jsondata[i].TradeWBID + '"  TradeWBName="' + jsondata[i].TradeWBName + '" WBID="' + jsondata[i].WBID + '" WBName="' + jsondata[i].WBName + '" VarietyID="' + jsondata[i].VarietyID + '" VarietyName="' + jsondata[i].VarietyName + '" TimeID="' + jsondata[i].TimeID + '" TimeName="' + jsondata[i].TimeName + '" Price_ShiChang="' + jsondata[i].Price_ShiChang + '"  onclick="showDetail(this)"/></td>';
+                        strhtml += '</tr>';
+                    }
+
+
+
+                    var strhtml_t = '';
+                    var jsondata_t = JSON.parse(r.data_t);
+                    strhtml_t += '<tr  class="trappend"><td colspan="9" style="height:25px;text-align:center;">总计</td></tr>';
+
+                    var sum_VarietyInterest = 0;//利息总计
+                    var sum_VarietyMoney = 0;//结算金额总计
+                    for (var i = 0; i < jsondata_t.length; i++) {
+                        strhtml_t += '<tr class="trappend"  onmouseover="change_colorOver(this)" onmouseout="change_colorOut(this)">';
+                        strhtml_t += ' <td style="height:25px;"></td>';
+                        strhtml_t += ' <td></td>';
+                        strhtml_t += ' <td></td>';
+                        strhtml_t += ' <td>' + jsondata_t[i].VarietyName + '</td>';
+                        strhtml_t += ' <td>' + jsondata_t[i].VarietyCount + '</td>';
+                        strhtml_t += ' <td>' + jsondata_t[i].Price_ShiChang + '</td>';
+                        strhtml_t += ' <td>' + jsondata_t[i].VarietyInterest + '元</td>';
+                        strhtml_t += ' <td>' + jsondata_t[i].StorageMoney + '元</td>';
+                        strhtml_t += ' <td>' + jsondata_t[i].VarietyMoney + '元</td>';
+                        strhtml_t += '</tr>';
+                        sum_VarietyInterest = parseFloat(sum_VarietyInterest) + parseFloat(jsondata_t[i].VarietyInterest);
+                        sum_VarietyMoney = parseFloat(sum_VarietyMoney) + parseFloat(jsondata_t[i].VarietyMoney);
+
+                    }
+                    strhtml_t += '<tr class="trappend"><td colspan="9" style="height:25px;">利息总计：' + changeTwoDecimal_f(sum_VarietyInterest) + ', 结算金额总计：' + changeTwoDecimal_f(sum_VarietyMoney) + '</td>';
+                    $('#dataInfo').fadeIn();
+                    $('#dataInfo .trappend').remove();//清除之前的添加项
+                    $('#dataInfo').append(strhtml);
+                    $('#dataInfo').append(strhtml_t);
+                }, error: function (r) {
+                    $(".fakeloader").fakeCloser();
+                    $('#dataInfo').fadeOut();
+                    showMsg("查询失败!");
+                }
+            });
+        }
+
+
+        function showDetail(obj) {
+            var report_type = $('#report_type').find('option:selected').val();
+            if (report_type == 'ALL') {//没有选择报表类型
+                $('.head_report_type').hide();
+            } else {
+                $('.head_report_type').show();
+                $('#spanreport_type').html($('#report_type').find('option:selected').text());
+            }
+            $('#spanWBID').html($(obj).attr('WBName'));
+            $('#spanTradeWBID').html($(obj).attr('TradeWBName'));
+            $('#spanTimeID').html($(obj).attr('TimeName'));
+            $('#spanVarietyID').html($(obj).attr('VarietyName'));
+            $('#spanPrice_ShiChang').html($(obj).attr('Price_ShiChang'));
+            $('#spandtBegin').html($('#Qdtstart').val());
+            $('#spandtEnd').html($('#Qdtend').val());
+            var TradeWBID = $(obj).attr('TradeWBID');
+            var WBID = $(obj).attr('WBID');
+            var VarietyID = $(obj).attr('VarietyID');
+            var TimeID = $(obj).attr('TimeID');
+            var Price_ShiChang = $(obj).attr('Price_ShiChang');
+
+
+            var para = 'report_type=' + report_type + '&TradeWBID=' + TradeWBID + '&WBID=' + WBID + '&VarietyID=' + VarietyID + '&TimeID=' + TimeID + '&Price_ShiChang=' + Price_ShiChang + '&Qdtstart=' + $('#Qdtstart').val() + '&Qdtend=' + $('#Qdtend').val();
+            var url = 'report.ashx?type=Get_Sell_Detail';
+            $.ajax({
+                url: url,
+                type: 'post',
+                data: para,
+                dataType: 'json',
+                success: function (r) {
+                    if (r.state == false) {
+                        $('.datadetail').fadeOut();
+                        showMsg(r.msg);
+                        return false;
+                    }
+                    var strhtml = '';
+                    var jsondata = JSON.parse(r.data);
+                    var height = 120;
+                    for (var i = 0; i < jsondata.length; i++) {
+                        strhtml += '<tr class="trappend"  onmouseover="change_colorOver(this)" onmouseout="change_colorOut(this)">';
+                        height += 27;
+                        if (jsondata[i].ISReturn == '存转销') {
+                            strhtml += ' <td style="height:25px;"><span style="color:green;">存转销</span></td>';
+                        } else {
+                            strhtml += ' <td style="height:25px;"><span style="color:red;">退还存转销</span></td>';
+                        }
+                        strhtml += ' <td>' + jsondata[i].AccountNumber + '</td>';
+                        strhtml += ' <td>' + jsondata[i].Dep_Name + '</td>';
+                        strhtml += ' <td>' + jsondata[i].VarietyCount + '</td>';
+                        strhtml += ' <td>' + jsondata[i].Price_ShiChang + '</td>';
+                        strhtml += ' <td>' + jsondata[i].VarietyInterest + '元</td>';
+                        strhtml += ' <td>' + jsondata[i].StorageMoney + '元</td>';
+                        strhtml += ' <td>' + jsondata[i].VarietyMoney + '元</td>';
+                        strhtml += ' <td>' + jsondata[i].dt_Sell + '</td>';
+                        strhtml += '</tr>';
+                    }
+
+                    $('#dataInfo_detail .trappend').remove();//清除之前的添加项
+                    $('#dataInfo_detail').append(strhtml);
+
+                    var width = 780;
+                    // height = 50 + $('#dataInfo_detail').get(0).offsetHeight;
+                    if (height > document.documentElement.clientHeight - 50) {
+                        height = document.documentElement.clientHeight - 50;
+                    }
+                    if (width > document.documentElement.clientWidth - 50) {
+                        width = document.documentElement.clientWidth - 50;
+                    }
+                    //var top = (document.body.scrollHeight - height) / 2;
+                    var top = (document.documentElement.clientHeight - height) / 2;
+
+                    var left = (document.body.scrollWidth - width) / 2;
+                    if (top <= 0) { top = 10; }
+                    if (left <= 0) { left = 10; }
+                    $('.datadetail').css('width', width).css('height', height).css('top', top).css('left', left);
+
+
+                    $('.datadetail').fadeIn();
+                }, error: function (r) {
+                    $('.datadetail').fadeOut();
+                    showMsg('查询详细信息失败!');
+                }
+            });
+        }
+    </script>
+    <style type="text/css">
+        .Query {
+            margin: 0px 0px 5px 0px;
+            background: #e0eeee;
+            border: 1px solid #9ac0cd;
+            border-radius: 10px;
+            max-width: 980px;
+            padding: 0px 5px 5px 5px;
+        }
+
+            .Query span {
+                font-size: 12px;
+                color: #333;
+            }
+
+            .Query img {
+                width: 30px;
+                height: 30px;
+                margin: 0px 10px -8px 10px;
+                cursor: pointer;
+            }
+
+            .Query .outputExcel {
+                width: 60px;
+                color: #111;
+            }
+
+        #dataInfo {
+            display: none;
+        }
+
+            #dataInfo .btndetail {
+                width: 50px;
+                height: 20px;
+                /*background: #cdcdcd;
+                border: 1px solid #aaa;*/
+                /*color: green;*/
+                cursor: pointer;
+            }
+
+        .datadetail {
+            display: none;
+            position: fixed;
+            top: 20px;
+            left: 10px;
+            width: 850px;
+            height: 200px;
+            background: #efefef;
+            border: 2px solid #9ac0cd;
+            padding: 5px 10px;
+            border-radius: 10px;
+            z-index: 100;
+        }
+
+        .datainner {
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+        }
+
+        .datadetail .datadetail_head {
+            float: left;
+            font-size: 14px;
+            margin: 5px 0px 10px 0px;
+        }
+
+            .datadetail .datadetail_head .spaninfo {
+                margin-left: 5px;
+                color: blue;
+            }
+
+        .datadetail .div_close {
+            float: right;
+        }
+
+        .datadetail #dataInfo_detail {
+            clear: both;
+        }
+
+        .datadetail .div_close #noticeclose {
+            font-size: 18pt;
+            color: red;
+            background: #efefef;
+            border-radius: 50%;
+            border: 1px solid #ccc;
+            width: 30px;
+            height: 30px;
+            cursor: pointer;
+        }
+    </style>
+
+</head>
+<body>
+
+    <div class="pageHead">
+        <b>网点存转销汇总报表</b>
+    </div>
+
+    <div class="Query">
+        <span>报表类型</span>
+        <select id="report_type" style="width: 80px; margin-right: 5px;">
+            <option value="ALL">--全部--</option>
+            <option value="P">存转销报表</option>
+            <option value="N">退还报表</option>
+        </select>
+        <span class="QWBInfo">网点</span>
+        <select class="QWBInfo" id="QWBID" style="width: 120px; margin-right: 5px;"></select>
+        <span>交易类型</span>
+        <select id="trade_type" style="width: 100px; margin-right: 5px;">
+            <option value="0">--全部--</option>
+            <option value="1">本地存转销</option>
+            <option value="2">异地存转销</option>
+            <option value="3">本行异地存转销</option>
+            <option value="4">它行异地存转销</option>
+        </select>
+        <span>存粮类型</span>
+        <select id="QVarietyID" style="width: 80px; margin-right: 5px;"></select>
+        <span>日期</span>
+        <input type="text" id="Qdtstart" onclick="WdatePicker();" style="font-size: 12px; width: 70px;height:20px;" />
+        <span>-</span>
+        <input type="text" id="Qdtend" onclick="WdatePicker()" style="font-size: 12px; width: 70px;height:20px;" />
+
+        <img id="imgQuery" src="/images/search_red.png" onclick="FunQuery()" />
+        <a id="excel_export" href="#">Excel</a>
+    </div>
+
+    <table class="tabData" id="dataInfo">
+        <tr class="tr_head">
+            <th style="width: 150px; height:20px; text-align: center;">
+                储户网点
+            </th>
+            <th style="width: 150px; height:20px; text-align: center;">
+                交易网点
+            </th>
+            <th style="width: 80px; text-align: center;">
+                存期
+            </th>
+            <th style="width: 100px; text-align: center;">
+                产品
+            </th>
+            <th style="width: 80px; text-align: center;">
+                交易量
+            </th>
+            <th style="width: 80px; text-align: center;">
+                结算价
+            </th>
+            <th style="width: 80px; text-align: center;">
+                利息
+            </th>
+            <th style="width: 80px; text-align: center;">
+                保管费
+            </th>
+            <th style="width: 100px; text-align: center;">
+                结算金额
+            </th>
+            <th style="width: 80px; text-align: center;">
+                详细
+            </th>
+        </tr>
+    </table>
+
+    <div class="datadetail">
+        <div class="datainner">
+            <div class="datadetail_head">
+                <span>储户网点:</span><span id="spanWBID" class="spaninfo"></span>
+                <span>交易网点:</span><span id="spanTradeWBID" class="spaninfo"></span>
+                <span class="head_report_type">报表类型:</span><span id="spanreport_type" class="spaninfo head_report_type"></span>
+                <br />
+                <span>存期:</span><span id="spanTimeID" class="spaninfo"></span>
+                <span>存粮类型:</span><span id="spanVarietyID" class="spaninfo"></span>
+                <span>结算价:</span><span id="spanPrice_ShiChang" class="spaninfo"></span>
+                <span>开始时间:</span><span id="spandtBegin" class="spaninfo"></span>
+                <span>结束时间:</span><span id="spandtEnd" class="spaninfo"></span>
+            </div>
+
+            <img class="imgclose" src="../../images/winClose.png" alt="关闭窗口" style="float: right; cursor: pointer;"  />
+            <!--<div class="div_close">
+        <input type="button" id="noticeclose" value="×">
+    </div>-->
+
+
+            <table class="tabData" id="dataInfo_detail">
+                <tr class="tr_head">
+                    <th style="width: 100px; height:20px; text-align: center;">
+                        类型
+                    </th>
+                    <th style="width: 80px; text-align: center;">
+                        账号
+                    </th>
+                    <th style="width: 80px; text-align: center;">
+                        姓名
+                    </th>
+                    <th style="width: 80px; text-align: center;">
+                        交易量
+                    </th>
+                    <th style="width: 80px; text-align: center;">
+                        结算价
+                    </th>
+                    <th style="width: 80px; text-align: center;">
+                        利息
+                    </th>
+                    <th style="width: 80px; text-align: center;">
+                        保管费
+                    </th>
+                    <th style="width: 100px; text-align: center;">
+                        结算金额
+                    </th>
+                    <th style="width: 80px; text-align: center;">
+                        时间
+                    </th>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    <div style="display: none;">
+        <input type="text" id="colorName" value="" />
+        <!--被选择的网点ID-->
+        <input type="text" id="WBID" value="" />
+    </div>
+
+</body>
+</html>

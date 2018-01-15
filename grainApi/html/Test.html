@@ -1,0 +1,26 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title></title>
+    <script src="../scripts/jquery.min.js"></script>
+    <script type="text/javascript">
+        $.ajax({//url的参数中model=shopping标志这是
+            url: '/api/Test',
+            type: 'post',
+            data: '{"id":2,"name":"name01"}',
+            dataType: 'json',
+            contentType: 'application/json',
+            success: function (data) {
+                console.log(data);
+                console.log(data.name);
+            }, error: function (data) {
+                console.log(data.responseText);
+            }
+        });
+    </script>
+</head>
+<body>
+    test 页面
+</body>
+</html>

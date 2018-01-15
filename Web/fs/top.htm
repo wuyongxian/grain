@@ -1,0 +1,167 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>top.html</title>
+    <script src="../Scripts/jquery-1.4.1.js" type="text/javascript"></script>
+    <script src="../Scripts/pushmsg.js"></script>
+    <link href="../Styles/top.css" rel="stylesheet" />
+    <script type="text/javascript">
+        $(function () {
+            var wbinfo =JSON.parse( localStorage.getItem('wbinfo'));
+            var ISHQ = wbinfo[0].ISHQ;
+            if (!ISHQ) {
+                $('#libackup').hide();
+                $('.pagehead-box .head-setting ').width(150);
+            } 
+            $.ajax({
+                url: 'frm.ashx?type=getUserInfo',
+                type: 'post',
+                data: '',
+                dataType: 'json',
+                success: function (r) {
+                    if (ISHQ) {
+                        $('#spanWBID').html('总部');
+                    } else {
+                        $('#spanWBID').html(r[0].WBID);   
+                    }
+                    $('#spanUser').html(r[0].strRealName);
+                }, error: function (r) {
+
+                }
+            });
+
+            //设置网点权限缓存
+            $.ajax({
+                url: '/ashx/wbinfo.ashx?type=GetWBAuthority',
+                type: 'post',
+                data: '',
+                dataType: 'json',
+                success: function (r) {
+                    localStorage.setItem('WBAuthority', JSON.stringify(r[0]));
+                    var wba = JSON.parse(localStorage.getItem("WBAuthority"));
+                    var ISCodekeyboard = wba.ISCodekeyboard;
+                    console.log('ISCodekeyboard:' + ISCodekeyboard);
+                }, error: function (r) {
+                   
+                }
+            });
+
+            $('#pagelogintime').val(new Date());
+            setInterval('checklogin()',1000);
+
+        });
+
+        function checklogin() {
+            // var loginstate = localStorage.getItem('loginstate');
+            var pagelogintime = new Date($('#pagelogintime').val());
+            for (var i = 0; i < localStorage.length; i++) {
+                if (localStorage.key(i).indexOf('loginuser') == 0) {
+                    var logintime = localStorage[localStorage.key(i)];
+                    if (timeCompare(logintime, pagelogintime)) {
+                        window.parent.location.href = '../index.html?Type=loginrep';
+
+                    }
+                }
+            }
+        }
+
+        //time1>time2:true  time1<time2:false  
+        function timeCompare(time1, time2) {
+            time1 = new Date(time1);
+            time2 = new Date(time2);
+            if (time1.getYear() > time2.getYear()) {
+                return true;
+            }
+            else if (time1.getYear() < time2.getYear()) {
+                return false;
+            }
+
+            if (time1.getMonth() > time2.getMonth()) {
+                return true;
+            }
+            else if (time1.getMonth() < time2.getMonth()) {
+                return false;
+            }
+
+            if (time1.getDay() > time2.getDay()) {
+                return true;
+            }
+            else if (time1.getDay() < time2.getDay()) {
+                return false;
+            }
+
+            if (time1.getHours() > time2.getHours()) {
+                return true;
+            }
+            else if (time1.getHours() < time2.getHours()) {
+                return false;
+            }
+
+            if (time1.getMinutes() > time2.getMinutes()) {
+                return true;
+            }
+            else if (time1.getMinutes() < time2.getMinutes()) {
+                return false;
+            }
+
+            if (time1.getSeconds() > time2.getSeconds()) {
+                return true;
+            }
+            else if (time1.getSeconds() < time2.getSeconds()) {
+                return false;
+            }
+
+            if (time1.getMilliseconds() > time2.getMilliseconds()) {
+                return true;
+            }
+            else if (time1.getMilliseconds() < time2.getMilliseconds()) {
+                return false;
+            }
+
+        }
+
+        function BackUpDB() {
+            $.ajax({
+                url: 'frm.ashx?type=BackUpDB',
+                type: 'post',
+                data: '',
+                dataType: 'text',
+                success: function (r) {
+                    alert("备份数据库成功!");
+                }, error: function (r) {
+                    alert("备份数据库成功!");
+                }
+            });
+        }
+    
+    </script>
+</head>
+<body>
+    <div class="CMLogo">
+        <img src="../images/LOGO.png" alt="" />
+    </div>
+    <div class="pagehead-box">
+        <div class="boxinner head-userinfo">
+            <p><span>网点:</span><span id="spanWBID"></span></p>
+            <p><span>用户:</span><span id="spanUser"></span></p>
+        </div>
+        <div class="boxinner pagetitle">
+            <!--旬邑宏润•粮安天下粮食银行-->
+            粮安天下粮贸结算管理系统
+        </div>
+        <div class="boxinner head-setting">
+            <ul>
+                <li><a href="homepage.html" target="main">主页</a> </li>
+                <li id="libackup"><a href="#" onclick="BackUpDB()">备份</a></li>
+                <li><a href="../index.html?Type=loginOut" target="_parent">退出</a></li>
+            </ul>
+        </div>
+    </div>
+
+    
+    <div style="display: none">
+        <input type="text" id="frmWBID" />
+        <input type="text" id="frmID" />
+        <input type="text" id="pagelogintime" /></div>
+</body>
+</html>

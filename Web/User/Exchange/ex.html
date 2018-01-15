@@ -1,0 +1,70 @@
+﻿
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title></title>
+    <script src="../../Scripts/jquery-1.4.1.js" type="text/javascript"></script>
+    <script src="../../Scripts/WebInner.js" type="text/javascript"></script>
+    <script src="../../Scripts/Common.js" type="text/javascript"></script>
+    <link href="../../Styles/Common.css" rel="stylesheet" type="text/css" />
+
+    <script src="../../Lodop6.198/LodopFuncs.js" type="text/javascript"></script>
+    <script src="../../Scripts/LodopPrint.js"></script>
+<script type="text/javascript">
+    var stuarray
+    $(function () {
+        var student = { ID: 1, Name: 'name001', Age: 20 };
+        var student2 = { ID: 2, Name: 'name002', Age: 40 };
+        stuarray = new Array();
+        stuarray.push(student);
+        stuarray.push(student2);
+        for (var i = 0; i < stuarray.length; i++) {
+            var stu = stuarray[i];
+            var str = '';
+            str += '<tr>';
+            str += '<td>' + stu.ID + '</td>';
+            str += '<td>' + stu.Name + '</td>';
+            str += '<td>' + stu.Age + '</td>';
+            str += '</tr>';
+            $('#tab').append(str);
+        }
+    })
+
+    function FunSubmit() {
+        $.ajax({
+            url: '/User/Exchange/exchange.ashx?type=getPage&stu='+JSON.stringify( stuarray),
+            type: 'post',
+            //data: $('#form1').serialize(),
+            data:'stu='+ JSON.stringify( stuarray),
+            dataType: 'text',
+            success: function (r) {
+                limitMount = parseInt(r);
+            }, error: function (r) {
+                showMsg('获取当前营业员的操作限额时发生错误 ！');
+            }
+        });
+
+        //$('#divPrint').html('这是打印内容');
+        //CreatePage();
+        //LODOP.PREVIEW(); //打印存折
+    }
+</script>
+</head>
+<body>
+    <form id="form1">
+        <input type="text" name="txt1" value="111" />
+        <input type="text" name="txt2" value="222" />
+        <input type="button" value="submit" onclick="FunSubmit()" />
+
+        <table id="tab">
+            <tr>
+                <td style="width:100px;">ID</td>
+                <td style="width:100px;">Name</td>
+                <td style="width: 100px;">Age</td>
+            </tr>
+            <tr><td>1</td><td>name1</td><td>age1</td></tr>
+        </table>
+    </form>
+</body>
+</html>

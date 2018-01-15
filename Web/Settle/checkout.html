@@ -1,0 +1,203 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title></title>
+    <script src="../Scripts/jquery-1.4.1.js" type="text/javascript"></script>
+    <script src="../Scripts/WebInner.js" type="text/javascript"></script>
+    <script src="../Scripts/Common.js" type="text/javascript"></script>
+    <script src="../Scripts/excelhelper.js"></script>
+    <link href="../Styles/Common.css" rel="stylesheet" type="text/css" />
+
+    <style type="text/css">
+        .Query {
+            margin: 0px 0px 5px 0px;
+            background: #e0eeee;
+            border: 1px solid #9ac0cd;
+            border-radius: 10px;
+            max-width: 610px;
+            padding: 0px 5px 5px 5px;
+        }
+
+            .Query span {
+                font-size: 12px;
+                color: #333;
+            }
+
+            .Query img {
+                width: 30px;
+                height: 30px;
+                margin: 0px 5px -8px 5px;
+                cursor: pointer;
+            }
+
+            .Query .outputExcel {
+                width: 60px;
+                color: #111;
+            }
+
+        #dataInfo {
+            display: none;
+        }
+
+            #dataInfo .btndetail {
+                width: 50px;
+                height: 20px;
+                /*background: #cdcdcd;
+                border: 1px solid #aaa;*/
+                /*color: green;*/
+                cursor: pointer;
+            }
+    </style>
+
+</head>
+<body>
+
+    <div class="pageHead">
+        <b>原粮出库操作</b>
+        <!--<span id="spanHelp" style="cursor: pointer">帮助</span>-->
+    </div>
+    <div id="divHelp" class="pageHelp" style="border:1px solid #333; border-radius:5px; display:none; ">
+        <span>提示1：网点存粮汇总报表只显示查询日期内的存粮总数。</span><br />
+    </div>
+
+    <div class="Query">
+      
+        <span class="QWBInfo">网点</span>
+        <select class="QWBInfo" id="QWBID" style="width: 120px; margin-right: 5px;"></select>
+      
+        <img id="imgQuery" src="/images/search_red.png" onclick="FunQuery()" />
+       
+        <a id="excel_export" href="#">Excel</a>
+        <a href="checkouthistory.html">出库记录查询</a>
+    </div>
+
+    <table class="tabData" id="dataInfo">
+        <tr class="tr_head">
+            <th style="width: 200px; height: 20px; text-align: center;">
+                网点名称
+            </th>
+            <th style="width: 100px; text-align: center;">
+                品种
+            </th>
+            <th style="width: 80px; text-align: center;">
+                等级
+            </th>
+            <th style="width: 150px; text-align: center;">
+                库存
+            </th>
+            <th  style="width: 80px; text-align: center;">
+                出库
+            </th>
+           
+        </tr>
+    </table>
+
+    <div style="display: none;">
+        <input type="text" id="colorName" />
+        <!--被选择的网点ID-->
+        <input type="text" id="WBID" value="" />
+    </div>
+
+
+    <script type="text/javascript">
+
+        $(function () {
+            
+            InitWBID();
+            $('#QWBID').change(function () {
+                $('#WBID').val($('#QWBID').find('option:selected').val());//选择查询的粮食银行
+
+            });
+
+            $('#excel_export').ExportExcel('dataInfo', '原粮出库报表');
+
+        });
+
+        function InitWBID() {
+            var WBName = '';
+            $('#QWBID').empty();
+            $.ajax({
+                url: '/Ashx/wbinfo.ashx?type=GetWBByName&strName=' + WBName,
+                type: 'post',
+                data: '',
+                dataType: 'json',
+                success: function (r) {
+
+                    $('#QWBID').append("<option value='0'>--全部--</option>");
+
+                    if (r.responseText == "Error") { return false; }
+                    for (var i = 0; i < r.length; i++) {
+                        if (WBName == r[i].strName) {
+                            $('#QWBID').append("<option value='" + r[i].ID + "' selected = 'selected'>" + r[i].strName + "</option>");
+                        } else {
+                            $('#QWBID').append("<option value='" + r[i].ID + "'>" + r[i].strName + "</option>");
+                        }
+                    }
+                }, error: function (r) { }
+            });
+        }
+
+
+        function FunQuery() {
+            var wbid = $('#QWBID').val();
+          
+            //if (wbid == '0') {
+            //    showMsg('请选择您要查询的分行！');
+            //    return;
+            //}
+            var para = 'wbid=' + wbid;
+            $.ajax({
+                url: '/ashx/settle_checkout.ashx?type=getGrainOutPut',
+                type: 'post',
+                data: para,
+                dataType: 'json',
+                success: function (r) {
+                    if (r.length>0) {
+                      
+                        var strhtml = '';
+                        //var jsondata = JSON.parse(r.data);
+                        var jsondata = r;
+                        var numStorage_t = 0;
+                        for (var i = 0; i < jsondata.length; i++) {
+                            strhtml += '<tr class="trappend"  onmouseover="change_colorOver(this)" onmouseout="change_colorOut(this)">';
+
+                            strhtml += ' <td style="height:25px;">' + jsondata[i].WBName + '</td>';
+                            strhtml += ' <td>' + jsondata[i].VarietyName + '</td>';
+                            strhtml += ' <td>' + jsondata[i].VarietyLevelName + '</td>';
+                            strhtml += ' <td>' + jsondata[i].numStorage + '</td>';
+                            numStorage_t += parseFloat(jsondata[i].numStorage);
+                            strhtml += ' <td><input type="button" value="出库"  class="btndetail" ID="' + jsondata[i].ID + '"  WBID="' + jsondata[i].WBID + '" WBID="' + jsondata[i].WBID + '" VarietyID="' + jsondata[i].VarietyID + '" VarietyLevelID="' + jsondata[i].VarietyLevelID + '"  onclick="checkoutDetail(this)"/></td>';
+                            strhtml += '</tr>';
+                        }
+
+
+
+                        strhtml += '<tr  class="trappend"><td colspan="4" style="height:25px;text-align:center;">总计:' + changeTwoDecimal_f(numStorage_t) + '</td></tr>';
+                       
+                        $('#dataInfo').fadeIn();
+                        $('#dataInfo .trappend').remove();//清除之前的添加项
+                        $('#dataInfo').append(strhtml);
+
+                    } else {
+                        showMsg('获取存粮出库信息失败！');
+                    }
+                }, error: function (r) {
+                    showMsg('获取存粮出库信息失败 ！');
+                }
+            });
+        }
+
+
+        function checkoutDetail(obj) {
+            var ID = $(obj).attr('ID');
+            var WBID = $(obj).attr('WBID');
+            var VarietyID = $(obj).attr('VarietyID');
+            var VarietyLevelID = $(obj).attr('VarietyLevelID');//市场价
+
+            window.location.href = '/Settle/checkoutdetail.html?ID=' + ID;
+            //window.location.href = '/Settle/CheckOutDetail.aspx?ID=' + ID + '&WBID=' + WBID + '&VarietyID=' + VarietyID + '&VarietyLevelID=' + VarietyLevelID;
+        }
+    </script>
+</body>
+</html>

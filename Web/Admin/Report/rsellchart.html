@@ -1,0 +1,451 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>网点存转销结算</title>
+
+    <script src="../../Scripts/jquery-1.4.1.js" type="text/javascript"></script>
+    <script src="../../Scripts/Common.js" type="text/javascript"></script>
+    <script src="../../Scripts/WebInner.js" type="text/javascript"></script>
+    <link href="../../Styles/Common.css" rel="stylesheet" type="text/css" />
+    <script src="../../Scripts/fakeLoader.js" type="text/javascript"></script>
+    <link href="../../Styles/fakeLoader.css" rel="stylesheet" />
+    <script src="../../Scripts/chart.min.js" type="text/javascript"></script>
+    <!--<script src="../../Scripts/colorpicker.js"></script>
+    <link href="../../Styles/colorpicker.css" rel="stylesheet" />-->
+    <script type="text/javascript">
+        /*--------窗体启动设置和基本设置--------*/
+        /*--loadFuntion--*/
+
+        var jsondata;
+        $(function () {
+
+            var wbinfo = JSON.parse(localStorage.getItem('wbinfo'));
+            var ISHQ = wbinfo[0].ISHQ;
+            if (!ISHQ) {
+                $('.QWBInfo').hide();
+                $('#WBID').val(wbinfo[0].ID);//当前的粮食银行
+            } else {
+                $('.QWBInfo').show();
+                InitWBID();
+            }
+            $('#QWBID').change(function () {
+                $('#WBID').val($('#QWBID').find('option:selected').val());//选择查询的粮食银行
+                rebuild_trade_type();
+            })
+
+            var now = new Date();
+            var year = now.getFullYear();
+            for (var i = year; i > parseInt(year - 5) ; i--) {
+                $('#dtyear').append('<option value="' + i + '">' + i + '</option>');
+            }
+            for (var i = 1; i < 13; i++) {
+                $('#dtmonth').append('<option value="' + i + '">' + i + '</option>');
+            }
+
+
+            $('input[name=chk_VarietyInterest]').change(function () {
+                getchartdata();
+            })
+            $( 'input[name=chk_StorageMoney]').change(function () {
+                getchartdata();
+            })
+            $('input[name=chk_VarietyMoney]').change(function () {
+                getchartdata();
+            })
+           
+        });
+        function InitWBID() {
+            var WBName = '';
+            $('#QWBID').empty();
+            $.ajax({
+                url: '/Ashx/wbinfo.ashx?type=GetWBByName&strName=' + WBName,
+                type: 'post',
+                data: '',
+                dataType: 'json',
+                success: function (r) {
+                    $('#QWBID').append("<option value='0'>--请选择--</option>");
+                    if (r.responseText == "Error") { return false; }
+                    for (var i = 0; i < r.length; i++) {
+                        if (WBName == r[i].strName) {
+                            $('#QWBID').append("<option value='" + r[i].ID + "' selected = 'selected'>" + r[i].strName + "</option>");
+                        } else {
+                            $('#QWBID').append("<option value='" + r[i].ID + "'>" + r[i].strName + "</option>");
+                        }
+                    }
+                    rebuild_trade_type();
+
+                }, error: function (r) {
+
+                }
+            });
+        }
+
+        function rebuild_trade_type() {
+            $('#trade_type').empty();
+            var strhtml = '';
+            var wbid = $('#QWBID').find('option:selected').val();
+            if (wbid == '0') {
+                strhtml += '<option value="0">--全部--</option>';
+                strhtml += ' <option value="1">本地存转销</option>';
+                strhtml += '<option value="2">异地存转销</option>';
+            } else {
+                strhtml += '<option value="0">--全部--</option>';
+                strhtml += ' <option value="1">本地存转销</option>';
+                strhtml += '<option value="2">异地存转销</option>';
+                strhtml += ' <option value="3">本行异地存转销</option>';
+                strhtml += ' <option value="4">它行异地存转销</option>';
+            }
+            $('#trade_type').append(strhtml);
+        }
+
+        function FunQuery() {
+            var chk_VarietyInterest = $('input[name=chk_VarietyInterest]').is(':checked');
+            var chk_StorageMoney = $('input[name=chk_StorageMoney]').is(':checked');
+            var chk_VarietyMoney = $('input[name=chk_VarietyMoney]').is(':checked');
+            if (!chk_VarietyInterest && !chk_StorageMoney && !chk_VarietyMoney) {
+                showMsg('请至少选择一个数据统计选项!');
+                return false;
+            }
+
+            $(".fakeloader").fakeLoader({
+                timeToHide: 12000000,
+                bgColor: "transparent",
+                spinner: "spinner7"
+            });
+            $('.chart').fadeOut();
+            $('#dataInfo').fadeOut();
+
+            var report_type = $('#report_type').find('option:selected').val();
+            var trade_type = $('#trade_type').find('option:selected').val();
+            var QWBID = $('#WBID').val();
+            var dttype = $('#dttype').val();
+            var dtyear = $('#dtyear').val();
+            var dtmonth = $('#dtmonth').val();
+            var para = 'report_type=' + report_type + '&trade_type=' + trade_type + '&QWBID=' + QWBID + '&dttype=' + dttype + '&dtyear=' + dtyear + '&dtmonth=' + dtmonth;
+            var url = 'report.ashx?type=Get_Sell_Chart';
+            $.ajax({
+                url: url,
+                type: 'post',
+                data: para,
+                dataType: 'json',
+                success: function (r) {
+                    $(".fakeloader").fakeCloser();
+                    if (r.state == false) {
+                        showMsg(r.msg);
+                        return false;
+                    }
+                     jsondata = JSON.parse(r.data);
+                     $('.chart').fadeIn();
+                     $('#dataInfo').fadeIn();
+                     getchartdata();
+                     showdataInfo();
+                   
+
+                }, error: function (r) {
+                    $(".fakeloader").fakeCloser();
+                    showMsg("查询失败!");
+                }
+            });
+        }
+
+        function showdataInfo() {
+            $('#dataInfo .trappend').remove();
+            var strtype = $('#dttype').find('option:selected').text();
+            var VarietyMoney_t=0;
+            var VarietyInterest_t=0;
+            var StorageMoney_t=0;
+            var strhtml = '';
+            for (var i = 0; i < jsondata.length; i++) {
+                ////strhtml += '<tr class="trappend"  onmouseover="change_colorOver(this)" onmouseout="change_colorOut(this)">';
+                strhtml += '<tr class="trappend">';
+                strhtml += ' <td>' + jsondata[i].chartdate + strtype + '</td>';
+                strhtml += ' <td style="height:25px;">' + jsondata[i].VarietyMoney + '</td>';
+                strhtml += ' <td>' + jsondata[i].VarietyInterest + '</td>';
+                strhtml += ' <td>' + jsondata[i].StorageMoney + '</td>';
+               
+                strhtml += '</tr>';
+                VarietyMoney_t = parseFloat(VarietyMoney_t) + parseFloat(jsondata[i].VarietyMoney);
+                VarietyInterest_t = parseFloat(VarietyInterest_t) + parseFloat(jsondata[i].VarietyInterest);
+                StorageMoney_t = parseFloat(StorageMoney_t) + parseFloat(jsondata[i].StorageMoney);
+            }
+            VarietyMoney_t = changeTwoDecimal_f(VarietyMoney_t);
+            VarietyInterest_t = changeTwoDecimal_f(VarietyInterest_t);
+            StorageMoney_t = changeTwoDecimal_f(StorageMoney_t);
+
+            strhtml += '<tr class="trappend" style="height:30px;background:#999;color:#fff;font-weight:bold;"><td>总计</td><td>' + VarietyMoney_t + '</td><td>' + VarietyInterest_t + '</td><td>' + StorageMoney_t + '</td></tr>';
+            $('#dataInfo').append(strhtml);
+        }
+
+        function getchartdata() {
+            var chk_VarietyInterest = $('input[name=chk_VarietyInterest]').is(':checked');
+            var chk_StorageMoney = $('input[name=chk_StorageMoney]').is(':checked');
+            var chk_VarietyMoney = $('input[name=chk_VarietyMoney]').is(':checked');
+
+            var labelsArray = new Array();
+            var dataArray_VarietyInterest = new Array();
+            var dataArray_StorageMoney = new Array();
+            var dataArray_VarietyMoney = new Array();
+            var strtype = $('#dttype').find('option:selected').text();
+
+
+            for (var i = 0; i < jsondata.length; i++) {
+
+                labelsArray.push(jsondata[i].chartdate + strtype);
+                dataArray_VarietyInterest.push(jsondata[i].VarietyInterest);
+                dataArray_StorageMoney.push(jsondata[i].StorageMoney);
+                dataArray_VarietyMoney.push(jsondata[i].VarietyMoney);
+            }
+
+            var datasetArray = new Array();
+            if (chk_StorageMoney) {
+                var objdata = {
+                    fillColor: "rgba(0,133,106,0.5)",
+                    strokeColor: "rgba(0,133,106,1)",
+                    pointColor: "rgba(0,133,106,1)",
+                    pointStrokeColor: "#fff",
+                    data: dataArray_StorageMoney
+                }
+                datasetArray.push(objdata);
+            }
+            if (chk_VarietyInterest) {
+                var objdata = {
+                    fillColor: "rgba(141,181,0,0.5)",
+                    strokeColor: "rgba(141,181,0,1)",
+                    pointColor: "rgba(141,181,0,1)",
+                    pointStrokeColor: "#fff",
+                    data: dataArray_VarietyInterest
+                }
+                datasetArray.push(objdata);
+            }
+            if (chk_VarietyMoney) {
+                var objdata = {
+                    fillColor: "rgba(255,117,0,0.5)",
+                    strokeColor: "rgba(255,117,0,1)",
+                    pointColor: "rgba(255,117,0,1)",
+                    pointStrokeColor: "#fff",
+                    data: dataArray_VarietyMoney
+                }
+                datasetArray.push(objdata);
+            }
+
+            var data = {
+                // labels: ["January", "February", "March", "April", "May", "June", "July"],
+                labels: labelsArray,
+                //数据集（y轴数据范围随数据集合中的data中的最大或最小数据而动态改变的）
+                datasets: datasetArray
+            };
+
+
+
+            showchart(data);
+
+        }
+
+        function showchart(data) {
+            $('#myChart').remove();
+            $('#chartcontent').append('<canvas id="myChart" width="800" height="400"></canvas>');
+            var ctx = document.getElementById("myChart").getContext("2d");;
+            //方式二：传入对象字面量去修改默认图标参数，自定义图表
+            var MyNewChart = new Chart(ctx).Line(data, {
+
+                // Y/X轴的颜色
+                scaleLineColor: "rgba(0,0,0,0.5)",
+                // 文字大小
+                scaleFontSize: 14,
+                // 文字颜色
+                scaleFontColor: "#666",
+                // 网格颜色
+                scaleGridLineColor: "rgba(0,0,0,0.1)",
+                // 是否使用贝塞尔曲线? 即:线条是否弯曲
+                // 是否执行动画
+                animation: true,
+                // 动画的时间
+                animationSteps: 60,
+                animationEasing: "easeOutQuart",
+                // 动画完成时的执行函数
+                onAnimationComplete: null
+            });
+        }
+
+    </script>
+    <style type="text/css">
+        .Query {
+            margin: 0px 0px 5px 0px;
+            background: #e0eeee;
+            border: 1px solid #9ac0cd;
+            border-radius: 10px;
+            max-width: 835px;
+            padding: 0px 5px 5px 5px;
+        }
+
+            .Query span {
+                font-size: 12px;
+                color: #333;
+            }
+
+            .Query img {
+                width: 30px;
+                height: 30px;
+                margin: 0px 10px -8px 10px;
+                cursor: pointer;
+            }
+
+            .Query .outputExcel {
+                width: 60px;
+                color: #111;
+            }
+
+        #dttype {
+        width:60px;
+        }
+        #dtyear {
+        width:60px;
+        }
+         #dtyear::after {
+            content: "年";
+        }
+        #dtmonth {
+            width: 60px;
+        }
+
+        .chart {
+            width:960px;
+        display:none;
+        }
+
+        .chartleft {
+        float:left;
+        width:120px;
+        border:1px solid #ccc;
+        border-radius:10px;
+        background:#efefef;
+        padding:10px;
+        font-size:12px;
+        margin-top:140px;
+        }
+
+        #taboption tr {
+        height:50px;
+        }
+
+        .taboptioncolor {
+            width: 20px;
+            height: 20px;
+            margin-top: 2px;
+            border-radius: 50%;
+            background:#ccc;
+        }
+        #dataInfo {
+            display: none;
+            clear: both;
+            margin:440px 0px 50px 200px;
+        }
+      
+    </style>
+
+</head>
+<body>
+
+    <div class="pageHead">
+        <b>网点存转销结算分析</b><span id="spanHelp" style="cursor: pointer">帮助</span>
+    </div>
+    <div id="divHelp" class="pageHelp" style="border:1px solid #333; border-radius:5px; display:none; ">
+        <span>提示1：当日期选项为年、月、周的时候，请选择要查询的年份。</span><br />
+        <span>提示2：当日期选项为日的时候，请选择要查询的年份及月份。</span><br />
+    </div>
+    <div class="Query">
+        <span>报表类型</span>
+        <select id="report_type" style="width: 80px; margin-right: 5px;">
+            <option value="ALL">--全部--</option>
+            <option value="P">存转销报表</option>
+            <option value="N">退还报表</option>
+        </select>
+        <span class="QWBInfo">网点</span>
+        <select class="QWBInfo" id="QWBID" style="width: 120px; margin-right: 5px;"></select>
+        <span>交易类型</span>
+        <select id="trade_type" style="width: 100px; margin-right: 5px;">
+            <option value="0">--全部--</option>
+            <option value="1">本地存转销</option>
+            <option value="2">异地存转销</option>
+            <option value="3">本行异地存转销</option>
+            <option value="4">它行异地存转销</option>
+        </select>
+       
+        <span>日期选项</span>
+        <select id="dttype">
+            <option value="year">年</option>
+            <option value="month">月</option>
+            <option value="week">周</option>
+            <option value="day">日</option>
+        </select>
+        <select id="dtyear"></select><span>年</span>
+        <span>-</span>
+        <select id="dtmonth"></select><span>月</span>
+
+        <img id="imgQuery" src="/images/search_red.png" onclick="FunQuery()" />
+       
+    </div>
+    <div class="chart">
+        <div class="chartleft">
+            <table id="taboption">
+                <tr><td align="center" colspan="3"><b>统计选项</b><small>(单位：元)</small></td></tr>
+                <tr>
+                    <td align="right"><span>结算金额</span></td>
+                    <td>
+                        <input type="checkbox" id="ISDefault-chk_VarietyMoney" name="chk_VarietyMoney" value="1" class="custom-checkbox" checked /><label for="ISDefault-chk_VarietyMoney"></label>
+                    </td>
+                    <td><div class="taboptioncolor" style="background: rgba(255,117,0,1)"></div></td>
+                </tr>
+                 <tr>
+                    <td align="right"><span>利息</span></td>
+                    <td>
+                       
+                        <input type="checkbox" id="ISDefault-chk_VarietyInterest" name="chk_VarietyInterest" value="1" class="custom-checkbox" checked /><label for="ISDefault-chk_VarietyInterest"></label>
+                    </td>
+                    <td><div class="taboptioncolor" style="background: rgba(141,181,0,1)"></div></td>
+                </tr>
+                <tr>
+                    <td align="right"><span>保管费</span></td>
+                    <td>
+                        <input type="checkbox" id="ISDefault-chk_StorageMoney" name="chk_StorageMoney" value="1" class="custom-checkbox" checked /><label for="ISDefault-chk_StorageMoney"></label>
+                    </td>
+                    <td ><div class="taboptioncolor" style="background: rgba(0,133,106,1)"></div></td>
+                </tr>
+               
+            </table>
+
+        </div>
+        
+       <div id="chartcontent" style="float:right"></div>
+       
+        
+    </div>
+
+
+    <table class="tabEdit" id="dataInfo">
+        <tr class="tr_head" style="text-align:left;">
+            <th style="width: 100px;">
+                日期
+            </th>
+            <th style="width: 150px; height:20px;">
+                结算金额
+            </th>
+            <th style="width: 150px; height:20px;">
+                利息
+            </th>
+            <th style="width: 150px; height:20px;">
+                保管费
+            </th>
+
+
+        </tr>
+    </table>
+    <!--<canvas id="myChart" width="840" height="400"></canvas>-->
+
+    <div style="display: none;">
+        <!--被选择的网点ID-->
+        <input type="text" id="WBID" value="" />
+    </div>
+
+</body>
+</html>
